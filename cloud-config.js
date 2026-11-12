@@ -13,5 +13,5 @@ window.ELM_CLOUD_CONFIG = {
     //     appId: "..."
     // },
     ownerEmail: "",   // your sign-in. Can save, publish and tick items.
-    staffEmail: ""    // the one shared staff sign-in. Can only view published events.
+    staffEmail: ""    // the one shared staff sign-in. Can view published events and tick lines.
 };

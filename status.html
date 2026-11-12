@@ -88,7 +88,8 @@
 
 <script>
 /* 440 Elm setup status page. Reads what the intake app published. Shows what is pending, what is done, and the shifts.
-   The shared staff sign-in can only look. The owner sign-in can tick lines and add notes. Paper stays the working copy. */
+   Both sign-ins can tick lines and add notes (staff ticking approved 2026-11-11). Only the owner can publish or
+   change the checklist itself. Paper stays the working copy. */
 (function () {
     'use strict';
     var $ = function (id) { return document.getElementById(id); };
@@ -264,6 +265,7 @@
     function drawEvent() {
         if (!view.eventId) return;
         var ev = view.event, owner = view.user && view.user.role === 'owner';
+        var canMark = !!view.user && (view.user.role === 'owner' || view.user.role === 'staff');
         var back = '<p class="no-print"><button type="button" class="btn-text" id="backBtn">&larr; All events</button></p>';
         if (view.error) { app.innerHTML = back + '<div class="card"><p class="error">' + esc(view.error) + '</p></div>'; $('backBtn').onclick = goList; return; }
         if (ev === undefined) return;
@@ -282,9 +284,9 @@
         html += '<div class="seg no-print" role="group" aria-label="View"><button type="button" data-tab="checklist" aria-pressed="' + (view.tab === 'checklist') + '">Checklist</button><button type="button" data-tab="shifts" aria-pressed="' + (view.tab === 'shifts') + '">Shifts</button></div>';
         if (view.tab === 'shifts') html += shiftsHtml(ev);
         else {
-            if (owner) html += '<div class="card no-print"><label class="field" style="margin:0">Done by (saved with each tick)<input id="doneBy" list="peopleList" placeholder="Name or initials" value="' + esc(keep.name) + '"></label><datalist id="peopleList">' + people.map(function (p) { return '<option value="' + esc(p) + '">'; }).join('') + '</datalist></div>';
+            if (canMark) html += '<div class="card no-print"><label class="field" style="margin:0">Your name or initials (saved with each tick)<input id="doneBy" list="peopleList" placeholder="Name or initials" value="' + esc(keep.name) + '"></label><datalist id="peopleList">' + people.map(function (p) { return '<option value="' + esc(p) + '">'; }).join('') + '</datalist></div>';
             html += '<div class="seg no-print" role="group" aria-label="Show"><button type="button" data-filter="pending" aria-pressed="' + (view.filter === 'pending') + '">Pending (' + t.pending + ')</button><button type="button" data-filter="done" aria-pressed="' + (view.filter === 'done') + '">Done (' + t.done + ')</button><button type="button" data-filter="all" aria-pressed="' + (view.filter === 'all') + '">All</button></div>';
-            html += checklistHtml(ev, owner);
+            html += checklistHtml(ev, canMark);
             html += '<p class="no-print"><button type="button" class="btn" id="printBtn">Print this list</button></p>';
         }
         app.innerHTML = html;
@@ -294,12 +296,14 @@
         if ($('doneBy')) $('doneBy').onchange = function () { rememberName(this.value.trim()); };
         app.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { view.tab = b.dataset.tab; drawEvent(); }; });
         app.querySelectorAll('[data-filter]').forEach(function (b) { b.onclick = function () { view.filter = b.dataset.filter; drawEvent(); }; });
-        if (!owner) return;
+        if (!canMark) return;
         var failed = function (err) { alert('That change was not saved. ' + err.message); };
         app.querySelectorAll('[data-tick]').forEach(function (b) {
             b.onclick = function () {
                 var k = b.dataset.tick, on = !((view.status[b.dataset.key] || {})[k] === true), change = {};
                 var by = $('doneBy') ? $('doneBy').value.trim() : ''; rememberName(by);
+                // The staff sign-in is shared, so a tick without a name would not say who did the work.
+                if (on && !by && !owner) { alert('Type your name or initials at the top first, so the next shift knows who did this.'); $('doneBy').focus(); return; }
                 change[k] = on; if (on) change.by = by;
                 b.disabled = true;
                 cloud.setItemStatus(view.eventId, b.dataset.key, change).catch(function (err) { b.disabled = false; failed(err); });

@@ -2,7 +2,8 @@ rules_version = '2';
 
 // 440 Elm online library and status page.
 // Replace the two emails below with the same ones you put in cloud-config.js, in lowercase.
-// Only these two sign-ins can read anything. Only the owner can change anything.
+// Only these two sign-ins can read anything. Only the owner can change events.
+// Staff can tick lines and add notes on published events, and nothing else.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -26,10 +27,12 @@ service cloud.firestore {
         allow read, write: if isOwner();
       }
 
-      // Done marks and notes. Staff can look, only the owner can change.
+      // Done marks and notes. Staff can read and mark them on published events, but cannot delete the record.
       match /status/{doc} {
         allow read, write: if isOwner();
         allow read: if isStaff() && isPublished(eventId);
+        allow create, update: if isStaff() && isPublished(eventId) && doc == 'items'
+                              && request.resource.data.keys().hasOnly(['items']);
       }
     }
   }

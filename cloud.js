@@ -5,7 +5,7 @@
    What is stored online (Cloud Firestore):
      events/{id}                 summary + the published checklist and shifts (owner writes, staff reads if published)
      events/{id}/draft/{n}       the full intake answers, in parts (owner only)
-     events/{id}/status/items    done marks, who, when, notes (owner writes, staff reads)
+     events/{id}/status/items    done marks, who, when, notes (owner and staff write)
    Uploaded job sheets and floor plans are still read in the browser and are never uploaded as files.
    The answers and review notes taken from them are part of the intake answers saved online.
    ========================================================================== */

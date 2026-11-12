@@ -44,7 +44,8 @@ Storage is Google Firebase on its free plan (called Spark). It needs a Google ac
 - The status page shows the version you last published. If you change the checklist, the top bar says
   "Publish again to update".
 - Done marks stay when you publish a new version, because each line keeps its permanent code.
-- The staff sign-in can only look. The owner sign-in can tick lines and add notes on the status page.
+- Both sign-ins can tick lines and add notes on the status page. Staff must type a name or initials first, because
+  the staff sign-in is shared. Only the owner can save, publish or remove events.
 - Uploaded job sheets and floor plans are still read in the browser and are not uploaded as files. The answers,
   and the review notes taken from them, are part of what is saved online.
 
