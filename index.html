@@ -13,25 +13,29 @@
     <script src="cloud.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        /* Design tokens. Paper and pen: grey desk, white paper, ink text, ballpoint blue for actions,
-           highlighter yellow only for things that will be left off the sheet. */
+        /* Design tokens. "Clean slate" (2026-11-12): soft grey page, white cards, near-black text, one indigo
+           accent for actions, amber only for things that need an answer. The token names keep their paper-and-pen
+           origin so the rest of the stylesheet reads the same. The printed PDFs stay black on white. */
         :root {
-            --desk: #E5E7EA;
+            --desk: #F4F5F8;
             --paper: #FFFFFF;
-            --ink: #1B1F24;
-            --graphite: #5A636D;
-            --rule: #D6DADF;
-            --rule-strong: #B7BEC6;
-            --pen: #2340A8;
-            --pen-dark: #182F86;
-            --pen-wash: #E9EDF9;
-            --highlighter: #FFE45C;
-            --highlighter-wash: #FFF7C9;
-            --danger: #B42318;
+            --ink: #0F172A;
+            --graphite: #5B6475;
+            --rule: #E5E7EB;
+            --rule-strong: #CBD2DC;
+            --pen: #4F46E5;
+            --pen-dark: #4338CA;
+            --pen-wash: #EEF2FF;
+            --highlighter: #FDE68A;
+            --highlighter-wash: #FEF9C3;
+            --danger: #C81E1E;
+            --done: #15803D;
+            --shadow-card: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .04);
+            --shadow-pop: 0 12px 32px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .06);
             --top: 60px;
-            --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -303,8 +307,61 @@
 .staff-grid,.staff-receiver{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .staff-field{display:block;margin:10px 0}.staff-field input,.staff-field textarea,.staff-card select{display:block;width:100%;box-sizing:border-box}
 .staff-dialog{width:min(680px,calc(100vw - 48px));max-height:85vh;overflow:auto;border:1px solid #bcc6d5;border-radius:10px;padding:24px}.staff-dialog::backdrop{background:rgba(0,0,0,.4)}.cloud-error{color:var(--danger);min-height:1.2em}.cloud-error:empty{display:none}
+.btn-attn{border-color:var(--pen);color:var(--pen-dark);background:var(--pen-wash);font-weight:600}
+.review-work.is-quiet{padding-top:4px;padding-bottom:4px;font-size:13px}.review-quiet{color:var(--graphite)}
+.staff-estimates{margin:18px 0;border:1px solid var(--rule);border-radius:8px;padding:10px 14px}.staff-estimates>summary{font-weight:600;cursor:pointer}.staff-estimates h4{margin:16px 0 6px}
+/* Touch screens: every tick, choice and small button gets a finger-sized target (2026-11-12). */
+@media (pointer: coarse), (max-width: 820px) {
+    input[type=checkbox], input[type=radio] { width: 22px; height: 22px; flex: none; }
+    label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding-right: 8px; }
+    .btn-text, .btn-sm, .jump, .review-toggle, .menu-panel button, summary { min-height: 40px; }
+    .btn-text, .jump { display: inline-flex; align-items: center; }
+}
+@media (max-width: 560px) { .actions { flex-wrap: wrap; } .actions > button, .actions > .menu { flex: 1 1 28%; } }
 #staffingContent details{margin:16px 0}#staffingContent h3{margin-top:28px}
 @media(max-width:650px){.staff-grid,.staff-receiver{grid-template-columns:1fr}.staff-suggestion{align-items:flex-start;flex-direction:column}.staff-dialog{padding:16px}.staff-toolbar{align-items:stretch;flex-direction:column}}
+
+/* ---------- Clean slate theme (2026-11-12). Shape and spacing only: rounder corners, softer borders, card surfaces. ---------- */
+.topbar { border-bottom-color: var(--rule); box-shadow: 0 1px 0 rgba(15, 23, 42, .02); }
+.mark { border: 0; border-radius: 6px; background: var(--pen); position: relative; }
+.mark::after { content: ""; position: absolute; inset: 5px; border-radius: 2px; background: #fff; opacity: .92; }
+.brand-name { letter-spacing: -0.01em; }
+.top-id { letter-spacing: -0.01em; }
+.btn-primary, .btn-secondary { border-radius: 10px; padding: 9px 16px; transition: background .12s, border-color .12s, box-shadow .12s; }
+.btn-primary { box-shadow: 0 1px 2px rgba(79, 70, 229, .25); }
+.btn-secondary { border-color: var(--rule-strong); }
+.btn-secondary:hover { border-color: #94A3B8; background: #F8FAFC; }
+.btn-sm { padding: 6px 12px; border-radius: 8px; }
+.btn-add { border-radius: 10px; }
+.btn-attn, .btn-attn:hover { border-color: var(--pen); color: var(--pen-dark); background: var(--pen-wash); }
+.menu-panel { border-color: var(--rule); border-radius: 14px; padding: 8px; box-shadow: var(--shadow-pop); }
+.menu-panel button { border-radius: 8px; }
+.menu-panel button:hover { background: var(--desk); }
+.sections-nav a { border-left: 0; border-radius: 10px; padding: 9px 12px; }
+.sections-nav a:hover { background: rgba(255, 255, 255, .7); }
+.sections-nav a[aria-current="location"] { background: var(--paper); box-shadow: var(--shadow-card); }
+.sections-nav a[aria-current="location"] .nav-title { color: var(--pen-dark); }
+.nav-flag { background: #FEF3C7; color: #92400E; border-radius: 999px; padding: 1px 8px; font-size: 12px; }
+.ws-head h2 { font-size: 22px; letter-spacing: -0.02em; }
+.group h3 { letter-spacing: -0.005em; }
+input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], input[type="datetime-local"], select, textarea { border-radius: 10px; padding: 9px 12px; border-color: var(--rule-strong); transition: border-color .12s, box-shadow .12s; }
+input[type=checkbox], input[type=radio] { accent-color: var(--pen); }
+.id-strip { border-radius: 12px; }
+.staff-card, .staff-summary, .staff-suggestion, .warnings { border-radius: 14px; }
+.staff-dialog { border: 0; border-radius: 16px; box-shadow: var(--shadow-pop); }
+.staff-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+.review-work { border-bottom-color: var(--rule); }
+.paper { border-radius: 6px; }
+@media (min-width: 821px) {
+    .layout { gap: 0 4px; }
+    .worksheet { margin: 20px 0 40px; min-height: 0; border: 1px solid var(--rule); border-radius: 18px; box-shadow: var(--shadow-card); padding: 26px 48px 120px; }
+}
+@media (max-width: 820px) {
+    .sections-nav a { border-radius: 999px; padding: 7px 14px; border-color: var(--rule); }
+    .sections-nav a[aria-current="location"] { background: var(--pen); border-color: var(--pen); box-shadow: none; }
+    .sections-nav a[aria-current="location"] .nav-title { color: #fff; }
+    .sections-nav a.needs { border-color: #F59E0B; background: #FFFBEB; }
+}
 </style>
 </head>
 
@@ -319,6 +376,8 @@
         <button type="button" class="btn-secondary" id="previewToggle" aria-controls="previewPanel" aria-expanded="false"><span class="label-long">Preview sheet</span><span class="label-short">Preview</span></button>
         <button type="button" class="btn-primary" id="generatePdfBtn"><span class="label-long">Download event sheet</span><span class="label-short">Download</span></button>
         <button type="button" class="btn-secondary" id="cardsPdfBtn"><span class="label-long">Download standard cards</span><span class="label-short">Cards</span></button>
+        <button type="button" class="btn-secondary is-hidden" id="cloudEventsBtn">Events</button>
+        <button type="button" class="btn-secondary is-hidden" id="cloudMainBtn">Save online</button>
         <details class="menu" id="moreMenu">
             <summary class="btn-secondary" aria-label="More outputs and file actions">More</summary>
             <div class="menu-panel">
@@ -337,7 +396,7 @@
                 </div>
                 <hr>
                 <button type="button" class="danger" id="newEventBtn">Start new event</button>
-                <hr><p class="menu-note"><strong>Other output</strong></p><button type="button" id="sculleryPdfBtn">Download scullery sheet</button>
+                <hr><p class="menu-note"><strong>Other output</strong></p><button type="button" id="sculleryPdfBtn">Download scullery sheet</button><button type="button" id="cardsMenuBtn" class="is-hidden">Download standard cards</button>
                 <p class="menu-note">Export saves answers and pending review for reopening. It also stamps the item version. Export first to keep the current event.</p>
             </div>
         </details>
@@ -769,7 +828,7 @@
    ========================================================================== */
 
 /* ---------- 1. Data block ---------- */
-const APP_VERSION = '2.8.0';
+const APP_VERSION = '2.9.0';
 const FILE_FORMAT = 'elm-event-intake';
 const FILE_FORMAT_VERSION = 1;
 const STORAGE_KEY = 'elm-event-intake-draft-v1';
@@ -1229,6 +1288,11 @@ function staffPlanAlerts(s=state){
 }
 function staffSelectOptions(rows,current,empty){return '<option value="">'+empty+'</option>'+rows.map(([v,t])=>'<option value="'+escapeHtml(v)+'"'+(String(current)===String(v)?' selected':'')+'>'+escapeHtml(t)+'</option>').join('');}
 function staffGoals(shift){return String(shift?.goals||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);}
+// Dates and times as people say them: "Sat, Dec 5" and "9:00 AM". Stored values stay in their original form.
+function friendlyDate(iso,withYear){const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso||'');if(!m)return iso||'';return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',...(withYear?{year:'numeric'}:{})});}
+function friendlyTime(v){const m=/(\d{2}):(\d{2})$/.exec(v||'');if(!m)return '';const h=+m[1];return ((h%12)||12)+':'+m[2]+' '+(h<12?'AM':'PM');}
+function friendlyStamp(v){const m=/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})$/.exec(v||'');return m?friendlyDate(m[1])+', '+friendlyTime(m[2]):(v||'');}
+function staffShiftTime(shift){const a=friendlyStamp(shift.start),b=friendlyStamp(shift.end);if(!a&&!b)return 'Start and end needed';if(!a)return 'Start needed, ends '+b;if(!b)return a+', end needed';return shift.start.slice(0,10)===shift.end.slice(0,10)?a+' to '+friendlyTime(shift.end):a+' to '+b;}
 function staffShiftLabel(x){return (x.label||'Shift '+x.n)+(staffPeople(x).length?' ('+staffPeople(x).join(', ')+')':'');}
 function renderStaffing(){
     const host=$('staffingContent');if(!host)return;
@@ -1238,14 +1302,17 @@ function renderStaffing(){
     host.innerHTML='<div class="staff-summary" role="status">'+plan.tasks.length+' planned tasks · '+plan.shifts.length+' shifts · '+plan.tasks.filter(t=>!t.shiftId).length+' tasks without shifts · '+alerts.length+' items to review</div>'+
     (staffingStandardsError?'<p class="warnings">'+escapeHtml(staffingStandardsError)+' <button type="button" data-staff-action="reset-standards">Back up and reset time standards</button></p>':'')+
     (alerts.length?'<details class="staff-issues" open><summary>Plan needs review ('+alerts.length+')</summary><ul>'+alerts.map(a=>'<li>'+escapeHtml(a)+'</li>').join('')+'</ul></details>':'')+
-    '<h3>1. Choose the work</h3><p class="hint">Suggestions use accepted event answers. Review quantities before adding. Unmatched work stays listed below; this is not a complete staffing plan until you review it.</p><div class="staff-suggestions">'+demands.map(d=>{const def=staffDef(d.id),exists=plan.tasks.some(t=>t.demandId===d.id);return '<div class="staff-suggestion"><span><strong>'+escapeHtml(def.name)+'</strong><br>'+escapeHtml(d.quantity||'Quantity needed')+' '+escapeHtml(def.basisLabel)+(d.hint?'<br><small>'+escapeHtml(d.hint)+'</small>':'')+'</span><button type="button" class="btn-secondary" data-staff-action="add-demand" data-id="'+d.id+'"'+(exists?' disabled':'')+'>'+(exists?'Added':'Review and add')+'</button></div>';}).join('')+'</div>'+
+    '<h3>1. Shifts, people and goals</h3><p class="hint">Each shift is one person or a crew working together. Add separate shifts for independent work. Adding people does not automatically shorten task estimates.</p><button type="button" class="btn-secondary" data-staff-action="add-shift">Add a shift</button>'+plan.shifts.map(shift=>{const tasks=plan.tasks.filter(t=>t.shiftId===String(shift.n)),times=tasks.map(staffMinutes).filter(Boolean);return '<div class="staff-card"><h4>'+escapeHtml(staffShiftLabel(shift))+'</h4><p>'+escapeHtml(staffShiftTime(shift))+'</p><p>Planned work: '+staffNumber(times.reduce((n,t)=>n+t.min,0))+' to '+staffNumber(times.reduce((n,t)=>n+t.max,0))+' min'+(times.length<tasks.length?' plus tasks without estimates':'')+'. Shift length: '+(staffShiftLength(shift)==null?'not set':staffNumber(staffShiftLength(shift))+' min')+'.</p>'+(hasText(shift.goals)?'<p><strong>Goals</strong></p><ul>'+staffGoals(shift).map(g=>'<li>'+escapeHtml(g)+'</li>').join('')+'</ul>':'')+'<button type="button" class="btn-secondary" data-staff-action="edit-shift" data-id="'+shift.n+'">Edit shift</button> <button type="button" class="btn-text danger" data-staff-action="remove-shift" data-id="'+shift.n+'">Remove shift</button></div>';}).join('')+
+    '<h3>2. Vendor receivers</h3><p class="hint">Choose a shift and one of its people. The same assignment prints on the event sheet. Blank receivers add no flag.</p>'+state.vendors.map(v=>'<div class="staff-card"><h4>'+escapeHtml(v.name||'Vendor '+v.n)+'</h4>'+['loadIn','loadOut'].map(kind=>{const key=v.n+':'+kind,a=plan.receivers[key]||{},shift=plan.shifts.find(x=>String(x.n)===a.shiftId);return '<div class="staff-receiver"><strong>'+(kind==='loadIn'?'Arrival':'Pickup')+'</strong><span>'+escapeHtml([v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')||'Time not set')+'</span><label>Shift<select data-staff-receiver-shift="'+key+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),a.shiftId,'No receiver assigned')+'</select></label><label>Receiver<select data-staff-receiver-person="'+key+'">'+staffSelectOptions(staffPeople(shift).map(n=>[n,n]),a.person,'Choose a person')+'</select></label></div>';}).join('')+'</div>').join('')+
+    Object.keys(plan.receivers).filter(k=>!state.vendors.some(v=>String(v.n)===k.split(':')[0])).map(k=>'<p>Removed vendor assignment <button type="button" data-staff-action="clear-receiver" data-id="'+escapeHtml(k)+'">Clear assignment</button></p>').join('')+
+    // Shifts, people and goals lead. Time estimating is optional and folded away, because an estimate is never exact (2026-11-12).
+    '<details class="staff-estimates"'+(plan.tasks.length?' open':'')+'><summary>3. Time estimates and task planning, optional ('+plan.tasks.length+')</summary>'+
+    '<h4>Choose the work</h4><p class="hint">Suggestions use accepted event answers. Review quantities before adding. Unmatched work stays listed below; this is not a complete staffing plan until you review it.</p><div class="staff-suggestions">'+demands.map(d=>{const def=staffDef(d.id),exists=plan.tasks.some(t=>t.demandId===d.id);return '<div class="staff-suggestion"><span><strong>'+escapeHtml(def.name)+'</strong><br>'+escapeHtml(d.quantity||'Quantity needed')+' '+escapeHtml(def.basisLabel)+(d.hint?'<br><small>'+escapeHtml(d.hint)+'</small>':'')+'</span><button type="button" class="btn-secondary" data-staff-action="add-demand" data-id="'+d.id+'"'+(exists?' disabled':'')+'>'+(exists?'Added':'Review and add')+'</button></div>';}).join('')+'</div>'+
     '<div class="staff-toolbar"><label for="staffCatalogPick">Add other work from the task library</label><select id="staffCatalogPick">'+staffSelectOptions(staffDefinitions().map(d=>[d.id,d.name]),'','Choose a task')+'</select><button type="button" class="btn-secondary" data-staff-action="add-library">Review and add</button><button type="button" class="btn-secondary" data-staff-action="add-custom">Add a custom planning task</button></div>'+
     '<details><summary>Other checklist work to review ('+unmapped.length+')</summary><p class="hint">Link work to an existing planned task when its time already includes that work. Do not count the same work twice.</p>'+unmapped.map(i=>'<div class="staff-suggestion"><span>'+escapeHtml(i.text)+'</span><div><select aria-label="Task covering '+escapeHtml(i.text)+'" data-staff-cover="'+escapeHtml(i.code)+'">'+staffSelectOptions(plan.tasks.map(t=>[String(t.n),t.snapshot.name]),'','Covered by task…')+'</select><button type="button" class="btn-secondary" data-staff-action="add-item" data-id="'+escapeHtml(i.code)+'">Plan separately</button></div></div>').join('')+'</details>'+
-    '<h3>2. Build shifts and assign people</h3><p class="hint">Each shift is one person or a crew working together. Add separate shifts for independent work. Adding people does not automatically shorten task estimates.</p><button type="button" class="btn-secondary" data-staff-action="add-shift">Add a shift</button>'+plan.shifts.map(shift=>{const tasks=plan.tasks.filter(t=>t.shiftId===String(shift.n)),times=tasks.map(staffMinutes).filter(Boolean);return '<div class="staff-card"><h4>'+escapeHtml(staffShiftLabel(shift))+'</h4><p>'+escapeHtml(shift.start.replace('T',' ')||'Start needed')+' to '+escapeHtml(shift.end.replace('T',' ')||'End needed')+'</p><p>Planned work: '+staffNumber(times.reduce((n,t)=>n+t.min,0))+' to '+staffNumber(times.reduce((n,t)=>n+t.max,0))+' min'+(times.length<tasks.length?' plus tasks without estimates':'')+'. Shift length: '+(staffShiftLength(shift)==null?'not set':staffNumber(staffShiftLength(shift))+' min')+'.</p>'+(hasText(shift.goals)?'<p><strong>Goals</strong></p><ul>'+staffGoals(shift).map(g=>'<li>'+escapeHtml(g)+'</li>').join('')+'</ul>':'')+'<button type="button" class="btn-secondary" data-staff-action="edit-shift" data-id="'+shift.n+'">Edit shift</button> <button type="button" class="btn-text danger" data-staff-action="remove-shift" data-id="'+shift.n+'">Remove shift</button></div>';}).join('')+
-    '<h3>3. Planned tasks</h3>'+(!plan.tasks.length?'<p>No tasks added yet.</p>':'')+plan.tasks.map(t=>{const latest=staffDef(t.catalogId),standardChanged=latest&&staffHash(latest)!==staffHash(t.snapshot)&&t.keptStandard!==staffHash(latest),sourceChanged=t.sourceCodes.length&&staffHash(staffCurrentSources(t))!==t.sourceHash&&t.keptSource!==staffHash(staffCurrentSources(t));return '<div class="staff-card"><h4>'+escapeHtml(t.snapshot.name)+'</h4><p>'+escapeHtml(staffTime(t))+' · '+escapeHtml(t.quantity||'Quantity needed')+' '+escapeHtml(t.snapshot.basisLabel)+' · Crew: '+escapeHtml(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax&&t.snapshot.crewMax!==t.snapshot.crewMin?' to '+escapeHtml(t.snapshot.crewMax):'')+' · Role: '+escapeHtml(t.snapshot.role||'not specified')+'</p>'+(t.note?'<p>'+escapeHtml(t.note)+'</p>':'')+'<label>Assigned shift<select data-staff-task-shift="'+t.n+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),t.shiftId,'Not assigned')+'</select></label>'+staffTaskAlerts(t).map(a=>'<p class="staff-alert">'+escapeHtml(a)+'</p>').join('')+(standardChanged?'<p>Current standard: '+escapeHtml(latest.min||'?')+' to '+escapeHtml(latest.max||'?')+' min per '+escapeHtml(latest.basisQty+' '+latest.basisLabel)+'. Crew '+escapeHtml(latest.crewMin||'?')+' to '+escapeHtml(latest.crewMax||'?')+'.</p><button type="button" data-staff-action="update-standard" data-id="'+t.n+'">Review current standard</button> <button type="button" data-staff-action="keep-standard" data-id="'+t.n+'">Keep saved estimate</button>':'')+(sourceChanged?'<button type="button" data-staff-action="review-source" data-id="'+t.n+'">Review event changes</button>':'')+'<div class="staff-toolbar"><button type="button" class="btn-secondary" data-staff-action="edit-task" data-id="'+t.n+'">Edit task</button><button type="button" class="btn-text danger" data-staff-action="remove-task" data-id="'+t.n+'">Remove task</button></div></div>';}).join('')+
-    '<h3>4. Vendor receivers</h3><p class="hint">Choose a shift and one of its people. The same assignment prints on the event sheet. Blank receivers add no flag.</p>'+state.vendors.map(v=>'<div class="staff-card"><h4>'+escapeHtml(v.name||'Vendor '+v.n)+'</h4>'+['loadIn','loadOut'].map(kind=>{const key=v.n+':'+kind,a=plan.receivers[key]||{},shift=plan.shifts.find(x=>String(x.n)===a.shiftId);return '<div class="staff-receiver"><strong>'+(kind==='loadIn'?'Arrival':'Pickup')+'</strong><span>'+escapeHtml([v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')||'Time not set')+'</span><label>Shift<select data-staff-receiver-shift="'+key+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),a.shiftId,'No receiver assigned')+'</select></label><label>Receiver<select data-staff-receiver-person="'+key+'">'+staffSelectOptions(staffPeople(shift).map(n=>[n,n]),a.person,'Choose a person')+'</select></label></div>';}).join('')+'</div>').join('')+
-    Object.keys(plan.receivers).filter(k=>!state.vendors.some(v=>String(v.n)===k.split(':')[0])).map(k=>'<p>Removed vendor assignment <button type="button" data-staff-action="clear-receiver" data-id="'+escapeHtml(k)+'">Clear assignment</button></p>').join('')+
+    '<h4>Planned tasks</h4>'+(!plan.tasks.length?'<p>No tasks added yet.</p>':'')+plan.tasks.map(t=>{const latest=staffDef(t.catalogId),standardChanged=latest&&staffHash(latest)!==staffHash(t.snapshot)&&t.keptStandard!==staffHash(latest),sourceChanged=t.sourceCodes.length&&staffHash(staffCurrentSources(t))!==t.sourceHash&&t.keptSource!==staffHash(staffCurrentSources(t));return '<div class="staff-card"><h4>'+escapeHtml(t.snapshot.name)+'</h4><p>'+escapeHtml(staffTime(t))+' · '+escapeHtml(t.quantity||'Quantity needed')+' '+escapeHtml(t.snapshot.basisLabel)+' · Crew: '+escapeHtml(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax&&t.snapshot.crewMax!==t.snapshot.crewMin?' to '+escapeHtml(t.snapshot.crewMax):'')+' · Role: '+escapeHtml(t.snapshot.role||'not specified')+'</p>'+(t.note?'<p>'+escapeHtml(t.note)+'</p>':'')+'<label>Assigned shift<select data-staff-task-shift="'+t.n+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),t.shiftId,'Not assigned')+'</select></label>'+staffTaskAlerts(t).map(a=>'<p class="staff-alert">'+escapeHtml(a)+'</p>').join('')+(standardChanged?'<p>Current standard: '+escapeHtml(latest.min||'?')+' to '+escapeHtml(latest.max||'?')+' min per '+escapeHtml(latest.basisQty+' '+latest.basisLabel)+'. Crew '+escapeHtml(latest.crewMin||'?')+' to '+escapeHtml(latest.crewMax||'?')+'.</p><button type="button" data-staff-action="update-standard" data-id="'+t.n+'">Review current standard</button> <button type="button" data-staff-action="keep-standard" data-id="'+t.n+'">Keep saved estimate</button>':'')+(sourceChanged?'<button type="button" data-staff-action="review-source" data-id="'+t.n+'">Review event changes</button>':'')+'<div class="staff-toolbar"><button type="button" class="btn-secondary" data-staff-action="edit-task" data-id="'+t.n+'">Edit task</button><button type="button" class="btn-text danger" data-staff-action="remove-task" data-id="'+t.n+'">Remove task</button></div></div>';}).join('')+
     '<details><summary>Edit task time standards</summary><p class="hint">Edits apply to new tasks in this browser. Existing tasks keep their saved estimates until you review the change. Exports include the standards for reference; importing an event does not replace this browser’s standards.</p><label for="staffStandardPick">Task standard</label><select id="staffStandardPick">'+staffSelectOptions(staffDefinitions().map(d=>[d.id,d.name]),'','Choose a task')+'</select><button type="button" class="btn-secondary" data-staff-action="edit-standard"'+(staffingStandardsError?' disabled':'')+'>Edit standard</button><details><summary>Time standard change history ('+staffingStandards.changeLog.length+')</summary>'+staffingStandards.changeLog.map(x=>'<p>'+escapeHtml(x.at+' · '+x.name+' · '+x.note)+'</p>').join('')+'</details></details>'+
+    '</details>'+
     '<div class="staff-toolbar"><button type="button" class="btn-primary" data-staff-action="download">Download staffing plan</button><span class="hint">Export the event file to save and reopen this plan. Completion remains on paper.</span></div>';
     picks.forEach(([id,value])=>{if($(id))$(id).value=value;});
     [...host.querySelectorAll('details')].forEach(d=>{if(opened.has(detailKey(d)))d.open=opened.get(detailKey(d));});
@@ -1271,7 +1338,7 @@ function staffEditTask(existing,definition,demand,sourceItem){
 function staffEditShift(existing){const plan=staffPlan(),shift=existing||{label:'',people:'',start:'',end:'',goals:''};staffDialog(existing?'Edit shift':'Add shift',staffInput('Shift name','shLabel',shift.label)+staffInput('Start, including date','shStart',shift.start,'datetime-local')+staffInput('End, including date','shEnd',shift.end,'datetime-local')+'<label class="staff-field" for="shPeople">People working together, one name per line<textarea id="shPeople" rows="4">'+escapeHtml(shift.people)+'</textarea></label><label class="staff-field" for="shGoals">Goals for this shift, one per line. A target, not a promise: estimates are never exact.<textarea id="shGoals" rows="4">'+escapeHtml(shift.goals||'')+'</textarea></label>',()=>{const next={label:$('shLabel').value.trim(),people:$('shPeople').value.trim(),start:$('shStart').value,end:$('shEnd').value,goals:$('shGoals').value.trim()};if(next.start&&next.end&&staffShiftLength(next)==null)throw Error('End must be after start. Use the following date for an overnight shift.');if(existing){if(!plan.shifts.includes(existing))throw Error('This shift was removed.');Object.assign(existing,next);}else plan.shifts.push({n:plan.nextShift++,...next});});}
 function staffEditStandard(id){const current=staffDef(id);if(!current||staffingStandardsError)return;staffDialog('Edit time standard',staffEstimateFields(current)+staffInput('Reason for this change','stReason',''),()=>{const next=staffReadDef(current),reason=$('stReason').value.trim();if(!reason)throw Error('Record a reason for the change.');next.rev=current.rev+1;const proposed=clone(staffingStandards);proposed.overrides[id]=next;proposed.changeLog.push({at:nowStamp(),id,name:next.name,from:current,to:next,note:reason,by:'Lino'});try{localStorage.setItem(STAFFING_STORAGE_KEY,JSON.stringify(proposed));}catch(e){throw Error('Time standards could not be saved. No standard was changed.');}staffingStandards=proposed;});}
 function staffReviewSource(task){const current=staffCurrentSources(task),demand=staffDemands().find(d=>d.id===task.demandId);staffDialog('Review changed event work','<p>The saved task and shift remain unchanged until you choose.</p><ul>'+current.map(x=>'<li>'+escapeHtml(x.text)+'</li>').join('')+staffInput('Quantity to plan','sourceQuantity',task.quantity,'number')+(demand?'<p>Current suggested quantity: '+escapeHtml(demand.quantity||'unknown')+' '+escapeHtml(staffDef(demand.id).basisLabel)+'.</p>':'')+'<p class="hint">Keep the quantity above if it is still right, or change it before saving. Remove the task separately if the work is no longer needed.</p>',()=>{const q=$('sourceQuantity').value;if(q!==''&&(!Number.isFinite(Number(q))||Number(q)<=0))throw Error('Enter a positive quantity or leave it blank.');task.quantity=q;task.keptSource=staffHash(current);});}
-function staffBuildPdf(){const plan=staffPlan(),alerts=staffPlanAlerts(),sections=[];if(alerts.length)sections.push({title:'NEEDS REVIEW',blocks:alerts.map(text=>({type:'text',text}))});const group=(title,tasks)=>({title,blocks:tasks.length?tasks.flatMap(t=>[{type:'text',text:t.snapshot.name+' · '+(t.quantity||'Quantity needed')+' '+t.snapshot.basisLabel+' · '+staffTime(t)+' · Crew: '+(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax!==t.snapshot.crewMin?' to '+t.snapshot.crewMax:'')},...(t.note?[{type:'note',text:t.note}]:[])]):[{type:'text',text:'No tasks assigned.'}]});plan.shifts.forEach(shift=>{const sec=group(staffShiftLabel(shift),plan.tasks.filter(t=>t.shiftId===String(shift.n)));sec.blocks.unshift({type:'text',text:(shift.start.replace('T',' ')||'Start needed')+' to '+(shift.end.replace('T',' ')||'End needed')},...(staffGoals(shift).length?[{type:'sub',text:'Goals for this shift'},...staffGoals(shift).map(g=>({type:'text',text:'- '+g})),{type:'sub',text:'Planned tasks'}]:[]));sections.push(sec);});sections.push(group('TASKS WITHOUT SHIFTS',plan.tasks.filter(t=>!plan.shifts.some(s=>String(s.n)===t.shiftId))));const receivers=[];state.vendors.forEach(v=>['loadIn','loadOut'].forEach(kind=>{const name=staffReceiver(state,v,kind);if(name)receivers.push({type:'text',text:(v.name||'Vendor')+' '+(kind==='loadIn'?'arrival':'pickup')+': '+name+' · '+[v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')});}));if(receivers.length)sections.push({title:'VENDOR RECEIVERS',blocks:receivers});return renderSheetPdf('STAFF ALLOCATION',[eventIdFor(state)||'Event identity incomplete','Planning only. Unassigned work and unresolved estimates remain listed.','Prepared '+nowStamp()],sections,'Staff Allocation',false);}
+function staffBuildPdf(){const plan=staffPlan(),alerts=staffPlanAlerts(),sections=[];if(alerts.length)sections.push({title:'NEEDS REVIEW',blocks:alerts.map(text=>({type:'text',text}))});const group=(title,tasks)=>({title,blocks:tasks.length?tasks.flatMap(t=>[{type:'text',text:t.snapshot.name+' · '+(t.quantity||'Quantity needed')+' '+t.snapshot.basisLabel+' · '+staffTime(t)+' · Crew: '+(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax!==t.snapshot.crewMin?' to '+t.snapshot.crewMax:'')},...(t.note?[{type:'note',text:t.note}]:[])]):[{type:'text',text:'No tasks assigned.'}]});plan.shifts.forEach(shift=>{const sec=group(staffShiftLabel(shift),plan.tasks.filter(t=>t.shiftId===String(shift.n)));sec.blocks.unshift({type:'text',text:staffShiftTime(shift)},...(staffGoals(shift).length?[{type:'sub',text:'Goals for this shift'},...staffGoals(shift).map(g=>({type:'text',text:'- '+g})),{type:'sub',text:'Planned tasks'}]:[]));sections.push(sec);});sections.push(group('TASKS WITHOUT SHIFTS',plan.tasks.filter(t=>!plan.shifts.some(s=>String(s.n)===t.shiftId))));const receivers=[];state.vendors.forEach(v=>['loadIn','loadOut'].forEach(kind=>{const name=staffReceiver(state,v,kind);if(name)receivers.push({type:'text',text:(v.name||'Vendor')+' '+(kind==='loadIn'?'arrival':'pickup')+': '+name+' · '+[v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')});}));if(receivers.length)sections.push({title:'VENDOR RECEIVERS',blocks:receivers});return renderSheetPdf('STAFF ALLOCATION',[eventIdFor(state)||'Event identity incomplete','Planning only. Unassigned work and unresolved estimates remain listed.','Prepared '+friendlyStamp(nowStamp())],sections,'Staff Allocation',false,'large',{fit:true});}
 function staffDownload(){staffBuildPdf().save('Staff-Allocation-'+fileSafe(eventIdFor(state)||NO_EVENT_ID)+'.pdf');}
 function staffAction(action,id){const plan=staffPlan(),task=plan.tasks.find(t=>String(t.n)===id),shift=plan.shifts.find(s=>String(s.n)===id);
     if(action==='add-demand'){const d=staffDemands().find(x=>x.id===id);if(d&&!plan.tasks.some(t=>t.demandId===id))staffEditTask(null,staffDef(id),d);return;}
@@ -2462,7 +2529,22 @@ function buildEventSheet(s, options={}) {
     if (waiting) warn(waiting + ' suggestion(s) from your documents are not accepted yet, so they are not on the sheet.', 'docs', 'Suggestions waiting');
     if (openIss) warn(openIss + ' issue(s) found in your documents are still open.', 'docs', 'Issues open');
 
-    return { sections, warnings, warningLinks };
+    // Answers that print as a blank or a placeholder (2026-11-12). They are flagged on the form, asked about before a
+    // download, and listed at the top of the sheet. Blank table counts are by design (staff write them in), so they are
+    // listed without stopping the download.
+    const gaps = [], blankRooms = [];
+    sections.forEach(sec => sec.blocks.forEach(b => {
+        if (b.type !== 'item') return;
+        if (b.source && b.source.rule === 'no table count for this room') { if (!blankRooms.includes(sec.title)) blankRooms.push(sec.title); return; }
+        if (/\(location not entered\)/.test(b.text)) { gaps.push('Scullery location'); warn('The scullery location is not entered, so the sheet prints "location not entered".', 'kitchen', 'Scullery location'); }
+        else if (/\(option not selected\)/.test(b.text)) { gaps.push('Coffee option'); warn('The coffee option is not selected, so the sheet prints "option not selected".', 'coffee', 'Coffee option'); }
+        else if (/type not entered/.test(b.text)) { gaps.push('Napkin fold type'); warn('The napkin fold type is not entered.', 'service', 'Napkin fold type'); }
+    }));
+    if (blankRooms.length) {
+        gaps.push('Table counts for ' + blankRooms.join(', ') + ' (write them in)');
+        warningLinks.push({ text: 'No table counts for ' + blankRooms.join(', ') + '. The sheet prints blank QTY lines for staff to fill in.', key: 'rooms', short: 'Table counts blank' });
+    }
+    return { sections, warnings, warningLinks, gaps };
 }
 function bucketFor(buckets, id) { const b = buckets[id]; if (!b) return []; delete buckets[id]; return b.blocks; }
 
@@ -2473,11 +2555,14 @@ function flattenItems(sheet) {
 }
 function itemsHash(items) { return fnv1a(JSON.stringify(items.map(i => i.stages ? [i.code, i.text, i.stages] : [i.code, i.text]))); }
 
-function headerLines(s, meta) {
+// sheet is optional. With it, the header also lists answers that print blank, so staff ask before starting.
+const GAPS_LABEL = 'NOT ANSWERED YET, ask before starting: ';
+function headerLines(s, meta, sheet) {
     const lines = [];
     const id = eventIdFor(s) || '(event id incomplete)';
     lines.push('Event: ' + id);
-    lines.push('Sheet version: v' + meta.version + '   Generated: ' + meta.generatedAt);
+    if (hasText(s.event.date)) lines.push('Event date: ' + friendlyDate(s.event.date, true));
+    lines.push('Sheet version: v' + meta.version + '   Generated: ' + friendlyStamp(meta.generatedAt));
     const basics = ['Head count: ' + (num(s.event.headCount) || 'not entered')];
     if (vis(s).sitDownTables) basics.push('Sit-down tables: ' + (num(s.food.guestTables) || 'not entered'));
     basics.push('Planner: ' + (plannerName(s) || 'not entered'));
@@ -2487,7 +2572,13 @@ function headerLines(s, meta) {
     const t = s.event.times; const tl = [];
     [['Chef/staff at kitchen', t.kitchen], ['Arrive onsite', t.arriveOnsite], ['Set-Up 100% Complete', t.setupComplete], ['Event start', t.eventStart], ['Event end/strike', t.eventEnd], ['Staff departs', t.staffDeparts]].forEach(([l, val]) => { if (hasText(val)) tl.push(l + ': ' + val.trim()); });
     if (tl.length) lines.push('Deadlines: ' + tl.join('   '));
+    // Who works when, with the goals typed for each shift (2026-11-12). Goals are targets, not promises.
+    ((s.staffing && s.staffing.shifts) || []).forEach(sh => {
+        lines.push('Shift: ' + (sh.label || 'Shift ' + sh.n) + '   ' + staffShiftTime(sh) + (staffPeople(sh).length ? '   ' + staffPeople(sh).join(', ') : ''));
+        staffGoals(sh).forEach(g => lines.push('   Goal: ' + g));
+    });
     lines.push('Cards: ' + CARD_ORDER.map(k => CARDS[k].title + ' v' + CARDS[k].version + ' (' + cardFingerprint(CARDS[k]) + ')').join('   '));
+    if (sheet && sheet.gaps && sheet.gaps.length) lines.push(GAPS_LABEL + sheet.gaps.join('; '));
     return lines;
 }
 
@@ -2745,8 +2836,8 @@ function renderEventId() {
 }
 function renderVersionStatus() {
     const m = state.sheetMeta; const el = $('versionStatus');
-    el.textContent = m.version ? 'Current item version: v' + m.version : 'No item version yet';
-    el.title = 'Export and successful PDF generation stamp the coded item version. Miscellaneous tasks do not change it.';
+    el.textContent = m.version ? 'Sheet version: v' + m.version : 'Not printed yet';
+    el.title = 'The version goes up when the checklist lines change and you download, export or publish. Miscellaneous tasks do not change it.';
 }
 
 /* ---------- Live preview and section list (screen only, prints nothing) ---------- */
@@ -2807,20 +2898,20 @@ function renderPreview(sheet) {
     const items = flattenItems(sheet); const h = itemsHash(items); const m = state.sheetMeta;
     const same = !!m.version && h === m.itemsHash;
     const status = $('previewStatus');
-    status.textContent = !m.version ? 'No item version yet. Export or successful PDF generation makes v1.' : same ? 'Coded items match v' + m.version + '. Other content may have changed.' : 'Coded items changed since v' + m.version + '. The next export or successful PDF generation makes v' + (m.version + 1) + '.';
+    status.textContent = !m.version ? 'Not printed yet. The first download, export or publish makes version 1.' : same ? 'Checklist lines match v' + m.version + '.' : 'Checklist lines changed since v' + m.version + '. The next download, export or publish makes v' + (m.version + 1) + '.';
     status.classList.toggle('changed', !!m.version && !same);
-    const meta = same ? m : { version: (m.version || 0) + 1, generatedAt: 'on next export or successful generation' };
+    const meta = same ? m : { version: (m.version || 0) + 1, generatedAt: 'on the next download' };
     const wl = sheet.warningLinks;
-    $('previewWarnings').innerHTML = wl.length ? '<div class="warnings"><h3>Output warnings</h3><ul>' + wl.map(w => '<li><button type="button" class="jump" data-review-target="' + escapeHtml(warningTarget(w)) + '">' + escapeHtml(w.text) + '</button></li>').join('') + '</ul></div>' : '';
+    $('previewWarnings').innerHTML = wl.length ? '<div class="warnings"><h3>Check before you print</h3><ul>' + wl.map(w => '<li><button type="button" class="jump" data-review-target="' + escapeHtml(warningTarget(w)) + '">' + escapeHtml(w.text) + '</button></li>').join('') + '</ul></div>' : '';
     let html = '<h1>EVENT SETUP CHECKLIST</h1>';
-    headerLines(state, meta).forEach((l, i) => { html += '<p class="hdr' + (i === 0 ? ' first' : '') + '">' + escapeHtml(pdfSafe(l)) + '</p>'; });
+    headerLines(state, meta, sheet).forEach((l, i) => { html += '<p class="hdr' + (i === 0 || l.startsWith(GAPS_LABEL) ? ' first' : '') + '">' + escapeHtml(pdfSafe(l)) + '</p>'; });
     sheet.sections.forEach(sec => {
         if (sec.newPage) html += '<div class="pagebreak"><span>New page</span></div>';
         html += '<div class="sec">' + escapeHtml(pdfSafe(sec.title)) + '</div>';
         const staged=sec.blocks.some(b=>b.stages);let stageOpen=false;
         if (sec.compact&&!staged) html += '<div class="compact-service">';
         sec.blocks.forEach(b => {
-            if(b.stages){if(!stageOpen)html+=stageHeaderHtml();stageOpen=true;html+='<div class="stage-row" data-item-code="'+escapeHtml(b.code)+'"><span>'+escapeHtml(pdfSafe(b.text))+'</span><span>'+stageCellHtml(b.stages.pull,'Preparation',stageTeam(b,'pull'))+'</span><span>'+stageCellHtml(b.stages.set,'Set',stageTeam(b,'set'))+'</span></div>';return;}
+            if(b.stages){if(!stageOpen)html+=stageHeaderHtml();stageOpen=true;html+='<div class="stage-row" data-item-code="'+escapeHtml(b.code)+'"><span>'+escapeHtml(pdfSafe(b.text))+'</span><span>'+stageCellHtml(b.stages.pull,'Preparation',stageTeamShown(b,'pull')||'initials ____')+'</span><span>'+stageCellHtml(b.stages.set,'Set',stageTeamShown(b,'set')||'initials ____')+'</span></div>';return;}
             stageOpen=false;
             if (sec.compact && !staged && b.type === 'item') html += '<div class="service-cell' + (b.text.length > 110 ? ' service-wide' : '') + '" data-item-code="' + escapeHtml(b.code) + '"><div class="service-line"><span class="box"></span><span>' + escapeHtml(pdfSafe(b.text)) + '</span></div></div>';
             else if (b.type === 'item') html += '<div class="item" data-item-code="' + escapeHtml(b.code) + '"><span class="box"></span><span>' + escapeHtml(pdfSafe(b.text)) + '</span></div>';
@@ -2875,6 +2966,9 @@ function initScrollSpy() {
 const PDF_STYLES = {
     standard: { title: 15, titleStep: 20, head1: 10.5, head: 9, headStep: 12, cont: 9.5, contStep: 16, sec: 11.5, secBefore: 8, secAfter: 18,
         sub: 9.5, subStep: 13, note: 8.8, noteStep: 11.5, code: 9, codeW: 50, box: 12, item: 9.5, itemStep: 12, itemMin: 16, notesLabel: 8, notesLineX: 32, notesSpace: 30, footer: 8 },
+    // Cards: larger than the old small print, smaller than the event sheet so a card stays short (2026-11-12).
+    medium: { title: 20, titleStep: 27, head1: 12, head: 11, headStep: 14.5, cont: 12.5, contStep: 20, sec: 15, secBefore: 10, secAfter: 22,
+        sub: 12.5, subStep: 16, note: 10.5, noteStep: 13.5, code: 11, codeW: 58, box: 13, item: 11, itemStep: 14, itemMin: 19, notesLabel: 10, notesLineX: 38, notesSpace: 36, footer: 9 },
     large: { title: 26, titleStep: 34, head1: 14, head: 13, headStep: 17, cont: 16, contStep: 24, sec: 20, secBefore: 12, secAfter: 28,
         sub: 16, subStep: 20, note: 13, noteStep: 16.5, code: 13, codeW: 66, box: 14, item: 13, itemStep: 16.5, itemMin: 22, notesLabel: 13, notesLineX: 44, notesSpace: 44, footer: 10 }
 };
@@ -2913,13 +3007,17 @@ function drawPlain(ctx, text, size, style, step) {
 }
 // The item text starts after the code column and the tick box.
 const itemTextX = ctx => ctx.m + ctx.st.codeW + ctx.st.box + 8;
+// Staff sheets leave a short line at the right of every tick line for initials (2026-11-12).
+const INITIALS_W = 40;
+const itemTextW = ctx => ctx.w - ctx.m - itemTextX(ctx) - (ctx.initials ? INITIALS_W + 10 : 0);
+function drawInitialsLine(ctx, x, y) { ctx.pdf.setLineWidth(0.5); ctx.pdf.line(x, y, x + INITIALS_W, y); }
 // The space a block needs at the top of what is left of the page, for keeping a heading with its first line.
 // Long notes and text paragraphs count three lines at most: they may continue on the next page.
 function blockNeed(ctx, b) {
     if (!b) return 0;
     const st = ctx.st;
     if (b.menuRole) { const heading=b.menuRole==='heading',dish=b.menuRole==='dish';setFont(ctx,heading?'bold':b.menuRole==='note'?'italic':'normal',st.note);return wrap(ctx,b.text,ctx.w-2*ctx.m-(heading?0:dish?14:24)).length*st.noteStep+(heading?10:5); }
-    if (b.type === 'item') { setFont(ctx, 'normal', st.item); const need = Math.max(st.itemMin, wrap(ctx, b.text, ctx.w - ctx.m - itemTextX(ctx)).length * st.itemStep + 6); return need > ctx.h - ctx.bottom - ctx.m - st.contStep ? st.itemStep * 3 : need; }
+    if (b.type === 'item') { setFont(ctx, 'normal', st.item); const need = Math.max(st.itemMin, wrap(ctx, b.text, itemTextW(ctx)).length * st.itemStep + 6); return need > ctx.h - ctx.bottom - ctx.m - st.contStep ? st.itemStep * 3 : need; }
     if (b.type === 'sub') { setFont(ctx, 'bold', st.sub); return 7 + st.sub - 9.5 + wrap(ctx, b.text, ctx.w - 2 * ctx.m).length * st.subStep; }
     if (b.type === 'note') { setFont(ctx, 'italic', st.note); return Math.min(3, wrap(ctx, b.text, ctx.w - 2 * ctx.m).length) * st.noteStep + 3; }
     if (b.type === 'text') { setFont(ctx, 'normal', st.note); return Math.min(3, wrap(ctx, String(b.text).split('\n')[0] || ' ', ctx.w - 2 * ctx.m - 14).length) * st.noteStep + 3; }
@@ -2969,10 +3067,12 @@ function drawSectionTitle(ctx, text, firstNeed) {
     lines.forEach((line,i)=>ctx.pdf.text(line,ctx.m,ctx.y+i*(st.sec+3)));
     ctx.y+=extra;ctx.pdf.setLineWidth(.8);ctx.pdf.line(ctx.m,ctx.y+4,ctx.w-ctx.m,ctx.y+4);ctx.y+=st.secAfter;ctx.section=text;
 }
+// "Unassigned" is not printed: the initials line says who did it.
+function stageTeamShown(b,key) { const t=stageTeam(b,key); return t&&t!=='Unassigned'?t:''; }
 function stagedRowNeed(ctx,b) {
     setFont(ctx,'normal',ctx.st.item);
     const textNeed=wrap(ctx,b.text,ctx.w-2*ctx.m-150).length*ctx.st.itemStep+8;
-    setFont(ctx,'normal',9);const teamNeed=Math.max(...['pull','set'].map(key=>stageTeam(b,key)?wrap(ctx,stageTeam(b,key),62).length*10+ctx.st.box+8:ctx.st.box+8));return Math.max(textNeed,teamNeed);
+    setFont(ctx,'normal',9);const teamNeed=Math.max(...['pull','set'].map(key=>(stageTeamShown(b,key)?wrap(ctx,stageTeamShown(b,key),62).length*10:0)+ctx.st.box+8+(ctx.initials&&b.stages[key]==='check'?13:0)));return Math.max(textNeed,teamNeed);
 }
 function sectionOpeningNeed(ctx,blocks) {
     let need=0, reserve=0;
@@ -2987,7 +3087,7 @@ function sectionOpeningNeed(ctx,blocks) {
     return Math.min(Math.max(need,reserve),ctx.h-ctx.bottom-ctx.m-ctx.st.secBefore-ctx.st.secAfter-30);
 }
 function drawBlock(ctx, b) {
-    const st = ctx.st, textX = itemTextX(ctx), textW = ctx.w - ctx.m - textX;
+    const st = ctx.st, textX = itemTextX(ctx), textW = itemTextW(ctx);
     if (b.menuRole) {
         const heading=b.menuRole==='heading', dish=b.menuRole==='dish';
         if(heading)ctx.y+=5;
@@ -3005,6 +3105,7 @@ function drawBlock(ctx, b) {
         ensure(ctx, oversized ? st.itemStep * 2 : height);
         // Internal item identifiers are not printed on staff copies.
         ctx.pdf.setLineWidth(0.9); ctx.pdf.rect(ctx.m + st.codeW, ctx.y - st.box + 2.5, st.box, st.box);
+        if (ctx.initials) drawInitialsLine(ctx, ctx.w - ctx.m - INITIALS_W, ctx.y + 2.5);
         setFont(ctx, 'normal', st.item);
         if (!oversized) {
             lines.forEach((l, i) => { ctx.pdf.text(l, textX, ctx.y + i * st.itemStep); });
@@ -3026,12 +3127,13 @@ function drawBlock(ctx, b) {
 function compactCodeWidth(ctx,b) { return 0; }
 function compactText(ctx, b, width) {
     const codeW=compactCodeWidth(ctx,b);setFont(ctx,'normal',ctx.st.item);
-    return wrap(ctx,b.text,width-codeW-ctx.st.box-8);
+    return wrap(ctx,b.text,width-codeW-ctx.st.box-8-(ctx.initials?INITIALS_W-6:0));
 }
 function compactNeed(ctx,b,width) { return Math.max(ctx.st.itemMin,compactText(ctx,b,width).length*ctx.st.itemStep+5); }
 function drawCompactCell(ctx,b,x,y,width) {
     const st=ctx.st,codeW=0;
     ctx.pdf.setLineWidth(.9);ctx.pdf.rect(x+codeW,y-st.box+2.5,st.box,st.box);
+    if(ctx.initials){ctx.pdf.setLineWidth(0.5);ctx.pdf.line(x+width-INITIALS_W+10,y+2.5,x+width-4,y+2.5);}
     const lines=compactText(ctx,b,width);setFont(ctx,'normal',st.item);
     lines.forEach((line,i)=>ctx.pdf.text(line,x+codeW+st.box+8,y+i*st.itemStep));
 }
@@ -3092,7 +3194,7 @@ function drawStagedBlocks(ctx,blocks,withNotes) {
         const page=ctx.pdf.internal.getNumberOfPages();ensure(ctx,startNeed+(open?0:30)+(withNotes&&index===blocks.length-1?notesNeed(ctx):0));if(page!==ctx.pdf.internal.getNumberOfPages()){open=false;if(category)drawBlock(ctx,{type:'sub',text:category+' (continued)'});}
         if(!open)header();const rowPage=ctx.pdf.internal.getNumberOfPages();
         // No code column on the staff sheet; descriptions use the reclaimed width.
-        for(const [key,x] of [['pull',pullX],['set',setX]]){const value=b.stages[key];if(value==='check'){ctx.pdf.setLineWidth(.9);ctx.pdf.rect(x-st.box/2,ctx.y-st.box+2.5,st.box,st.box);}else{setFont(ctx,'normal',10);ctx.pdf.text(value,x,ctx.y,{align:'center'});}const team=stageTeam(b,key);if(team){setFont(ctx,'normal',9);wrap(ctx,team,62).forEach((line,n)=>ctx.pdf.text(line,x,ctx.y+14+n*10,{align:'center'}));}}
+        for(const [key,x] of [['pull',pullX],['set',setX]]){const value=b.stages[key];if(value==='check'){ctx.pdf.setLineWidth(.9);ctx.pdf.rect(x-st.box/2,ctx.y-st.box+2.5,st.box,st.box);}else{setFont(ctx,'normal',10);ctx.pdf.text(value,x,ctx.y,{align:'center'});}const team=stageTeamShown(b,key);let teamY=ctx.y+14;if(ctx.initials&&value==='check'){ctx.pdf.setLineWidth(0.5);ctx.pdf.line(x-INITIALS_W/2,ctx.y+15,x+INITIALS_W/2,ctx.y+15);teamY=ctx.y+25;}if(team){setFont(ctx,'normal',9);wrap(ctx,team,62).forEach((line,n)=>ctx.pdf.text(line,x,teamY+n*10,{align:'center'}));}}
         const rowStart=ctx.y;lines.forEach(line=>{if(ctx.y+st.itemStep>ctx.h-ctx.bottom){ensure(ctx,st.itemStep*4);header();setFont(ctx,'bold',st.code);ctx.pdf.text('(continued)',ctx.m,ctx.y);ctx.y+=st.code+5;}setFont(ctx,'normal',st.item);ctx.pdf.text(line,textX,ctx.y);ctx.y+=st.itemStep;});ctx.y+=6;if(ctx.pdf.internal.getNumberOfPages()===rowPage)ctx.y=Math.max(ctx.y,rowStart+rowNeed);
     });
 }
@@ -3111,12 +3213,43 @@ function drawFooters(ctx, label) {
         ctx.pdf.text(pdfSafe(label + '   |   Page ' + i + ' of ' + n), ctx.m, ctx.h - 24);
     }
 }
-function renderSheetPdf(title, headerLns, sections, footerLabel, withNotes, style) {
-    const ctx = newPdf(style), st = ctx.st;
+// opts.initials: leave an initials line on every tick line. opts.fit: avoid nearly empty last pages (see below).
+function renderSheetPdf(title, headerLns, sections, footerLabel, withNotes, style, opts) {
+    opts = opts || {};
+    const once = scales => renderSheetOnce(title, headerLns, sections, footerLabel, withNotes, style, opts, scales);
+    let best = once({});
+    if (!opts.fit) return best.pdf;
+    // A group is the run of sections between forced page breaks. When a group's last page is mostly empty, try the
+    // group slightly smaller (never below 84%, still larger than the old small print) and keep it only if it saves a page.
+    const scales = {};
+    for (let g = 0; g < best.groups.length; g++) {
+        const grp = best.groups[g];
+        if (grp.pages < 2 || grp.lastFill > 0.4) continue;
+        for (const scale of [0.94, 0.89, 0.84]) {
+            const trial = once({ ...scales, [g]: scale });
+            if (trial.groups[g] && trial.groups[g].pages < grp.pages) { scales[g] = scale; best = trial; break; }
+        }
+    }
+    return best.pdf;
+}
+function scaledStyle(base, scale) {
+    if (!scale || scale === 1) return base;
+    const out = {}; Object.keys(base).forEach(k => { out[k] = ['box', 'codeW', 'notesLineX'].includes(k) ? base[k] : Math.round(base[k] * scale * 10) / 10; });
+    return out;
+}
+function renderSheetOnce(title, headerLns, sections, footerLabel, withNotes, style, opts, scales) {
+    const ctx = newPdf(style), base = ctx.st; let st = ctx.st;
+    ctx.initials = !!opts.initials;
+    const groups = []; let g = 0, groupStart = 1;
+    const fill = () => (ctx.y - ctx.m) / (ctx.h - ctx.bottom - ctx.m);
+    const closeGroup = () => groups.push({ pages: ctx.pdf.internal.getNumberOfPages() - groupStart + 1, lastFill: fill() });
     drawTitle(ctx, title);
-    headerLns.forEach((l, i) => drawPlain(ctx, l, i === 0 ? st.head1 : st.head, i === 0 ? 'bold' : 'normal', st.headStep));
-    sections.forEach(sec => {
-        if (sec.newPage) newPage(ctx);
+    headerLns.forEach((l, i) => { const strong = i === 0 || l.startsWith(GAPS_LABEL); drawPlain(ctx, l, strong ? st.head1 : st.head, strong ? 'bold' : 'normal', st.headStep); });
+    if (ctx.initials) drawPlain(ctx, 'Tick the box when a line is done, and write your initials on the short line beside it.', st.head, 'italic', st.headStep);
+    ctx.st = st = scaledStyle(base, scales[0]);
+    sections.forEach((sec, index) => {
+        if (sec.newPage && index > 0) { closeGroup(); g++; newPage(ctx); groupStart = ctx.pdf.internal.getNumberOfPages(); ctx.st = st = scaledStyle(base, scales[g]); }
+        else if (sec.newPage) newPage(ctx);
         const first = sec.blocks[0], sectionNotes=withNotes&&!sec.referenceOnly;
         const totalNeed=sec.blocks.reduce((n,b)=>n+blockNeed(ctx,b)+(b.stages?30:0),0)+(sectionNotes?notesNeed(ctx):0);
         let opening=Math.max(totalNeed<=320?totalNeed:0,sectionOpeningNeed(ctx,sec.blocks));
@@ -3132,24 +3265,41 @@ function renderSheetPdf(title, headerLns, sections, footerLabel, withNotes, styl
         if (sec.blocks.some(b=>b.stages)) drawStagedBlocks(ctx,sec.blocks,sectionNotes); else if (sec.compact) drawCompactBlocks(ctx, sec.blocks, sectionNotes); else drawBlocks(ctx, sec.blocks, sectionNotes);
         if (sectionNotes) drawNotesSpace(ctx);
     });
-    ctx.section = null;
+    closeGroup();
+    ctx.st = base; ctx.section = null;
     drawFooters(ctx, footerLabel);
-    return ctx.pdf;
+    return { pdf: ctx.pdf, groups };
 }
 
 function renderCardsPdf() {
-    const ctx = newPdf();
-    CARD_ORDER.forEach((k, idx) => {
-        const c = CARDS[k]; if (idx > 0) newPage(ctx); ctx.section = null;
+    const ctx = newPdf('medium'), base = ctx.st;
+    // A card should stay on one page. Each card prints as large as it can while still fitting (2026-11-12).
+    const drawCard = (ctx, c, scale) => {
+        ctx.st = scaledStyle(base, scale); ctx.section = null;
         drawTitle(ctx, c.title.toUpperCase() + ' CARD');
-        drawPlain(ctx, 'Version v' + c.version + '   Fingerprint ' + cardFingerprint(c) + '   Printed ' + nowStamp() + '   440 Elm standard card. Event sheets cite this version.', 8.5, 'normal');
-        ctx.y += 4; drawPlain(ctx, c.purpose, 9.5, 'italic');
+        drawPlain(ctx, 'Version v' + c.version + '   Fingerprint ' + cardFingerprint(c) + '   Printed ' + friendlyStamp(nowStamp()) + '   440 Elm standard card. Event sheets cite this version.', 9.5 * scale, 'normal', 12.5 * scale);
+        ctx.y += 4; drawPlain(ctx, c.purpose, 11 * scale, 'italic', 14 * scale);
         c.sections.forEach(sec => {
             const blocks = sec.lines.map(([code, text]) => ({ type: 'item', code, text }));
             drawSectionTitle(ctx, sec.title + '  [Owner: ' + sec.owner + ']', blockNeed(ctx, blocks[0])); drawBlocks(ctx, blocks, false);
         });
-        [['Variants', c.variants], ['What the event sheet still has to say', c.eventSheetSays], ['What stays a per-event item', c.perEvent], ['After the event', c.after]]
-            .forEach(([t, text]) => { drawSectionTitle(ctx, t, 36); drawPlain(ctx, text, 9); });
+        // Staff copy: only what staff act on. The two planning notes print once, on the office page at the end.
+        [['When to skip lines', c.variants], ['After the event', c.after]]
+            .forEach(([t, text]) => { drawSectionTitle(ctx, t, 40); drawPlain(ctx, text, 10.5 * scale, 'normal', 13.5 * scale); });
+        ctx.section = null;
+    };
+    CARD_ORDER.forEach((k, idx) => {
+        const c = CARDS[k]; if (idx > 0) newPage(ctx);
+        const scale = [1.16, 1.08, 1, 0.93, 0.86].find(sc => { const trial = newPdf('medium'); drawCard(trial, c, sc); return trial.pdf.internal.getNumberOfPages() === 1; }) || 1;
+        drawCard(ctx, c, scale);
+    });
+    ctx.st = base;
+    newPage(ctx); drawTitle(ctx, 'CARD NOTES (OFFICE COPY)');
+    drawPlain(ctx, 'For the person who fills in the event intake. Not needed by staff on the floor.', 11, 'italic', 14);
+    CARD_ORDER.forEach(k => {
+        const c = CARDS[k];
+        drawSectionTitle(ctx, c.title, 60);
+        [['What the event sheet still has to say', c.eventSheetSays], ['What stays a per-event item', c.perEvent]].forEach(([t, text]) => { drawBlock(ctx, { type: 'sub', text: t }); drawPlain(ctx, text, 10.5, 'normal', 13.5); });
         ctx.section = null;
     });
     drawFooters(ctx, '440 Elm standard cards');
@@ -4499,7 +4649,14 @@ function warningTarget(w) {
 function renderReviewWork() {
     const box = $('reviewWork'); if (!box) return;
     const w = reviewWork(), total = w.choices.length + w.other.length + w.issues.length;
-    box.innerHTML = '<strong>Review</strong> <button type="button" class="btn-text" data-review-target="queue:choices">' + w.choices.length + (w.choices.length === 1 ? ' choice required' : ' choices required') + '</button> <button type="button" class="btn-text" data-review-target="queue:other">' + w.other.length + (w.other.length === 1 ? ' other suggestion' : ' other suggestions') + '</button> <button type="button" class="btn-text" data-review-target="queue:issues">' + w.issues.length + (w.issues.length === 1 ? ' open document issue' : ' open document issues') + '</button> <button type="button" class="btn-text" data-review-target="queue:all">All unresolved (' + total + ')</button>' + (total ? '<button type="button" class="btn-secondary btn-sm" data-review-target="queue:' + (w.choices.length ? 'choices' : w.issues.length ? 'issues' : 'other') + '">' + (w.choices.length ? 'Review next choice' : w.issues.length ? 'Open next issue' : 'Review next suggestion') + '</button>' : '<span>No unresolved review items.</span>') + '<span class="hint">Output warnings are listed separately in Current sheet content.</span>';
+    if (!total) {
+        // Nothing from the documents is waiting: one quiet line, plus how many sections still need an answer (2026-11-12).
+        const need = [...document.querySelectorAll('#sectionNav a.needs')];
+        box.innerHTML = need.length ? '<strong>To finish</strong> <a class="btn-text" href="' + need[0].getAttribute('href') + '">' + need.length + (need.length === 1 ? ' section needs' : ' sections need') + ' an answer</a><span class="review-quiet">Start with ' + escapeHtml(need[0].querySelector('.nav-title').textContent) + '.</span>' : '<span class="review-quiet">Nothing waiting for review.</span>';
+        box.classList.add('is-quiet'); return;
+    }
+    box.classList.remove('is-quiet');
+    box.innerHTML = '<strong>Review</strong> <button type="button" class="btn-text" data-review-target="queue:choices">' + w.choices.length + (w.choices.length === 1 ? ' choice required' : ' choices required') + '</button> <button type="button" class="btn-text" data-review-target="queue:other">' + w.other.length + (w.other.length === 1 ? ' other suggestion' : ' other suggestions') + '</button> <button type="button" class="btn-text" data-review-target="queue:issues">' + w.issues.length + (w.issues.length === 1 ? ' open document issue' : ' open document issues') + '</button> <button type="button" class="btn-text" data-review-target="queue:all">All unresolved (' + total + ')</button>' + (total ? '<button type="button" class="btn-secondary btn-sm" data-review-target="queue:' + (w.choices.length ? 'choices' : w.issues.length ? 'issues' : 'other') + '">' + (w.choices.length ? 'Review next choice' : w.issues.length ? 'Open next issue' : 'Review next suggestion') + '</button>' : '<span>No unresolved review items.</span>') + '<span class="hint">Warnings about the printed sheet are listed above the preview.</span>';
 }
 function intakeClick(t) {
     const all = [...pendingSuggestions(), ...openIssues()];
@@ -4578,7 +4735,7 @@ function generateEventSheet() {
     if (!confirmWarnings(sheet.warnings)) return null;
     const proposal = proposedVersion(sheet), meta = proposal.meta;
     const id = proposal.id || NO_EVENT_ID;
-    const pdf = renderSheetPdf('EVENT SETUP CHECKLIST', headerLines(state, meta), sheet.sections, 'Event ' + id + '   |   Sheet v' + meta.version, true, 'large');
+    const pdf = renderSheetPdf('EVENT SETUP CHECKLIST', headerLines(state, meta, sheet), sheet.sections, 'Event ' + id + '   |   Sheet v' + meta.version, true, 'large', { initials: true, fit: true });
     return saveGeneratedPdf(pdf, 'Checklist-' + fileSafe(id) + '-v' + meta.version + '.pdf', proposal, { sheet, meta });
 }
 function generateScullerySheet() {
@@ -4586,7 +4743,7 @@ function generateScullerySheet() {
     if (!confirmWarnings(sheet.warnings)) return null;
     const proposal = proposedVersion(sheet), meta = proposal.meta;
     const sc = buildScullerySheet(state, meta); const id = proposal.id || NO_EVENT_ID;
-    const pdf = renderSheetPdf(sc.title, sc.lines, sc.sections, 'Scullery sheet   |   Event ' + id + '   |   Sheet v' + meta.version, true);
+    const pdf = renderSheetPdf(sc.title, sc.lines, sc.sections, 'Scullery sheet   |   Event ' + id + '   |   Sheet v' + meta.version, true, 'large', { initials: true, fit: true });
     return saveGeneratedPdf(pdf, 'Scullery-' + fileSafe(id) + '-v' + meta.version + '.pdf', proposal, { sheet, meta });
 }
 function generateCards() { renderCardsPdf().save('440-Elm-standard-cards-' + CARD_ORDER.map(k => k + 'v' + CARDS[k].version).join('-') + '.pdf'); }
@@ -4693,6 +4850,15 @@ function renderCloud() {
     if (!cloudOn()) { el.textContent = ''; return; }
     const link = cloudLink(), owner = cloudIsOwner();
     $('cloudSignBtn').textContent = cloudUser ? 'Sign out' : 'Sign in';
+    // Top bar: Events opens the library, and one button always offers the next online step (2026-11-12).
+    // Standard cards move into More to make room, because they do not change per event.
+    const stale = !!(link.publishedVersion && cloudSheetHash && cloudSheetHash !== link.publishedHash);
+    const step = !owner ? ['signin', 'Sign in'] : !link.id ? ['save', 'Save online'] : !link.publishedVersion ? ['publish', 'Publish'] : stale ? ['publish', 'Publish again'] : ['status', 'Status page'];
+    const main = $('cloudMainBtn'); main.dataset.step = step[0]; main.textContent = step[1];
+    main.classList.toggle('btn-attn', step[0] === 'save' && hasAnyAnswers(state) || step[1] === 'Publish again');
+    main.title = { signin: 'Sign in to save events online and publish to staff.', save: 'Save this event to the online library.', publish: 'Send the checklist and shifts to the staff status page.', status: 'The status page is up to date. Open it.' }[step[0]];
+    ['cloudEventsBtn', 'cloudMainBtn', 'cardsMenuBtn'].forEach(id => $(id).classList.remove('is-hidden'));
+    $('cardsPdfBtn').classList.add('is-hidden');
     $('cloudWho').textContent = !cloudUser ? 'Signed out. Answers stay in this browser only.' : owner ? 'Signed in as ' + cloudUser.email + '.' : 'Signed in as ' + cloudUser.email + '. This sign-in can only view the status page.';
     let text = '', warn = false, title = '';
     if (!cloudUser) text = 'Online: signed out';
@@ -4725,7 +4891,7 @@ function cloudSave(force) {
             cloudNote = null; return true;
         })
         .catch(e => { console.error(e); cloudNote = { text: e.conflict ? 'Online copy is newer. Not saved online.' : 'Online save failed', warn: true, detail: e.message }; return false; })
-        .finally(() => { cloudBusy = false; renderCloud(); if (cloudAgain) { cloudAgain = false; cloudAutosave(); } });
+        .finally(() => { cloudBusy = false; renderCloud(); setTimeout(renderCloud, 0); if (cloudAgain) { cloudAgain = false; cloudAutosave(); } });
 }
 function cloudDialog(id, title, body) {
     $(id)?.remove();
@@ -4773,8 +4939,9 @@ function cloudSaveManual() {
       .catch(e => { alert('The event was not saved online. ' + e.message); return false; });
 }
 function cloudLibrary() {
-    const d = cloudDialog('cloudLibrary', 'Online library', '<p class="hint">Every event saved online. Opening one replaces the event on screen.</p><div id="cloudLibraryList"><p>Loading...</p></div><div class="staff-toolbar"><button type="button" class="btn-secondary" id="cloudLibraryClose">Close</button></div>');
+    const d = cloudDialog('cloudLibrary', 'Online library', '<p class="hint">Every event saved online. Opening one replaces the event on screen.</p><div id="cloudLibraryList"><p>Loading...</p></div><div class="staff-toolbar"><button type="button" class="btn-secondary" id="cloudLibraryNew">Start a new event</button><button type="button" class="btn-secondary" id="cloudLibraryClose">Close</button></div>');
     $('cloudLibraryClose').onclick = d.close;
+    $('cloudLibraryNew').onclick = () => { d.close(); $('newEventBtn').click(); };
     const draw = () => ElmCloud.listEvents(false).then(list => {
         const host = $('cloudLibraryList'); if (!host) return;
         const here = cloudLink().id;
@@ -4846,7 +5013,7 @@ function cloudPublish() {
             times: { arriveOnsite: t.arriveOnsite || '', setupComplete: t.setupComplete || '', eventStart: t.eventStart || '', eventEnd: t.eventEnd || '', staffDeparts: t.staffDeparts || '' },
             sheetJson: JSON.stringify(cloudPublishedSheet(sheet)), shiftsJson: JSON.stringify(cloudPublishedShifts()) };
         return ElmCloud.publish(cloudLink().id, published).then(() => {
-            if (state === draft) { cloudLink().publishedVersion = meta.version; cloudLink().publishedHash = meta.itemsHash; cloudPersistLocal(); cloudAutosave(); renderCloud(); }
+            if (state === draft) { cloudLink().publishedVersion = meta.version; cloudLink().publishedHash = meta.itemsHash; cloudPersistLocal(); cloudAutosave(); renderCloud(); setTimeout(renderCloud, 0); }
             alert('Published. The status page now shows sheet v' + meta.version + ' and ' + staffPlan().shifts.length + ' shift(s). Done marks already made are kept.');
             return true;
         });
@@ -4860,6 +5027,15 @@ function initCloud() {
     $('cloudSaveBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Saving...', cloudSaveManual)); });
     $('cloudPublishBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Publishing...', cloudPublish)); });
     $('cloudStatusLink').addEventListener('click', () => window.open('status.html', '_blank', 'noopener'));
+    $('cloudEventsBtn').addEventListener('click', () => cloudOwnerThen(cloudLibrary));
+    $('cardsMenuBtn').addEventListener('click', () => $('cardsPdfBtn').click());
+    $('cloudMainBtn').addEventListener('click', function () {
+        const step = this.dataset.step;
+        if (step === 'signin') { if (cloudUser) alert('This sign-in can only view the status page. Sign out under More, then sign in as the owner.'); else ElmCloud.init().then(() => cloudSignIn()).catch(e => alert(e.message)); }
+        else if (step === 'save') withButton(this, 'Saving...', cloudSaveManual);
+        else if (step === 'publish') withButton(this, 'Publishing...', cloudPublish);
+        else window.open('status.html' + (cloudLink().id ? '#e=' + encodeURIComponent(cloudLink().id) : ''), '_blank', 'noopener');
+    });
     ElmCloud.onUser(u => { cloudUser = u; if (!u) clearTimeout(cloudTimer); renderCloud(); });
     ElmCloud.init().catch(e => { cloudNote = { text: 'Online library unavailable', warn: true, detail: e.message }; const el = $('cloudStatus'); if (el) { el.textContent = cloudNote.text; el.className = 'warn'; el.title = e.message; } });
 }

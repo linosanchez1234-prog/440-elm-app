@@ -8,10 +8,14 @@
     <title>440 Elm Setup Status</title>
     <script src="cloud-config.js"></script>
     <script src="cloud.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Same paper and pen tokens as the intake app. Built for a phone held in one hand. */
-        :root { --desk: #E5E7EA; --paper: #FFFFFF; --ink: #1B1F24; --graphite: #5A636D; --rule: #D6DADF; --rule-strong: #B7BEC6; --pen: #2340A8; --pen-dark: #182F86; --pen-wash: #E9EDF9; --highlighter-wash: #FFF7C9; --danger: #B42318; --done: #1F7A4D; --done-wash: #E6F4EC;
-            --font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+        /* Same "Clean slate" tokens as the intake app (2026-11-12). Built for a phone held in one hand. */
+        :root { --desk: #F4F5F8; --paper: #FFFFFF; --ink: #0F172A; --graphite: #5B6475; --rule: #E5E7EB; --rule-strong: #CBD2DC; --pen: #4F46E5; --pen-dark: #4338CA; --pen-wash: #EEF2FF; --highlighter-wash: #FEF9C3; --danger: #C81E1E; --done: #15803D; --done-wash: #F0FDF4;
+            --shadow-card: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .04);
+            --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.4; -webkit-text-size-adjust: 100%; }
         button, input, select, textarea { font: inherit; color: inherit; }
@@ -68,6 +72,30 @@
         details.ref .text { padding: 2px 14px; font-size: 14px; }
         ul.plain { margin: 4px 0 4px 18px; padding: 0; }
         .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        /* Clean slate shapes */
+        body { -webkit-font-smoothing: antialiased; }
+        .topbar strong { letter-spacing: -0.01em; }
+        .card, .sec { border-radius: 16px; box-shadow: var(--shadow-card); }
+        h1 { letter-spacing: -0.02em; font-weight: 700; }
+        h2 { text-transform: none; letter-spacing: -0.01em; font-size: 16px; font-weight: 600; }
+        .btn { border-radius: 12px; font-weight: 500; }
+        .btn-primary { box-shadow: 0 1px 2px rgba(79, 70, 229, .25); }
+        label.field input, label.field select { border-radius: 12px; }
+        .seg { border-radius: 12px; border-color: var(--rule); padding: 3px; gap: 3px; background: #E9EBF0; }
+        .seg button { border: 0; border-radius: 9px; min-height: 40px; color: var(--graphite); }
+        .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: var(--shadow-card); }
+        .sec-head { background: var(--paper); padding: 12px 16px; }
+        .sec-head .meta { background: var(--pen-wash); color: var(--pen-dark); border-radius: 999px; padding: 2px 10px; font-size: 12.5px; font-weight: 500; }
+        .item { padding: 12px 16px; }
+        .tick { border-radius: 8px; border-color: var(--rule-strong); }
+        .tick.on { background: var(--done); border-color: var(--done); color: #fff; }
+        .count { border-radius: 14px; background: var(--desk); border: 0; color: var(--graphite); font-size: 13px; }
+        .count.pending b { color: var(--ink); }
+        .bar { height: 6px; border-radius: 999px; }
+        .bar span { border-radius: 999px; }
+        .item .inote { border-radius: 10px; }
+        .item .btn-text { display: block; min-height: 32px; padding: 4px 0; font-size: 13.5px; text-decoration: none; font-weight: 500; }
+        .banner { border-radius: 12px; }
         @media print {
             body { background: #fff; font-size: 12pt; }
             .topbar, .seg, .no-print, .btn, .btn-text, .bar { display: none !important; }
@@ -219,7 +247,7 @@
         var noteBtn = owner ? '<button type="button" class="btn-text no-print" data-key="' + esc(b.key) + '" data-note="1">' + (mark.note ? 'Edit note' : 'Add note') + '</button>' : '';
         if (!b.stages) return '<div class="item' + (done ? ' is-done' : '') + '">' + box('done', b.text) + '<div class="body">' + esc(b.text) + who + note + noteBtn + '</div></div>';
         var stage = function (k, label) {
-            var team = b.stages[k + 'Team'] ? ' (' + b.stages[k + 'Team'] + ')' : '';
+            var team = b.stages[k + 'Team'] && b.stages[k + 'Team'] !== 'Unassigned' ? ' (' + b.stages[k + 'Team'] + ')' : '';
             if (b.stages[k] !== 'check') return b.stages[k] ? '<span class="stage">' + esc(label + ': ' + b.stages[k]) + '</span>' : '';
             return '<span class="stage">' + box(k, label + ': ' + b.text) + esc(label + team) + '</span>';
         };
