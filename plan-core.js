@@ -53,7 +53,7 @@
   }
   const clock = (s) => {
     const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i.exec(s || "");
-    if (!m) return "23:59";
+    if (!m) return "";
     let h = +m[1];
     if (m[3]) h = (h % 12) + (m[3].toUpperCase() === "PM" ? 12 : 0);
     return String(h).padStart(2, "0") + ":" + m[2];

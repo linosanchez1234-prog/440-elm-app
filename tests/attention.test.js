@@ -69,3 +69,6 @@ assert.equal(
 assert.equal(P.add("2026-12-31", 2), "2027-01-02");
 assert.equal(P.add("2026-03-08", 2), "2026-03-10");
 console.log("Attention and setup order checks passed.");
+
+// An unknown time does not establish a same day timing conflict.
+assert.equal(P.shiftWarnings({date:"2026-12-18",vendors:[{kind:"linen",loadInDate:"2026-12-17"}],shifts:[{n:1,phase:"tables",start:"2026-12-17T09:00"}]}).length,0);
