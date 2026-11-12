@@ -288,6 +288,18 @@
         .paper .service-line { display:flex;gap:7px;font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere; }
         .paper .service-line .box { flex:0 0 10px;margin-top:2px; }
         .paper .service-cell { border-bottom:1px solid #ddd;padding-bottom:6px;min-width:0; }
+
+.staff-summary{padding:12px;background:#eef2ff;font-weight:600;border-radius:6px}
+.staff-suggestion{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid #d6dbe2}
+.staff-suggestion>span{flex:1;min-width:0}.staff-suggestion button{flex-shrink:0}
+.staff-card{border:1px solid #cbd2db;border-radius:8px;padding:16px;margin:12px 0}.staff-card h4{margin:0 0 8px}.staff-card p{margin:8px 0}
+.staff-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0}.staff-toolbar select{max-width:100%}
+.staff-issues{background:#fff7cf;padding:12px;margin:12px 0}.staff-alert,#staffDialogError{color:#8b2600}
+.staff-grid,.staff-receiver{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.staff-field{display:block;margin:10px 0}.staff-field input,.staff-field textarea,.staff-card select{display:block;width:100%;box-sizing:border-box}
+.staff-dialog{width:min(680px,calc(100vw - 48px));max-height:85vh;overflow:auto;border:1px solid #bcc6d5;border-radius:10px;padding:24px}.staff-dialog::backdrop{background:rgba(0,0,0,.4)}
+#staffingContent details{margin:16px 0}#staffingContent h3{margin-top:28px}
+@media(max-width:650px){.staff-grid,.staff-receiver{grid-template-columns:1fr}.staff-suggestion{align-items:flex-start;flex-direction:column}.staff-dialog{padding:16px}.staff-toolbar{align-items:stretch;flex-direction:column}}
 </style>
 </head>
 
@@ -668,6 +680,11 @@
             </div>
         </section>
 
+        <section class="ws-section" id="sec-staffing" data-section="staffing" aria-labelledby="h-staffing">
+            <h2 id="h-staffing">Staff Allocation</h2>
+            <p>Plan work, review estimates and assign people to shifts. Completion stays on the printed checklist.</p>
+            <div id="staffingContent"></div>
+        </section>
         <section class="ws-section" id="sec-extras" data-section="extras" aria-labelledby="h-extras">
             <header class="ws-head"><h2 id="h-extras">Extras</h2><p class="source">Anything the standard lines do not cover, and setup notes.</p></header>
             <div class="group">
@@ -703,6 +720,9 @@
     </aside>
 </div>
 
+<!-- STAFFING CATALOGUE START -->
+<script type="application/json" id="staffingCatalogue">{"tasks":[{"id":"vendor-load-in","name":"Vendor load-in and running the elevator for vendors","duration":{"min":4,"max":4,"unit":"hours","maxOnly":true},"per":"event","crew":{"min":1,"max":1},"rev":3,"notes":"4 hours max, 1 person (Lino Q5). The same person can usually work an extra 3 hours after load-in (Lino Q5). Confluence 2025: 0.5 to 5 hours. Upper end: more trips, large rental orders. The 2 hours ops runs the elevator during a dance floor install sit inside this 4-hour max, not on top of it (Lino C9).","phase":"pre-event"},{"id":"partake-transport","name":"Pulling equipment from Partake to Elm (transport)","duration":{"min":2,"max":2,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"notes":"Replaces the Confluence 'pull' range (1.5 to 5 hours, 2 people) together with partake-count-stage.","phase":"pre-event"},{"id":"partake-count-stage","name":"Counting, organizing and staging in the right location, including labelling items and starting to wrap plates","duration":{"min":2,"max":3,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"phase":"pre-event"},{"id":"bar-setup","name":"Bar setup, ops part: move the white bars, back tables with linen, floor mats, trash and recycling","duration":{"min":4,"max":4,"unit":"hours","approx":true},"per":"event","crew":{"min":2,"max":2},"owner":"ops","rev":2,"notes":"Existing estimate covers the regular Ops bar setup work. All bar responsibilities remain on the Bar Setup card without a default person. Ops may help with other setup when time is available; review additional work separately because its time is not included in this estimate.","phase":"pre-event"},{"id":"tables-chairs","name":"Rounds, rectangular tables and chairs in place","duration":{"min":2,"max":5,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"notes":"Upper end: nearly all tables in use, several locations.","phase":"pre-event"},{"id":"ceremony-chairs","name":"Ceremony chairs","duration":{"min":90,"max":120,"unit":"minutes","typical":90,"maxOnly":false},"per":"event","crew":{"min":2,"max":2},"rev":2,"notes":"About 90 minutes (Lino Q24). The interview figure of 2 hours max for 2 people stays as the ceiling. Ceremony setup for ops is chairs only: anything beyond chairs is not ops work (Q24).","phase":"pre-event"},{"id":"silverware-polish","name":"Silverware polishing after washing, bagged in zip lock bags of 50","per":"event","rev":2,"notes":"Lino's own run: about 300 forks and 150 knives (450 pieces, 9 bags of 50). When polishing happens inside a washing shift (as on 2026-10-25), its time is already in the wash time. Count it separately only when it is its own task. Phase is breakdown, after washing (Lino C8).","phase":"breakdown"},{"id":"kitchen-prep","name":"Kitchen area prep","duration":{"min":1,"max":2,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"phase":"pre-event"},{"id":"scullery-setup","name":"Scullery setup (ops start)","duration":{"min":1,"max":1,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"phase":"pre-event"},{"id":"staff-meal-setup","name":"Staff meal setup","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":{"min":1,"max":1},"rev":1,"phase":"pre-event"},{"id":"room-function-setup","name":"Per-room function setup","duration":{"min":30,"max":60,"unit":"minutes"},"per":"room","crew":{"min":2,"max":2},"rev":1,"phase":"pre-event"},{"id":"ready-room-check","name":"Ready room check (a check, not a setup)","duration":{"min":20,"max":20,"unit":"minutes"},"per":"both ready rooms together","crew":{"min":1,"max":1},"rev":3,"notes":"Ops just checks the ready rooms: 20 minutes for both rooms together, 1 person (Lino Q33, C1). Checks, not setups. The printed lines stay one per room (BR-40, GR-40), and this one time covers both. No time is given for one room alone.","phase":"pre-event"},{"id":"water-ice-station","name":"Water and ice station","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":{"min":1,"max":1},"rev":1,"notes":"Self-serve station for guests. Separate from the back of house water service area for servers, which is part of plated service setup (Lino, 2026-10-26).","phase":"pre-event"},{"id":"plated-service-setup","name":"Plated dinner service setup","duration":{"min":1,"max":2,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"notes":"Does not include place settings (timed separately). It covers organizing the expo lines and setting up the back of house water service area for servers (Lino, 2026-10-26). That is separate from the self-serve water and ice station for guests, so the two do not overlap.","phase":"pre-event"},{"id":"cake-dessert-setup","name":"Cake and dessert setup","duration":{"min":30,"max":60,"unit":"minutes"},"per":"event","crew":{"min":1,"max":2},"owner":"notOps","rev":2,"phase":"pre-event"},{"id":"signage-welcome","name":"Signage and welcome setup","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":{"min":1,"max":1},"rev":1,"phase":"pre-event"},{"id":"dust-chair-seats","name":"Dusting chair seats","duration":{"min":1,"max":1,"unit":"hours"},"per":"150 chairs","crew":{"min":1,"max":1},"rev":1,"notes":"1 person dusts 150 chairs in 1 hour (Lino, 2026-10-26).","phase":"pre-event"},{"id":"vendor-load-out-next-day","name":"Vendor load-out the next day after the event, including the elevator (ops)","duration":{"min":4,"max":4,"unit":"hours","maxOnly":true},"per":"event","crew":{"min":1,"max":1},"owner":"ops","rev":3,"notes":"Ops work: 4 hours max, 1 person (Lino Q13). This is the next-day load-out. Load-out at the end of the event, night of, is servers' work (tasks.vendor-load-out-night-of). Vendor check-out at end of night is servers' work (Q40). Confluence 2025 range: 0.5 to 5 hours.","phase":"breakdown"},{"id":"vendor-load-out-night-of","name":"Vendor load-out at the end of the event (night of)","duration":null,"per":"event","crew":null,"owner":"servers","rev":1,"notes":"Servers' work. No time documented yet.","phase":"breakdown"},{"id":"washing","name":"Washing dirty equipment, including transport to Partake","per":"event","rev":3,"notes":"Upper end: large plated events with many sheet pans and several bars, large family style events. Washing starts the night of the event, and the scullery area is cleaned the same night when the washing is finished (task scullery-clean-night-of, Lino 2026-10-28). What is left (often coffee urns, dispensers, misc items and bar equipment) is washed the next day by the dishwashing team (Scullery card v2, Lino 2026-10-27, replacing the earlier 'last 15%' wording from interview 4.2). The post-event defaults in 'defaults.postEventWashing' (2026-10-26) are newer and come from a real night. They are higher than this 2025 range.","phase":"breakdown"},{"id":"scullery-clean-night-of","name":"Clean the scullery area when the washing is finished","duration":null,"per":"event","crew":null,"owner":"scullery staff","rev":2,"notes":"A timing fix, not a new item: Trinity finished cleaning the scullery area the next day (Oct 26-27), and Lino ruled it belongs to the night of the event. Scullery card v3 SCU-10 (app 2.5.10). No time recorded. Owner: scullery staff, next to the night-of washing (confirmed by Lino 2026-10-28).","phase":"breakdown"},{"id":"tables-off-sanctuary","name":"Moving tables off the Sanctuary","duration":{"min":2,"max":4,"unit":"hours"},"per":"event","crew":{"min":2,"max":2},"rev":1,"notes":"Ops job when event staff cannot get to it at end of night. Two more round table dollies and side staging would remove the task.","phase":"breakdown"},{"id":"review-job-sheet","name":"Review job sheet and floor plan with the team","duration":{"min":1,"max":1,"unit":"hours","approx":true},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"verify-rental-deliveries","name":"Verify rental deliveries are complete and match the order","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"rentals-cross-check","name":"Check the rental list before pulling in-house items, on rental events","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"clear-pathways","name":"Clear pathways for service staff and wheelchair access (4 ft)","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":2,"notes":"Standing work only: the event sheet line WV-53 was removed (Lino 2026-10-28, app 2.5.12), so no checklist line prints for it.","phase":"pre-event"},{"id":"measure-tape-floor","name":"Measure and tape floor dimensions","duration":{"min":20,"max":20,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"notes":"Lino first tapped 30 minutes, then corrected to 20 in text.","phase":"pre-event"},{"id":"specialty-disposables","name":"Pull and stage specialty disposables from the job sheet","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"bar-disposables","name":"Pull and stage bar disposables (napkins, stirrers, straws, cups)","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"tablecloths","name":"Tablecloths (linens on tables)","duration":{"min":90,"max":90,"unit":"minutes"},"per":"1 to 2 rooms","crew":{"min":1,"max":1},"owner":"ops","rev":1,"notes":"90 minutes across 1 to 2 rooms, 1 person (Lino Q19). Rugs, lounge furniture and display pieces: ops does not put them down (Q19).","phase":"pre-event"},{"id":"special-seating","name":"Special seating","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"place-rollups","name":"Place roll-ups on tables or buffets","duration":{"min":25,"max":25,"unit":"minutes"},"per":"150 guests","crew":null,"owner":"ops","rev":1,"notes":"25 minutes for 150 people (Lino Q28). Making the roll-ups is timed separately (rates.rollups).","phase":"pre-event"},{"id":"boh-water-service-nonplated","name":"Back of house water service on non-plated events (silver pitchers, blue jugs, ice bucket and scoop)","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"buffet-setup","name":"Buffet setup (tables, linens, plates, signage)","duration":{"min":45,"max":45,"unit":"minutes"},"per":"buffet","crew":{"min":1,"max":1},"owner":"ops","rev":1,"notes":"1 person per buffet, 45 minutes per buffet. Multiply by the buffet count (Lino Q42). Resolved 20:08: 45 minutes per buffet replaces Q1's 2 hours per buffet.","phase":"pre-event"},{"id":"food-station-setup","name":"Food station setup","duration":null,"per":"event","crew":null,"owner":"servers","rev":2,"notes":"Set up the day of the event by the event servers, not ops, so not counted as ops time. Ops only by exception: 1 to 2 hours when ops covers it (Lino Q2, Q45, C5). The app no longer offers 'Ops sets up in advance'.","phase":"pre-event"},{"id":"coffee-station-setup","name":"Coffee station setup, front of house and back of house together (brewers and boilers)","duration":{"min":2,"max":2,"unit":"hours"},"per":"event","crew":null,"owner":"ops may start, servers finish","rev":1,"notes":"2 hours for both sides (Lino Q3, resolved Q43). Front of house is sometimes delegated to the event servers (Q3).","phase":"pre-event"},{"id":"vendor-meals-setup","name":"Vendor meals setup","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"inventory-on-hand-check","name":"Check that in-house inventory is on hand (china, silverware, tables, chairs, disposables, sternos, cleaning supplies, trash bags)","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"pre-event"},{"id":"final-check","name":"Final check: setups against the floor plan, and equipment clean and polished","duration":{"min":30,"max":60,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"notes":"Lino first tapped about 1 hour, then refined to 30 minutes to 1 hour (Q14). His answer covers both parts.","phase":"pre-event"},{"id":"dance-floor-install","name":"Dance floor install","duration":{"min":2,"max":2,"unit":"hours"},"per":"event","crew":null,"owner":"vendor","rev":2,"notes":"The vendor installs it, not ops (Q11). 2 hours. Ops operates the elevator during this period (Q46). The 2 elevator hours are inside the 4-hour vendor load-in max (tasks.vendor-load-in), not added on top (Lino C9).","phase":"pre-event"},{"id":"linen-count","name":"Linen count","duration":{"min":45,"max":45,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":2,"notes":"Rule: counted the day after the event, ops is the count owner (Elizabeth). Night-of counting happens occasionally in practice. Trinity's end-of-night proposal does not go to Elizabeth (Lino C4). Matches printed line RR-20.","phase":"breakdown"},{"id":"rtr-verify","name":"Return to Ready check, verifying the event staff's tasks","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"breakdown"},{"id":"clean-stock-back","name":"Bring clean stock back from Partake the next day","duration":{"min":1,"max":2,"unit":"hours"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"breakdown"},{"id":"wrap-clean-plates-bowls","name":"Wrap the clean plates and bowls and put them away at Elm","duration":null,"per":"event","crew":null,"owner":"ops","rev":2,"notes":"Recurring: Trinity did it on Mon 10/26 and Tue 10/27. Prints as Return to Ready RR-25 (app 2.5.10). Done by the ops person who brings the clean stock back from Partake (Lino 2026-10-28). No separate time exists: Trinity's wrapping was inside her Monday and Tuesday totals, so the 1-2 hour estimate stays unconfirmed until Lino has a real number.","phase":"breakdown"},{"id":"linen-staging-return","name":"Linens staging and return, counted against the delivery receipt","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"breakdown"},{"id":"emergency-kit-check","name":"Emergency kit post-event check, replenish and log","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops","rev":1,"phase":"breakdown"},{"id":"coffee-equipment-return","name":"Coffee equipment returned to storage, when event staff did not","duration":{"min":30,"max":30,"unit":"minutes"},"per":"event","crew":null,"owner":"ops (only when event staff did not)","rev":1,"phase":"breakdown"},{"id":"staff-meal-reset","name":"Reset the staff meal area, when event staff did not","duration":{"min":15,"max":15,"unit":"minutes"},"per":"event","crew":null,"owner":"ops (only when event staff did not)","rev":1,"phase":"breakdown"},{"id":"organize-partake","name":"Organize Partake","duration":{"min":1,"max":1,"unit":"hours"},"per":"event","crew":null,"owner":"ops","rev":1,"notes":"1 hour after every event, not monthly. The space is too small, and a lot of equipment is now staged at Elm because of the Partake clutter (Lino Q35). Replaces the monthly rhythm on Ops Associate Responsibilities.","phase":"breakdown"},{"id":"pressure-wash-mats","name":"Pressure wash mats and slim jims","duration":{"min":1,"max":1,"unit":"hours"},"per":"month","crew":null,"owner":"ops","rev":1,"phase":"standing"},{"id":"sweep-storage","name":"Sweep storage floors","duration":{"min":15,"max":15,"unit":"minutes"},"per":"occurrence","crew":null,"owner":"ops","rev":1,"notes":"How often is not stated.","phase":"standing"},{"id":"refill-spray-bottles","name":"Refill spray bottles","duration":{"min":15,"max":15,"unit":"minutes"},"per":"occurrence","crew":null,"owner":"ops","rev":1,"notes":"How often is not stated.","phase":"standing"},{"id":"clean-room-restroom","name":"Clean room restroom","duration":{"min":15,"max":15,"unit":"minutes"},"per":"occurrence","crew":null,"owner":"ops","rev":2,"notes":"How often is not stated. Standing work only: the event sheet line RR-21 was removed (Lino 2026-10-28, app 2.5.11), so no checklist line prints for it.","phase":"standing"},{"id":"qc-visit","name":"Quality control visit, walking the venue","duration":{"min":15,"max":15,"unit":"minutes"},"per":"visit","crew":null,"owner":"ops","rev":1,"notes":"How often is not stated.","phase":"standing"},{"id":"water-goblet-polish","name":"Polish water goblets","duration":{"min":20,"max":20,"unit":"minutes","approx":true},"per":"25 goblets","crew":{"min":1,"max":1},"rev":1,"notes":"Lino: roughly 20 minutes per 25 water goblets, for one person. Confirm the number to polish; the pull list can include extras. Scale proportionally, without assuming a complete batch of 25 is required.","phase":"pre-event"}],"rates":[{"id":"rollups","name":"Roll-ups and napkin folds","perPiece":{"seconds":15,"note":"give or take"},"crew":{"min":1,"max":1},"rev":1,"notes":"Lino 2026-10-26: about 15 seconds per roll-up, which is about 240 an hour. His 2025 Confluence page said 150 to 200 an hour (18 to 24 seconds each). Both kept: 15 s is the current estimate, the older range is a slower bound."}],"placeSettings":{"rev":1,"tableMinutes":{"guests":[50,100,150,200,250],"rows":[{"items":["fork","knife","water goblet"],"minutes":[45,90,135,180,225]},{"items":["fork","fork","knife","water goblet"],"minutes":[55,110,165,220,275]},{"items":["fork","fork","knife","water goblet","wine glass"],"minutes":[65,130,195,260,325]},{"items":["fork","fork","knife","water goblet","wine glass","champagne glass"],"minutes":[75,150,225,300,375]}]}}}</script>
+<!-- STAFFING CATALOGUE END -->
 <script>
 /* ============================================================================
    440 Elm Event Intake. Single file, no build step, no AI dependency.
@@ -721,7 +741,7 @@
    ========================================================================== */
 
 /* ---------- 1. Data block ---------- */
-const APP_VERSION = '2.6.14';
+const APP_VERSION = '2.7.0';
 const FILE_FORMAT = 'elm-event-intake';
 const FILE_FORMAT_VERSION = 1;
 const STORAGE_KEY = 'elm-event-intake-draft-v1';
@@ -1063,6 +1083,201 @@ function pdfSafe(text) {
     return out;
 }
 
+/* Staff Allocation is planning only. No completion or automatic scheduling. */
+const STAFFING_DATA = JSON.parse(document.getElementById('staffingCatalogue').textContent);
+const STAFFING_STORAGE_KEY = 'elm-staffing-standards-v1';
+const STAFFING_RETIRED = new Set(['clear-pathways','clean-room-restroom','cake-dessert-setup','inventory-on-hand-check','coffee-equipment-return','staff-meal-reset']);
+function staffBaseCatalog() {
+    const amount = n => n == null ? '' : String(n);
+    const base = STAFFING_DATA.tasks.filter(t=>!STAFFING_RETIRED.has(t.id)).map(t=>{
+        const duration=t.duration, match=/^(\d+)\s+(?!to\b)(.+)$/.exec(t.per||'');
+        return {id:t.id,name:t.name,min:amount(duration?duration.min*(duration.unit==='hours'?60:1):null),max:amount(duration?duration.max*(duration.unit==='hours'?60:1):null),crewMin:amount(t.crew?.min),crewMax:amount(t.crew?.max),basisQty:match?match[1]:'1',basisLabel:match?match[2]:(t.per||'event'),role:t.owner||'',rev:t.rev||1,notes:t.notes||'',phase:t.phase||'',approx:!!duration?.approx,maxOnly:!!duration?.maxOnly};
+    });
+    STAFFING_DATA.rates.forEach(t=>base.push({id:t.id,name:t.name,min:String(t.perPiece.seconds/60),max:String(t.perPiece.seconds/60),crewMin:String(t.crew.min),crewMax:String(t.crew.max),basisQty:'1',basisLabel:'pieces',role:'',rev:t.rev||1,notes:t.notes||'',phase:'pre-event',approx:true,maxOnly:false}));
+    const seen=new Set(); STAFFING_DATA.placeSettings.tableMinutes.rows.forEach(row=>{
+        const count=row.items.length;if(seen.has(count))return;seen.add(count);
+        base.push({id:'place-settings-'+count,name:'Place settings with '+count+' items each',min:String(row.minutes[0]),max:String(row.minutes[0]),crewMin:'1',crewMax:'1',basisQty:'50',basisLabel:'guests',role:'',rev:STAFFING_DATA.placeSettings.rev||1,notes:'Confirm the items in each setting. Example: '+row.items.join(', ')+'. This is setting work, separate from polishing.',phase:'pre-event',approx:true,maxOnly:false});
+    }); return base;
+}
+const STAFFING_BASE = staffBaseCatalog();
+let staffingStandardsError='', staffingStandardsRaw='';
+function staffValidDef(t) {
+    if(!t||typeof t!=='object'||['id','name','min','max','crewMin','crewMax','basisQty','basisLabel','role','notes','phase'].some(k=>typeof t[k]!=='string'))return false;
+    if(typeof t.approx!=='boolean'||typeof t.maxOnly!=='boolean')return false;
+    if(!Number.isSafeInteger(t.rev)||t.rev<1||!t.id||!t.name.trim()||!t.basisLabel.trim())return false;
+    if(['min','max','crewMin','crewMax','basisQty'].some(k=>t[k]!==''&&(!Number.isFinite(Number(t[k]))||Number(t[k])<=0)))return false;
+    if(['crewMin','crewMax'].some(k=>t[k]!==''&&!Number.isInteger(Number(t[k]))))return false;
+    return !!t.basisQty && (t.min===''&&t.max===''||t.min!==''&&t.max!==''&&Number(t.min)<=Number(t.max)) && (t.crewMin===''&&t.crewMax===''||t.crewMin!==''&&t.crewMax!==''&&Number(t.crewMin)<=Number(t.crewMax));
+}
+function loadStaffStandards() {
+    try {
+        staffingStandardsRaw=localStorage.getItem(STAFFING_STORAGE_KEY)||'';
+        if(!staffingStandardsRaw)return {overrides:{},changeLog:[]};
+        const x=JSON.parse(staffingStandardsRaw);
+        if(!x||!x.overrides||typeof x.overrides!=='object'||Array.isArray(x.overrides)||!Array.isArray(x.changeLog))throw Error('Invalid time standards');
+        if(x.changeLog.some(e=>!e||typeof e.at!=='string'||typeof e.name!=='string'||typeof e.note!=='string'))throw Error('Invalid change history');
+        for(const [id,t] of Object.entries(x.overrides))if(!STAFFING_BASE.some(b=>b.id===id)||id!==t.id||!staffValidDef(t))throw Error('Invalid time standard');
+        return x;
+    }catch(e){staffingStandardsError='Saved time standards could not be read. Built in estimates are shown; existing task snapshots are unchanged.';return {overrides:{},changeLog:[]};}
+}
+let staffingStandards=loadStaffStandards();
+function staffDefinitions(){return STAFFING_BASE.map(t=>staffingStandards.overrides[t.id]||t);}
+function staffDef(id){return staffDefinitions().find(t=>t.id===id);}
+function staffDefaultPlan(){return {tasks:[],shifts:[],receivers:{},nextTask:1,nextShift:1};}
+function staffPlan(s=state){return s.staffing||staffDefaultPlan();}
+function staffHash(x){return fnv1a(JSON.stringify(x));}
+function staffPeople(shift){const seen=new Set();return String(shift?.people||'').split(/\r?\n/).map(x=>x.trim()).filter(x=>{const k=x.toLowerCase();if(!x||seen.has(k))return false;seen.add(k);return true;});}
+function staffNum(x){return x===''||x==null||!Number.isFinite(Number(x))?null:Number(x);}
+function staffMinutes(task){const t=task.snapshot,q=staffNum(task.quantity),a=staffNum(t.min),b=staffNum(t.max);return q==null||q<=0||a==null||b==null?null:{min:a*q/Number(t.basisQty),max:b*q/Number(t.basisQty)};}
+function staffNumber(x){return Number(x.toFixed(1)).toString();}
+function staffTime(task){const x=staffMinutes(task);return x?(task.snapshot.approx?'About ':'')+(task.snapshot.maxOnly?'Up to '+staffNumber(x.max):staffNumber(x.min)+(x.max!==x.min?' to '+staffNumber(x.max):''))+' min':'Time or quantity needed';}
+function staffDate(value){if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value||''))return null;const d=new Date(value),parts=value.split(/[-T:]/).map(Number);return Number.isFinite(d.getTime())&&d.getFullYear()===parts[0]&&d.getMonth()+1===parts[1]&&d.getDate()===parts[2]&&d.getHours()===parts[3]&&d.getMinutes()===parts[4]?d.getTime():null;}
+function staffShiftLength(shift){const a=staffDate(shift.start),b=staffDate(shift.end);return a!=null&&b!=null&&b>a?(b-a)/60000:null;}
+function staffSourceItems(s=state){return flattenItems(buildEventSheet(s));}
+function staffSources(codes,items=staffSourceItems()){return codes.map(code=>{const x=items.find(i=>i.code===code);return x?{code,text:x.text,qty:x.qty}: {code,text:'Item no longer on the event sheet',qty:null};});}
+function staffDemands(s=state) {
+    const items=staffSourceItems(s),out=[];
+    const add=(id,test,quantity='1',hint='')=>{const found=items.filter(test);if(found.length)out.push({id,quantity:String(quantity),hint,codes:found.map(x=>x.code),sources:found.map(x=>({code:x.code,text:x.text,qty:x.qty}))});};
+    add('review-job-sheet',i=>i.code==='WV-50');
+    add('verify-rental-deliveries',i=>i.code==='WV-51');
+    add('bar-setup',i=>/-30\.\d+$/.test(i.code));
+    add('bar-disposables',i=>/-31\.\d+$/.test(i.code));
+    add('buffet-setup',i=>/-3[23]\.\d+$/.test(i.code),s.food.buffets.length||'','Confirm the number of buffets; no count is inferred from guests.');
+    add('scullery-setup',i=>/^KB-73(?:\.|$)/.test(i.code));
+    add('staff-meal-setup',i=>i.code==='KB-74');
+    add('coffee-station-setup',i=>i.code==='KB-76'||/-35\.\d+$/.test(i.code));
+    add('final-check',i=>/^FC-0[12]$/.test(i.code));
+    add('linen-count',i=>i.code==='RR-20');
+    add('tables-chairs',i=>ROOMS.some(r=>i.code.startsWith(r.code+'-'))&&/-(?:0[1-9]|1[01])$/.test(i.code));
+    const goblet=items.find(i=>i.code==='PU-06');
+    add('water-goblet-polish',i=>i.code==='PU-06',goblet?.source?.type==='conflict'?'':(goblet?.qty??''),'Suggested quantity is the accepted pull quantity, including extras. Confirm how many you will polish.');
+    return out;
+}
+function staffCurrentSources(task,s=state){const demand=staffDemands(s).find(d=>d.id===task.demandId);const codes=[...new Set([...(demand?.codes||[]),...task.sourceCodes])];return staffSources(codes,staffSourceItems(s));}
+function staffTaskAlerts(task,s=state){
+    const a=[],plan=staffPlan(s),latest=staffDef(task.catalogId),hash=latest?staffHash(latest):'';
+    if(latest&&hash!==staffHash(task.snapshot)&&task.keptStandard!==hash)a.push('Time standard changed; review the saved estimate.');
+    if(task.sourceCodes.length){const current=staffHash(staffCurrentSources(task,s));if(current!==task.sourceHash&&task.keptSource!==current)a.push('Event requirements changed; review this task.');}
+    if(!staffMinutes(task))a.push('Time or quantity is missing.');
+    if(!task.snapshot.crewMin)a.push('Crew requirement is not specified.');
+    const shift=plan.shifts.find(x=>String(x.n)===task.shiftId);
+    if(!shift)a.push('No shift assigned.');
+    else if(Number(task.snapshot.crewMin)>staffPeople(shift).length)a.push('Assigned shift has fewer people than this task needs.');
+    return a;
+}
+function staffReceiver(s,vendor,kind){
+    const assignment=staffPlan(s).receivers[vendor.n+':'+kind];if(!assignment)return '';
+    const shift=staffPlan(s).shifts.find(x=>String(x.n)===assignment.shiftId);
+    return shift&&staffPeople(shift).includes(assignment.person)?assignment.person:'';
+}
+function staffPlanAlerts(s=state){
+    const plan=staffPlan(s),alerts=[];
+    plan.tasks.forEach(t=>staffTaskAlerts(t,s).forEach(m=>alerts.push(t.snapshot.name+': '+m)));
+    plan.shifts.forEach(shift=>{
+        const name=shift.label||'Shift '+shift.n,cap=staffShiftLength(shift),people=staffPeople(shift);
+        if(!people.length)alerts.push(name+': no people assigned.');
+        if(cap==null)alerts.push(name+': enter valid start and end dates and times.');
+        const tasks=plan.tasks.filter(t=>t.shiftId===String(shift.n)),known=tasks.map(staffMinutes).filter(Boolean),total=known.reduce((n,x)=>n+x.max,0);
+        if(cap!=null&&total>cap)alerts.push(name+': planned work exceeds the shift by '+staffNumber(total-cap)+' minutes.');
+        if(tasks.some(t=>!staffMinutes(t)))alerts.push(name+': workload is incomplete because a task has no estimate.');
+    });
+    for(let i=0;i<plan.shifts.length;i++)for(let j=i+1;j<plan.shifts.length;j++){
+        const a=plan.shifts[i],b=plan.shifts[j];if(staffShiftLength(a)==null||staffShiftLength(b)==null)continue;
+        const overlap=staffDate(a.start)<staffDate(b.end)&&staffDate(b.start)<staffDate(a.end),names=staffPeople(a).filter(n=>staffPeople(b).some(m=>m.toLowerCase()===n.toLowerCase()));
+        if(overlap&&names.length)alerts.push('Overlapping shifts for '+names.join(', ')+'.');
+    }
+    Object.entries(plan.receivers).forEach(([key,assignment])=>{
+        if(!assignment.shiftId&&!assignment.person)return;
+        const [n,kind]=key.split(':'),vendor=s.vendors.find(v=>String(v.n)===n),shift=plan.shifts.find(x=>String(x.n)===assignment.shiftId);
+        if(!vendor){alerts.push('A receiver assignment refers to a removed vendor. Remove that assignment.');return;}
+        if(!shift||!staffPeople(shift).includes(assignment.person)){alerts.push((vendor.name||'Vendor')+': choose a receiver from the assigned shift.');return;}
+        const date=vendor[kind+'Date'],time=vendor[kind+'Time'],m=/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i.exec(String(time||'').trim());
+        if(!date||!m||Number(m[1])>23||Number(m[2]||0)>59){alerts.push((vendor.name||'Vendor')+': receiver coverage cannot be checked until the movement date and time are clear.');return;}
+        let h=Number(m[1]);if(m[3]){if(h<1||h>12){alerts.push((vendor.name||'Vendor')+': check the movement time.');return;}h=h%12+(/pm/i.test(m[3])?12:0);}
+        const at=staffDate(date+'T'+String(h).padStart(2,'0')+':'+(m[2]||'00'));
+        if(at==null||staffShiftLength(shift)==null||at<staffDate(shift.start)||at>staffDate(shift.end))alerts.push((vendor.name||'Vendor')+': receiving time is outside the assigned shift or its time is missing.');
+    }); return alerts;
+}
+function staffSelectOptions(rows,current,empty){return '<option value="">'+empty+'</option>'+rows.map(([v,t])=>'<option value="'+escapeHtml(v)+'"'+(String(current)===String(v)?' selected':'')+'>'+escapeHtml(t)+'</option>').join('');}
+function staffShiftLabel(x){return (x.label||'Shift '+x.n)+(staffPeople(x).length?' ('+staffPeople(x).join(', ')+')':'');}
+function renderStaffing(){
+    const host=$('staffingContent');if(!host)return;
+    const picks=['staffCatalogPick','staffStandardPick'].map(id=>[id,$(id)?.value||'']);
+    const detailKey=d=>(d.querySelector('summary')?.textContent||'').replace(/\s*\(\d+\)/g,'');const opened=new Map([...host.querySelectorAll('details')].map(d=>[detailKey(d),d.open])),active=document.activeElement,focusKey=active&&host.contains(active)?{id:active.id,data:{...active.dataset}}:null;
+    const plan=staffPlan(),demands=staffDemands(),covered=new Set(plan.tasks.flatMap(t=>t.sourceCodes)),items=staffSourceItems(),unmapped=items.filter(i=>!covered.has(i.code)&&!demands.some(d=>d.codes.includes(i.code))),alerts=staffPlanAlerts();
+    host.innerHTML='<div class="staff-summary" role="status">'+plan.tasks.length+' planned tasks · '+plan.shifts.length+' shifts · '+plan.tasks.filter(t=>!t.shiftId).length+' tasks without shifts · '+alerts.length+' items to review</div>'+
+    (staffingStandardsError?'<p class="warnings">'+escapeHtml(staffingStandardsError)+' <button type="button" data-staff-action="reset-standards">Back up and reset time standards</button></p>':'')+
+    (alerts.length?'<details class="staff-issues" open><summary>Plan needs review ('+alerts.length+')</summary><ul>'+alerts.map(a=>'<li>'+escapeHtml(a)+'</li>').join('')+'</ul></details>':'')+
+    '<h3>1. Choose the work</h3><p class="hint">Suggestions use accepted event answers. Review quantities before adding. Unmatched work stays listed below; this is not a complete staffing plan until you review it.</p><div class="staff-suggestions">'+demands.map(d=>{const def=staffDef(d.id),exists=plan.tasks.some(t=>t.demandId===d.id);return '<div class="staff-suggestion"><span><strong>'+escapeHtml(def.name)+'</strong><br>'+escapeHtml(d.quantity||'Quantity needed')+' '+escapeHtml(def.basisLabel)+(d.hint?'<br><small>'+escapeHtml(d.hint)+'</small>':'')+'</span><button type="button" class="btn-secondary" data-staff-action="add-demand" data-id="'+d.id+'"'+(exists?' disabled':'')+'>'+(exists?'Added':'Review and add')+'</button></div>';}).join('')+'</div>'+
+    '<div class="staff-toolbar"><label for="staffCatalogPick">Add other work from the task library</label><select id="staffCatalogPick">'+staffSelectOptions(staffDefinitions().map(d=>[d.id,d.name]),'','Choose a task')+'</select><button type="button" class="btn-secondary" data-staff-action="add-library">Review and add</button><button type="button" class="btn-secondary" data-staff-action="add-custom">Add a custom planning task</button></div>'+
+    '<details><summary>Other checklist work to review ('+unmapped.length+')</summary><p class="hint">Link work to an existing planned task when its time already includes that work. Do not count the same work twice.</p>'+unmapped.map(i=>'<div class="staff-suggestion"><span>'+escapeHtml(i.text)+'</span><div><select aria-label="Task covering '+escapeHtml(i.text)+'" data-staff-cover="'+escapeHtml(i.code)+'">'+staffSelectOptions(plan.tasks.map(t=>[String(t.n),t.snapshot.name]),'','Covered by task…')+'</select><button type="button" class="btn-secondary" data-staff-action="add-item" data-id="'+escapeHtml(i.code)+'">Plan separately</button></div></div>').join('')+'</details>'+
+    '<h3>2. Build shifts and assign people</h3><p class="hint">Each shift is one person or a crew working together. Add separate shifts for independent work. Adding people does not automatically shorten task estimates.</p><button type="button" class="btn-secondary" data-staff-action="add-shift">Add a shift</button>'+plan.shifts.map(shift=>{const tasks=plan.tasks.filter(t=>t.shiftId===String(shift.n)),times=tasks.map(staffMinutes).filter(Boolean);return '<div class="staff-card"><h4>'+escapeHtml(staffShiftLabel(shift))+'</h4><p>'+escapeHtml(shift.start.replace('T',' ')||'Start needed')+' to '+escapeHtml(shift.end.replace('T',' ')||'End needed')+'</p><p>Planned work: '+staffNumber(times.reduce((n,t)=>n+t.min,0))+' to '+staffNumber(times.reduce((n,t)=>n+t.max,0))+' min'+(times.length<tasks.length?' plus tasks without estimates':'')+'. Shift length: '+(staffShiftLength(shift)==null?'not set':staffNumber(staffShiftLength(shift))+' min')+'.</p><button type="button" class="btn-secondary" data-staff-action="edit-shift" data-id="'+shift.n+'">Edit shift</button> <button type="button" class="btn-text danger" data-staff-action="remove-shift" data-id="'+shift.n+'">Remove shift</button></div>';}).join('')+
+    '<h3>3. Planned tasks</h3>'+(!plan.tasks.length?'<p>No tasks added yet.</p>':'')+plan.tasks.map(t=>{const latest=staffDef(t.catalogId),standardChanged=latest&&staffHash(latest)!==staffHash(t.snapshot)&&t.keptStandard!==staffHash(latest),sourceChanged=t.sourceCodes.length&&staffHash(staffCurrentSources(t))!==t.sourceHash&&t.keptSource!==staffHash(staffCurrentSources(t));return '<div class="staff-card"><h4>'+escapeHtml(t.snapshot.name)+'</h4><p>'+escapeHtml(staffTime(t))+' · '+escapeHtml(t.quantity||'Quantity needed')+' '+escapeHtml(t.snapshot.basisLabel)+' · Crew: '+escapeHtml(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax&&t.snapshot.crewMax!==t.snapshot.crewMin?' to '+escapeHtml(t.snapshot.crewMax):'')+' · Role: '+escapeHtml(t.snapshot.role||'not specified')+'</p>'+(t.note?'<p>'+escapeHtml(t.note)+'</p>':'')+'<label>Assigned shift<select data-staff-task-shift="'+t.n+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),t.shiftId,'Not assigned')+'</select></label>'+staffTaskAlerts(t).map(a=>'<p class="staff-alert">'+escapeHtml(a)+'</p>').join('')+(standardChanged?'<p>Current standard: '+escapeHtml(latest.min||'?')+' to '+escapeHtml(latest.max||'?')+' min per '+escapeHtml(latest.basisQty+' '+latest.basisLabel)+'. Crew '+escapeHtml(latest.crewMin||'?')+' to '+escapeHtml(latest.crewMax||'?')+'.</p><button type="button" data-staff-action="update-standard" data-id="'+t.n+'">Review current standard</button> <button type="button" data-staff-action="keep-standard" data-id="'+t.n+'">Keep saved estimate</button>':'')+(sourceChanged?'<button type="button" data-staff-action="review-source" data-id="'+t.n+'">Review event changes</button>':'')+'<div class="staff-toolbar"><button type="button" class="btn-secondary" data-staff-action="edit-task" data-id="'+t.n+'">Edit task</button><button type="button" class="btn-text danger" data-staff-action="remove-task" data-id="'+t.n+'">Remove task</button></div></div>';}).join('')+
+    '<h3>4. Vendor receivers</h3><p class="hint">Choose a shift and one of its people. The same assignment prints on the event sheet. Blank receivers add no flag.</p>'+state.vendors.map(v=>'<div class="staff-card"><h4>'+escapeHtml(v.name||'Vendor '+v.n)+'</h4>'+['loadIn','loadOut'].map(kind=>{const key=v.n+':'+kind,a=plan.receivers[key]||{},shift=plan.shifts.find(x=>String(x.n)===a.shiftId);return '<div class="staff-receiver"><strong>'+(kind==='loadIn'?'Arrival':'Pickup')+'</strong><span>'+escapeHtml([v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')||'Time not set')+'</span><label>Shift<select data-staff-receiver-shift="'+key+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),a.shiftId,'No receiver assigned')+'</select></label><label>Receiver<select data-staff-receiver-person="'+key+'">'+staffSelectOptions(staffPeople(shift).map(n=>[n,n]),a.person,'Choose a person')+'</select></label></div>';}).join('')+'</div>').join('')+
+    Object.keys(plan.receivers).filter(k=>!state.vendors.some(v=>String(v.n)===k.split(':')[0])).map(k=>'<p>Removed vendor assignment <button type="button" data-staff-action="clear-receiver" data-id="'+escapeHtml(k)+'">Clear assignment</button></p>').join('')+
+    '<details><summary>Edit task time standards</summary><p class="hint">Edits apply to new tasks in this browser. Existing tasks keep their saved estimates until you review the change. Exports include the standards for reference; importing an event does not replace this browser’s standards.</p><label for="staffStandardPick">Task standard</label><select id="staffStandardPick">'+staffSelectOptions(staffDefinitions().map(d=>[d.id,d.name]),'','Choose a task')+'</select><button type="button" class="btn-secondary" data-staff-action="edit-standard"'+(staffingStandardsError?' disabled':'')+'>Edit standard</button><details><summary>Time standard change history ('+staffingStandards.changeLog.length+')</summary>'+staffingStandards.changeLog.map(x=>'<p>'+escapeHtml(x.at+' · '+x.name+' · '+x.note)+'</p>').join('')+'</details></details>'+
+    '<div class="staff-toolbar"><button type="button" class="btn-primary" data-staff-action="download">Download staffing plan</button><span class="hint">Export the event file to save and reopen this plan. Completion remains on paper.</span></div>';
+    picks.forEach(([id,value])=>{if($(id))$(id).value=value;});
+    [...host.querySelectorAll('details')].forEach(d=>{if(opened.has(detailKey(d)))d.open=opened.get(detailKey(d));});
+    if(focusKey){const target=[...host.querySelectorAll('button,select')].find(el=>focusKey.id?el.id===focusKey.id:Object.keys(focusKey.data).length&&Object.entries(focusKey.data).every(([k,v])=>el.dataset[k]===v));if(target)target.focus({preventScroll:true});}
+}
+function staffDialog(title,body,onAccept){
+    $('staffDialog')?.remove();const opened=state,focus=document.activeElement,dialog=document.createElement('dialog');dialog.id='staffDialog';dialog.className='staff-dialog';dialog.setAttribute('aria-labelledby','staffDialogTitle');dialog.innerHTML='<h2 id="staffDialogTitle" tabindex="-1">'+escapeHtml(title)+'</h2><div>'+body+'</div><p id="staffDialogError" role="alert"></p><div class="staff-toolbar"><button type="button" class="btn-secondary" id="staffCancel">Cancel</button><button type="button" class="btn-primary" id="staffAccept">Save</button></div>';document.body.appendChild(dialog);
+    const close=()=>{dialog.close?.();dialog.remove();if(focus?.isConnected)focus.focus();};$('staffCancel').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close();});$('staffAccept').onclick=()=>{if(opened!==state){$('staffDialogError').textContent='The event changed. Cancel and reopen this editor.';return;}try{if(onAccept()===false)return;close();renderStaffing();saveDraft(true);renderLive();}catch(e){$('staffDialogError').textContent=e.message;}};if(dialog.showModal)dialog.showModal();else dialog.setAttribute('open','');$('staffDialogTitle').focus();dialog.scrollTop=0;
+}
+function staffInput(label,id,value,type='text'){return '<label class="staff-field" for="'+id+'">'+escapeHtml(label)+'<input id="'+id+'" type="'+type+'" value="'+escapeHtml(value??'')+'"'+(type==='number'?' min="0.01" step="any"':'')+'></label>';}
+function staffEstimateFields(def){return staffInput('Task name','stName',def.name)+'<div class="staff-grid">'+staffInput('Minimum minutes per unit','stMin',def.min,'number')+staffInput('Maximum minutes per unit','stMax',def.max,'number')+staffInput('Unit quantity','stBasisQty',def.basisQty,'number')+staffInput('Unit name','stBasisLabel',def.basisLabel)+staffInput('Minimum people needed','stCrewMin',def.crewMin,'number')+staffInput('Maximum people needed','stCrewMax',def.crewMax,'number')+'</div>'+staffInput('Responsible role, if known','stRole',def.role)+'<p class="hint">Leave both time fields or both crew fields blank when unknown. A time is elapsed time for the stated crew, not per person.</p><p>'+escapeHtml(def.notes)+'</p>';}
+function staffReadDef(original){const t={...original,name:$('stName').value.trim(),min:$('stMin').value, max:$('stMax').value,basisQty:$('stBasisQty').value,basisLabel:$('stBasisLabel').value.trim(),crewMin:$('stCrewMin').value,crewMax:$('stCrewMax').value,role:$('stRole').value.trim()};if(!staffValidDef(t))throw Error('Enter a task name, a positive unit quantity and valid ranges. Crew must be whole people. Leave both fields blank for an unknown range.');return t;}
+function staffEditTask(existing,definition,demand,sourceItem){
+    const plan=staffPlan(),def=definition||existing?.snapshot||{id:'custom',name:sourceItem?.text||'',min:'',max:'',crewMin:'',crewMax:'',basisQty:'1',basisLabel:'task',role:'',rev:1,notes:'',phase:'',approx:true,maxOnly:false};
+    const quantity=existing?.quantity??demand?.quantity??'1';
+    staffDialog(existing?'Review planned task':'Review and add task',staffEstimateFields(def)+staffInput('Quantity to plan','stQuantity',quantity,'number')+staffInput('Planning note','stNote',existing?.note||demand?.hint||''),()=>{
+        if(existing&&!plan.tasks.includes(existing))throw Error('This task was removed. Reopen the editor.');
+        const snapshot=staffReadDef(def),q=$('stQuantity').value;if(q!==''&&(!Number.isFinite(Number(q))||Number(q)<=0))throw Error('Quantity must be positive or blank.');
+        if(existing){existing.snapshot=snapshot;existing.quantity=q;existing.note=$('stNote').value.trim();existing.keptStandard=staffDef(existing.catalogId)?staffHash(staffDef(existing.catalogId)):'';}
+        else {const codes=demand?.codes|| (sourceItem?[sourceItem.code]:[]);plan.tasks.push({n:plan.nextTask++,catalogId:def.id,quantity:q,shiftId:'',snapshot:clone(snapshot),demandId:demand?.id||'',sourceCodes:codes,sourceHash:staffHash(staffSources(codes)),keptSource:'',keptStandard:staffDef(def.id)?staffHash(staffDef(def.id)):'',note:$('stNote').value.trim()});}
+    });
+}
+function staffEditShift(existing){const plan=staffPlan(),shift=existing||{label:'',people:'',start:'',end:''};staffDialog(existing?'Edit shift':'Add shift',staffInput('Shift name','shLabel',shift.label)+staffInput('Start, including date','shStart',shift.start,'datetime-local')+staffInput('End, including date','shEnd',shift.end,'datetime-local')+'<label class="staff-field" for="shPeople">People working together, one name per line<textarea id="shPeople" rows="4">'+escapeHtml(shift.people)+'</textarea></label>',()=>{const next={label:$('shLabel').value.trim(),people:$('shPeople').value.trim(),start:$('shStart').value,end:$('shEnd').value};if(next.start&&next.end&&staffShiftLength(next)==null)throw Error('End must be after start. Use the following date for an overnight shift.');if(existing){if(!plan.shifts.includes(existing))throw Error('This shift was removed.');Object.assign(existing,next);}else plan.shifts.push({n:plan.nextShift++,...next});});}
+function staffEditStandard(id){const current=staffDef(id);if(!current||staffingStandardsError)return;staffDialog('Edit time standard',staffEstimateFields(current)+staffInput('Reason for this change','stReason',''),()=>{const next=staffReadDef(current),reason=$('stReason').value.trim();if(!reason)throw Error('Record a reason for the change.');next.rev=current.rev+1;const proposed=clone(staffingStandards);proposed.overrides[id]=next;proposed.changeLog.push({at:nowStamp(),id,name:next.name,from:current,to:next,note:reason,by:'Lino'});try{localStorage.setItem(STAFFING_STORAGE_KEY,JSON.stringify(proposed));}catch(e){throw Error('Time standards could not be saved. No standard was changed.');}staffingStandards=proposed;});}
+function staffReviewSource(task){const current=staffCurrentSources(task),demand=staffDemands().find(d=>d.id===task.demandId);staffDialog('Review changed event work','<p>The saved task and shift remain unchanged until you choose.</p><ul>'+current.map(x=>'<li>'+escapeHtml(x.text)+'</li>').join('')+staffInput('Quantity to plan','sourceQuantity',task.quantity,'number')+(demand?'<p>Current suggested quantity: '+escapeHtml(demand.quantity||'unknown')+' '+escapeHtml(staffDef(demand.id).basisLabel)+'.</p>':'')+'<p class="hint">Keep the quantity above if it is still right, or change it before saving. Remove the task separately if the work is no longer needed.</p>',()=>{const q=$('sourceQuantity').value;if(q!==''&&(!Number.isFinite(Number(q))||Number(q)<=0))throw Error('Enter a positive quantity or leave it blank.');task.quantity=q;task.keptSource=staffHash(current);});}
+function staffBuildPdf(){const plan=staffPlan(),alerts=staffPlanAlerts(),sections=[];if(alerts.length)sections.push({title:'NEEDS REVIEW',blocks:alerts.map(text=>({type:'text',text}))});const group=(title,tasks)=>({title,blocks:tasks.length?tasks.flatMap(t=>[{type:'text',text:t.snapshot.name+' · '+(t.quantity||'Quantity needed')+' '+t.snapshot.basisLabel+' · '+staffTime(t)+' · Crew: '+(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax!==t.snapshot.crewMin?' to '+t.snapshot.crewMax:'')},...(t.note?[{type:'note',text:t.note}]:[])]):[{type:'text',text:'No tasks assigned.'}]});plan.shifts.forEach(shift=>{const sec=group(staffShiftLabel(shift),plan.tasks.filter(t=>t.shiftId===String(shift.n)));sec.blocks.unshift({type:'text',text:(shift.start.replace('T',' ')||'Start needed')+' to '+(shift.end.replace('T',' ')||'End needed')});sections.push(sec);});sections.push(group('TASKS WITHOUT SHIFTS',plan.tasks.filter(t=>!plan.shifts.some(s=>String(s.n)===t.shiftId))));const receivers=[];state.vendors.forEach(v=>['loadIn','loadOut'].forEach(kind=>{const name=staffReceiver(state,v,kind);if(name)receivers.push({type:'text',text:(v.name||'Vendor')+' '+(kind==='loadIn'?'arrival':'pickup')+': '+name+' · '+[v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')});}));if(receivers.length)sections.push({title:'VENDOR RECEIVERS',blocks:receivers});return renderSheetPdf('STAFF ALLOCATION',[eventIdFor(state)||'Event identity incomplete','Planning only. Unassigned work and unresolved estimates remain listed.','Prepared '+nowStamp()],sections,'Staff Allocation',false);}
+function staffDownload(){staffBuildPdf().save('Staff-Allocation-'+fileSafe(eventIdFor(state)||NO_EVENT_ID)+'.pdf');}
+function staffAction(action,id){const plan=staffPlan(),task=plan.tasks.find(t=>String(t.n)===id),shift=plan.shifts.find(s=>String(s.n)===id);
+    if(action==='add-demand'){const d=staffDemands().find(x=>x.id===id);if(d&&!plan.tasks.some(t=>t.demandId===id))staffEditTask(null,staffDef(id),d);return;}
+    if(action==='add-library'){const def=staffDef($('staffCatalogPick').value);if(def)staffEditTask(null,def);return;}
+    if(action==='add-custom'){staffEditTask();return;}
+    if(action==='add-item'){const item=staffSourceItems().find(i=>i.code===id);if(item)staffEditTask(null,null,null,item);return;}
+    if(action==='edit-task'&&task){staffEditTask(task);return;}
+    if(action==='update-standard'&&task){staffEditTask(task,staffDef(task.catalogId));return;}
+    if(action==='keep-standard'&&task)task.keptStandard=staffHash(staffDef(task.catalogId));
+    if(action==='review-source'&&task){staffReviewSource(task);return;}
+    if(action==='remove-task'&&task){if(!confirm('Remove this planning task? Its assignment will also be removed. The event checklist stays unchanged.'))return;plan.tasks=plan.tasks.filter(t=>t!==task);}
+    if(action==='add-shift'){staffEditShift();return;}
+    if(action==='edit-shift'&&shift){staffEditShift(shift);return;}
+    if(action==='remove-shift'&&shift){if(!confirm('Remove this shift? Its tasks will become unassigned and its receiver assignments will be cleared.'))return;plan.shifts=plan.shifts.filter(s=>s!==shift);plan.tasks.filter(t=>t.shiftId===id).forEach(t=>t.shiftId='');Object.keys(plan.receivers).filter(k=>plan.receivers[k].shiftId===id).forEach(k=>delete plan.receivers[k]);}
+    if(action==='edit-standard'){staffEditStandard($('staffStandardPick').value);return;}
+    if(action==='clear-receiver'){delete plan.receivers[id];}
+    if(action==='download'){staffDownload();return;}
+    if(action==='reset-standards'){if(!confirm('Back up the unreadable standards and restore built in task times? Existing event task snapshots will remain.'))return;try{localStorage.setItem(STAFFING_STORAGE_KEY+'-recovery-'+Date.now(),staffingStandardsRaw);localStorage.removeItem(STAFFING_STORAGE_KEY);staffingStandards={overrides:{},changeLog:[]};staffingStandardsError='';}catch(e){alert('Could not preserve the backup. Nothing was reset.');return;}}
+    renderStaffing();saveDraft(true);renderLive();
+}
+function staffChange(el){const plan=staffPlan();let handled=true;
+    if(el.dataset.staffTaskShift){const task=plan.tasks.find(t=>String(t.n)===el.dataset.staffTaskShift);if(task)task.shiftId=el.value;}
+    else if(el.dataset.staffReceiverShift){const key=el.dataset.staffReceiverShift;if(!el.value)delete plan.receivers[key];else plan.receivers[key]={shiftId:el.value,person:''};}
+    else if(el.dataset.staffReceiverPerson){const a=plan.receivers[el.dataset.staffReceiverPerson];if(a)a.person=el.value;}
+    else if(el.dataset.staffCover){const task=plan.tasks.find(t=>String(t.n)===el.value);if(task&&!task.sourceCodes.includes(el.dataset.staffCover)){task.sourceCodes.push(el.dataset.staffCover);task.sourceHash=staffHash(staffSources(task.sourceCodes));task.keptSource='';}}
+    else handled=false;
+    if(handled){renderStaffing();saveDraft(true);renderLive();}return handled;
+}
+function validateStaffingPlan(plan,fail){
+    if(!plan||typeof plan!=='object'||!Array.isArray(plan.tasks)||!Array.isArray(plan.shifts)||!plan.receivers||typeof plan.receivers!=='object'||Array.isArray(plan.receivers))fail('intake.staffing');
+    for(const [key,nextKey] of [['tasks','nextTask'],['shifts','nextShift']]){const ids=new Set();if(!Number.isSafeInteger(plan[nextKey])||plan[nextKey]<1)fail('staffing.'+nextKey);for(const row of plan[key]){if(!row||!Number.isSafeInteger(row.n)||row.n<1||row.n>=plan[nextKey]||ids.has(row.n))fail('staffing.'+key+'.n');ids.add(row.n);}}
+    plan.tasks.forEach(t=>{if(['catalogId','quantity','shiftId','demandId','sourceHash','keptSource','keptStandard','note'].some(k=>typeof t[k]!=='string')||!Array.isArray(t.sourceCodes)||t.sourceCodes.some(c=>typeof c!=='string')||!staffValidDef(t.snapshot)||t.quantity!==''&&(!Number.isFinite(Number(t.quantity))||Number(t.quantity)<=0))fail('staffing.tasks');if(t.shiftId&&!plan.shifts.some(s=>String(s.n)===t.shiftId))fail('staffing.tasks.shiftId');});
+    plan.shifts.forEach(s=>{if(['label','people','start','end'].some(k=>typeof s[k]!=='string')||s.start&&staffDate(s.start)==null||s.end&&staffDate(s.end)==null||s.start&&s.end&&staffShiftLength(s)==null)fail('staffing.shifts');});
+    Object.entries(plan.receivers).forEach(([key,a])=>{if(!/^\d+:(loadIn|loadOut)$/.test(key)||!a||typeof a.shiftId!=='string'||typeof a.person!=='string')fail('staffing.receivers');});
+}
+
 /* ---------- 3. State ---------- */
 function defaultState() {
     return {
@@ -1082,7 +1297,7 @@ function defaultState() {
         coffee: { has: 'no', option: '', stations: [], whoFinishes: 'ops' },
         water: { has: false, dispensers: 1, room: '' },
         boh: { blueJugs: '', scullery: [], sculleryWhoFinishes: 'scullery', staffMeal: { count: '', time: '', location: '', whoFinishes: 'ops' } },
-        vendors: [], oneOffs: [], miscTasks: [],
+        vendors: [], oneOffs: [], miscTasks: [], staffing: staffDefaultPlan(),
         notes: { decor: '', decorRoom: '', kitchenPrep: '', other: '' },
         tableSettings: [], spoonType: '', noTableSettings: false,
         overrides: {},
@@ -1861,7 +2076,7 @@ function buildEventSheet(s) {
         const room = roomById(s, vd.room);
         const when = (d, t) => (hasText(d) || hasText(t)) ? [d, t].filter(hasText).map(x => x.trim()).join(' ') : 'unknown';
         const elev = vd.elevator === 'yes' ? 'Operate elevator.' : vd.elevator === 'no' ? 'No elevator needed.' : 'Elevator: unknown.';
-        const text = 'Receive ' + (hasText(vd.name) ? vd.name.trim() : 'vendor (name unknown)') + ' (' + (vd.bookedBy === 'client' ? 'client-booked' : vd.bookedBy === 'bite' ? 'Bite-booked' : 'booking not known') + '), ' + (room ? room.printName : 'room unknown') + '. Load-in: ' + when(vd.loadInDate, vd.loadInTime) + '. Load-out: ' + when(vd.loadOutDate, vd.loadOutTime) + '. ' + elev;
+        const text = 'Receive ' + (hasText(vd.name) ? vd.name.trim() : 'vendor (name unknown)') + ' (' + (vd.bookedBy === 'client' ? 'client-booked' : vd.bookedBy === 'bite' ? 'Bite-booked' : 'booking not known') + '), ' + (room ? room.printName : 'room unknown') + '. Load-in: ' + when(vd.loadInDate, vd.loadInTime) + '. Load-out: ' + when(vd.loadOutDate, vd.loadOutTime) + '. ' + elev + (staffReceiver(s,vd,'loadIn')?' Arrival receiver: '+staffReceiver(s,vd,'loadIn')+'.':'') + (staffReceiver(s,vd,'loadOut')?' Pickup receiver: '+staffReceiver(s,vd,'loadOut')+'.':'');
         wv.blocks.push(item(WV_LINES.vendor.code + '.' + vd.n, text, { source: rowSource(s, 'vendors', vd, ['name', 'bookedBy', 'room', 'loadInDate', 'loadInTime', 'loadOutDate', 'loadOutTime', 'elevator']) }));
     });
     if (v.napkins && s.napkins.style === 'fold') wv.blocks.push(item(WV_LINES.napkinFold.code, 'Napkin fold: ' + (hasText(s.napkins.foldType) ? s.napkins.foldType.trim() : 'type not entered'), { source: { type: 'typed' } }));
@@ -2091,11 +2306,12 @@ function exportObject() {
         format: FILE_FORMAT, formatVersion: FILE_FORMAT_VERSION, appVersion: APP_VERSION, exportedAt: nowStamp(),
         event: { id: eventIdFor(state), date: state.event.date, client: state.event.clientName, planner: plannerName(state) },
         intake: clone(state),
+        staffingStandards: clone(staffingStandards),
         sheet: { version: meta.version, generatedAt: meta.generatedAt, itemsHash: meta.itemsHash,
             cards: CARD_ORDER.map(k => ({ key: k, title: CARDS[k].title, version: CARDS[k].version, fingerprint: cardFingerprint(CARDS[k]) })),
             items },
         miscTasks: (state.miscTasks || []).filter(m => hasText(m.task)).map(m => ({ task: m.task.trim(), time: hasText(m.time) ? m.time.trim() : '' })),
-        note: 'Intake answers and generated items only. Completion state (check-offs, notes, status) never travels in this file.'
+        note: 'Intake answers, staffing plan and generated items. Completion state (check-offs, notes, status) never travels in this file.'
     };
 }
 // Validate the supplied shape before merging defaults or touching the live draft.
@@ -2135,6 +2351,7 @@ function validateEventFile(data) {
     if (data.intake && data.intake.water && typeof data.intake.water.dispensers === 'string') defaults.water.dispensers = '';
     shape(data.intake, defaults, 'intake');
     const v = data.intake;
+    if(v.staffing!==undefined)validateStaffingPlan(v.staffing,fail);
     if (v.meta && (v.meta.format !== undefined && v.meta.format !== FILE_FORMAT || v.meta.formatVersion !== undefined && v.meta.formatVersion !== FILE_FORMAT_VERSION)) fail('intake.meta');
     Object.keys(ROW_LISTS).forEach(k => list(getPath(v, ROW_LISTS[k].path), ROW_LISTS[k].make(1), 'intake.' + ROW_LISTS[k].path));
     ['food.types', 'rooms.selected', 'tableSettings'].forEach(k => list(getPath(v, k), '', 'intake.' + k));
@@ -2311,6 +2528,7 @@ const SECTIONS = [
     { id: 'sec-coffee', key: 'coffee', title: 'Coffee and water' },
     { id: 'sec-kitchen', key: 'kitchen', title: 'Kitchen' },
     { id: 'sec-vendors', key: 'vendors', title: 'Rentals and vendors' },
+    { id: 'sec-staffing', key: 'staffing', title: 'Staff Allocation' },
     { id: 'sec-extras', key: 'extras', title: 'Extras' }
 ];
 const FOOD_LABELS = { buffet: 'Buffet', family: 'Family style', plated: 'Plated', tray_pass: 'Tray passed', stations: 'Food stations', none: 'No food service' };
@@ -2318,6 +2536,7 @@ function countText(n, one, many, none) { return n ? n + ' ' + (n === 1 ? one : (
 function sectionSummary(s, key) {
     const v = vis(s);
     switch (key) {
+        case 'staffing': return staffPlan(s).tasks.length+' planned tasks, '+staffPlan(s).shifts.length+' shifts';
         case 'docs': { const it = s.intake || {}; const d = (it.docs || []).length; return d ? countText(d, 'document') + ' read' : 'Optional upload'; }
         case 'event': { const id = eventIdFor(s); const head = num(s.event.headCount); return [id || 'Date and name needed', head ? head + ' guests' : null].filter(Boolean).join(', '); }
         case 'food': return s.food.types.length ? s.food.types.map(t => FOOD_LABELS[t]).join(', ') : 'Nothing chosen yet';
@@ -2388,7 +2607,7 @@ function schedulePreview() { clearTimeout(previewTimer); previewTimer = setTimeo
 function renderLive() {
     clearTimeout(previewTimer);
     const sheet = buildEventSheet(state);
-    renderPreview(sheet); renderNav(sheet); renderReviewWork();
+    renderPreview(sheet); renderNav(sheet); renderReviewWork(); renderStaffing();
 }
 function prefersReducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function setPreviewOpen(open) {
@@ -3921,11 +4140,13 @@ function generateCards() { renderCardsPdf().save('440-Elm-standard-cards-' + CAR
 
 document.addEventListener('input', e => handleBoundInput(e, false));
 document.addEventListener('change', e => {
+    if(staffChange(e.target))return;
     if (e.target.id === 'docFiles') { const files = e.target.files; handleFiles(files).finally(() => { e.target.value = ''; }); return; }
     if (e.target.dataset && e.target.dataset.issueOwner !== undefined) { const it = intakeState(), key = e.target.dataset.issueOwner; if (e.target.value) it.owners[key] = e.target.value; else delete it.owners[key]; renderIntake(); focusScreen([...document.querySelectorAll('[data-issue-owner]')].find(el => el.dataset.issueOwner === key), false); $('reviewAnnouncement').textContent = 'Issue owner updated.'; saveDraft(); return; }
     handleBoundInput(e, true);
 });
 document.addEventListener('click', e => {
+    const staffButton=e.target.closest('[data-staff-action]');if(staffButton){staffAction(staffButton.dataset.staffAction,staffButton.dataset.id);return;}
     const exception = e.target.closest('[data-bar-exception]');
     if (exception) { showBarException(Number(exception.dataset.barException)); return; }
     const menu = $('moreMenu');
