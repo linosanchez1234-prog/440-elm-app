@@ -184,6 +184,7 @@
         .paper .stage-row { display:grid;grid-template-columns:minmax(0,1fr) 70px 58px;gap:8px;align-items:start;margin:5px 0;font-size:12px; }
         .paper .stage-row > span:not(:first-child) { text-align:center; }
         .paper .stage-row .box { display:inline-block; }
+        .paper .stage-team { display:block;font-size:9px;line-height:1.25;margin-top:3px;overflow-wrap:anywhere; }
         .paper .stage-head { font-weight:700;font-size:10px;border-bottom:1px solid #aaa;padding-bottom:4px;margin-top:9px; }
         .paper .stage-code { font-weight:700;margin-right:8px; }
         .paper .ptext { white-space: pre-wrap; padding-left: 14px; font-size: 10px; margin: 2px 0 4px; overflow-wrap: anywhere; }
@@ -295,6 +296,7 @@
 .staff-card{border:1px solid #cbd2db;border-radius:8px;padding:16px;margin:12px 0}.staff-card h4{margin:0 0 8px}.staff-card p{margin:8px 0}
 .staff-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0}.staff-toolbar select{max-width:100%}
 .staff-issues{background:#fff7cf;padding:12px;margin:12px 0}.staff-alert,#staffDialogError{color:#8b2600}
+#epBackupTeams[hidden]{display:none}
 .staff-grid,.staff-receiver{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .staff-field{display:block;margin:10px 0}.staff-field input,.staff-field textarea,.staff-card select{display:block;width:100%;box-sizing:border-box}
 .staff-dialog{width:min(680px,calc(100vw - 48px));max-height:85vh;overflow:auto;border:1px solid #bcc6d5;border-radius:10px;padding:24px}.staff-dialog::backdrop{background:rgba(0,0,0,.4)}
@@ -461,11 +463,17 @@
 
             <div id="menusGroup" class="group">
                 <h3>Menus</h3>
-                <p class="hint">Paste from the job sheet. Each menu prints under its service.</p>
+                <p class="hint">Buffet menus print with buffet setup. Other menus print after the checklist.</p>
                 <div id="buffetMenuContainer" class="field sub-q"><label for="buffetMenuTextarea">Buffet menu</label><textarea id="buffetMenuTextarea" data-bind="food.menus.buffet"></textarea></div>
                 <div id="platedMenuContainer" class="field sub-q"><label for="platedMenuTextarea">Plated menu</label><textarea id="platedMenuTextarea" data-bind="food.menus.plated"></textarea></div>
                 <div id="familyStyleMenuContainer" class="field sub-q"><label for="familyStyleMenuTextarea">Family style menu</label><textarea id="familyStyleMenuTextarea" data-bind="food.menus.family"></textarea></div>
                 <div id="foodStationMenuContainer" class="field sub-q"><label for="foodStationMenuTextarea">Food station menu</label><textarea id="foodStationMenuTextarea" data-bind="food.menus.stations"></textarea></div>
+                <div class="field sub-q"><label for="additionalMenuTextarea">Other menus, later food and desserts</label><textarea id="additionalMenuTextarea" data-bind="food.menus.additional"></textarea><p class="hint">Keep course headings and serving notes. This reference does not add a food station.</p></div>
+            </div>
+            <div id="specialMealsGroup" class="group">
+                <h3>Limited plated meals within buffet service</h3>
+                <div class="field"><label for="specialMealsNotes">Meal notes from the job sheet</label><textarea id="specialMealsNotes" data-bind="food.specialMealsNotes" rows="3"></textarea><p class="hint">Keeps buffet setup. These notes do not create plated place settings for every guest.</p></div>
+                <div class="field"><label for="specialMealsEquipment">Extra equipment for these meals</label><textarea id="specialMealsEquipment" data-bind="food.specialMealsEquipment" rows="3"></textarea><p class="hint">Enter only the additional equipment required, including quantities when known. Each item gets its own preparation and Set checks.</p></div>
             </div>
         </section>
 
@@ -477,7 +485,7 @@
                     <label class="option" for="equipTypeStandard"><input type="checkbox" id="equipTypeStandard" data-bind="equipment.standard">China, flatware and glassware</label>
                     <label class="option" for="equipTypeDisposables"><input type="checkbox" id="equipTypeDisposables" data-bind="equipment.disposables">Disposables</label>
                 </div>
-                <div class="field sub-q"><label for="disposablesDetailsTextarea">Disposables on the job sheet</label><textarea id="disposablesDetailsTextarea" data-bind="equipment.disposablesText" rows="3"></textarea><p class="hint">Copy the Disposables block. It prints right after the pull list.</p></div>
+                <div class="field sub-q"><label for="disposablesDetailsTextarea">Disposables on the job sheet</label><textarea id="disposablesDetailsTextarea" data-bind="equipment.disposablesText" rows="3"></textarea><p class="hint">Enter one item or kit per line. Each gets its own checkbox after the pull list. Keep kit contents and special instructions together.</p></div>
                 <div class="field sub-q"><label for="tableServiceTextarea">Table service needs on the job sheet</label><textarea id="tableServiceTextarea" data-bind="equipment.tableServiceText" rows="4"></textarea><p class="hint">Copy the Table Service Needs and Table Setting lists, one item per line. They print in categories with separate checkboxes. Repeated entries remain separate; edit this list to remove a confirmed duplicate.</p></div>
             </div>
 
@@ -539,6 +547,7 @@
                 <label class="check" for="noTableSettings"><input type="checkbox" id="noTableSettings" data-bind="noTableSettings">No table settings needed</label>
             </div>
 
+<div class="group" id="equipmentPlanGroup"><h3>Equipment source and responsible teams</h3><div id="equipmentPlanContent"></div></div>
             <div id="computedGroup" class="group">
                 <h3>Computed counts</h3>
                 <p class="hint">Head count x 1.15. Forks and knives round up to the next 25, plates up to the next 10, everything else rounds up. Type a number to override one. If the head count changes later, the override is flagged here and on the sheet until you decide.</p>
@@ -602,6 +611,11 @@
                     <label class="option" for="coffeeSelfServe"><input type="radio" id="coffeeSelfServe" name="coffeeTeaOption" data-bind="coffee.option" value="self_serve">Self-serve station</label>
                     <label class="option" for="coffeeTableService"><input type="radio" id="coffeeTableService" name="coffeeTeaOption" data-bind="coffee.option" value="table_service">Table side service</label>
                 </div>
+                <div class="grid-2 sub-q">
+                    <div class="field"><label for="coffeeCountBasis">Coffee guest count</label><select id="coffeeCountBasis" data-bind="coffee.countBasis"><option value="event">Use the event head count</option><option value="separate">Use a separately confirmed count</option></select></div>
+                    <div id="coffeeSeparateCountGroup" class="field"><label for="coffeeHeadCount">Guests having coffee</label><input type="number" min="1" step="1" id="coffeeHeadCount" data-bind="coffee.headCount"><p class="hint">Leave blank until confirmed. The event head count is not used for a limited group.</p></div>
+                </div>
+                <div class="field sub-q"><label for="coffeeScopeNotes">Coffee service scope</label><textarea id="coffeeScopeNotes" data-bind="coffee.scopeNotes" rows="2"></textarea></div>
                 <div id="coffeeStationDetailsGroup" class="sub-q">
                     <span class="label">Self-serve stations</span>
                     <div id="coffeeStationRows"></div>
@@ -741,7 +755,7 @@
    ========================================================================== */
 
 /* ---------- 1. Data block ---------- */
-const APP_VERSION = '2.7.0';
+const APP_VERSION = '2.7.2';
 const FILE_FORMAT = 'elm-event-intake';
 const FILE_FORMAT_VERSION = 1;
 const STORAGE_KEY = 'elm-event-intake-draft-v1';
@@ -1149,8 +1163,9 @@ function staffDemands(s=state) {
     add('final-check',i=>/^FC-0[12]$/.test(i.code));
     add('linen-count',i=>i.code==='RR-20');
     add('tables-chairs',i=>ROOMS.some(r=>i.code.startsWith(r.code+'-'))&&/-(?:0[1-9]|1[01])$/.test(i.code));
-    const goblet=items.find(i=>i.code==='PU-06');
-    add('water-goblet-polish',i=>i.code==='PU-06',goblet?.source?.type==='conflict'?'':(goblet?.qty??''),'Suggested quantity is the accepted pull quantity, including extras. Confirm how many you will polish.');
+    const goblets=items.filter(i=>i.code==='PU-06'||/\bwater\s+(?:goblets?|glasses|glass)\b/i.test(i.text)&&!/^\s*(?:no|do not|without)\b/i.test(i.text));
+    const goblet=goblets.length===1?goblets[0]:null;
+    add('water-goblet-polish',i=>goblets.includes(i),goblet?.source?.type==='conflict'?'':(goblet?.qty??''),goblets.length>1?'Several water goblet entries may describe totals or allocations. Enter the quantity to polish; these entries are not added together.':'Confirm the house water goblet quantity to polish, including any extras. A source entry without a quantity needs your count.');
     return out;
 }
 function staffCurrentSources(task,s=state){const demand=staffDemands(s).find(d=>d.id===task.demandId);const codes=[...new Set([...(demand?.codes||[]),...task.sourceCodes])];return staffSources(codes,staffSourceItems(s));}
@@ -1285,16 +1300,17 @@ function defaultState() {
         counters: { bars: 0, buffets: 0, stations: 0, coffeeStations: 0, scullery: 0, vendors: 0, oneOffs: 0, miscTasks: 0, otherRooms: 0, custom: 0 },
         event: { clientName: '', date: '', headCount: '', planner: '', plannerOther: '', clientPlanner: '', suffix: '', id: '', idLocked: false,
             times: { kitchen: '', arriveOnsite: '', setupComplete: '', eventStart: '', eventEnd: '', staffDeparts: '' } },
-        food: { types: [], trayVesselNotes:'', buffet: {}, family: {}, buffets: [],
+        food: { types: [], trayVesselNotes:'', specialMealsNotes:'', specialMealsEquipment:'', buffet: {}, family: {}, buffets: [],
             stations: { source: '', list: [], constructionNotes: '' },
             placeSettingsBy: 'ops', guestTables: '', cakeService: '',
-            menus: { buffet: '', plated: '', family: '', stations: '' } },
+            menus: { buffet: '', plated: '', family: '', stations: '', additional: '' } },
         equipment: { standard: true, disposables: false, disposablesText: '', tableServiceText: '' },
+        equipmentPlan: {},
         rentals: { has: 'no', details: '', logistics: '' },
         napkins: { style: '', foldType: '', rollUpPlacement: '' },
         rooms: { selected: [], others: [], tables: {}, taped: {}, custom: {}, specialSeating: '', specialSeatingRoom: '' },
         bars: [], barGlass: { champagne: '', wine: '', oldFashioned: '', martini: '', softNotes: '' },
-        coffee: { has: 'no', option: '', stations: [], whoFinishes: 'ops' },
+        coffee: { has: 'no', option: '', countBasis:'event', headCount:'', scopeNotes:'', stations: [], whoFinishes: 'ops' },
         water: { has: false, dispensers: 1, room: '' },
         boh: { blueJugs: '', scullery: [], sculleryWhoFinishes: 'scullery', staffMeal: { count: '', time: '', location: '', whoFinishes: 'ops' } },
         vendors: [], oneOffs: [], miscTasks: [], staffing: staffDefaultPlan(),
@@ -1699,12 +1715,14 @@ function applyVisibility() {
     show('buffetGroup', v.buffet); show('familyGroup', v.family); show('stationsGroup', v.stations); show('placeSettingsGroup', v.placeSettings);
     show('sitDownTablesGroup', v.sitDownTables); show('cakeServiceGroup', v.tableSettings);
     show('trayVesselNotesGroup', (state.food.types||[]).includes('tray_pass')); show('buffetMenuContainer', v.buffet); show('platedMenuContainer', v.plated); show('familyStyleMenuContainer', v.family); show('foodStationMenuContainer', v.stations);
-    show('menusGroup', v.buffet || v.plated || v.family || v.stations);
+    show('menusGroup', !v.noFood || hasText(state.food.menus.additional));
+    show('specialMealsGroup', v.buffet || hasText(state.food.specialMealsNotes) || hasText(state.food.specialMealsEquipment));
     show('rentedItemsGroup', v.hasRentals); show('rentalWarningTableReq', v.hasRentals); show('rentalWarningTableSettings', v.hasRentals);
     show('napkinSetupQuestionGroup', v.napkins); show('rollUpPlacementQuestionGroup', v.rollUpPlacement);
     show('standardTableSettingsFormGroup', v.tableSettings); show('flatwareFormSection', v.flatware);
     show('tableRequirementsPerLocationGroup', selectedRoomObjects().length > 0);
     show('barGlasswareQtyGroup', v.barGlassQty); show('softBarGlasswareGroup', v.softBarGlass);
+    show('coffeeSeparateCountGroup', state.coffee.countBasis==='separate');
     show('coffeeTeaOptionsGroup', v.coffee); show('coffeeStationDetailsGroup', v.coffeeStations);
     show('waterStationDetailsGroup', v.water);
     show('plannerOther', state.event.planner === 'Other');
@@ -1742,7 +1760,8 @@ function pulledSettings(s) { return Array.from(new Set(s.tableSettings.concat(Ob
 function cakeService(s) { const v = vis(s); return s.food.cakeService === 'yes' && v.tableSettings && !v.noTableSettings; }
 
 /* ---------- 6. Computed quantities and overrides ---------- */
-function currentBasis() { return { headCount: num(state.event.headCount), tableCount: num(state.food.guestTables) }; }
+function coffeeGuestCount(s){if(s.coffee.countBasis!=='separate')return num(s.event.headCount);const n=Number(s.coffee.headCount);return Number.isSafeInteger(n)&&n>0?n:0;}
+function currentBasis() { return { headCount: num(state.event.headCount), tableCount: num(state.food.guestTables), coffeeHeadCount:coffeeGuestCount(state), coffeeCountBasis:state.coffee.countBasis||'event' }; }
 function computedLines(s) {
     // Every quantity the app computes, with its rule. Used by the panel and by the sheet builder.
     const v = vis(s); const head = num(s.event.headCount); const tables = num(s.food.guestTables); const out = [];
@@ -1765,8 +1784,9 @@ function computedLines(s) {
     }
     if (v.rollUps) { const p = PULL_ITEMS.find(x => x.id === 'rollUps'); out.push({ key: 'PU-16', name: p.name, computed: headQty(p, head), basisKind: 'headCount', basisValue: head, rule: headRule(p) }); }
     if (v.coffee) {
-        out.push({ key: 'KB-76.brewers', name: 'Coffee brewers', computed: head ? Math.ceil(head / 100 * 2) : 0, basisKind: 'headCount', basisValue: head, rule: '2 per 100 guests, rounded up' });
-        out.push({ key: 'KB-76.boilers', name: 'Water boilers', computed: head ? Math.ceil(head / 100 * 1) : 0, basisKind: 'headCount', basisValue: head, rule: '1 per 100 guests, rounded up' });
+        const coffeeHead=coffeeGuestCount(s);
+        out.push({ key: 'KB-76.brewers', name: 'Coffee brewers', computed: coffeeHead ? Math.ceil(coffeeHead / 100 * 2) : 0, basisKind: 'coffeeHeadCount', basisValue: coffeeHead, rule: '2 per 100 coffee guests, rounded up' });
+        out.push({ key: 'KB-76.boilers', name: 'Water boilers', computed: coffeeHead ? Math.ceil(coffeeHead / 100 * 1) : 0, basisKind: 'coffeeHeadCount', basisValue: coffeeHead, rule: '1 per 100 coffee guests, rounded up' });
     }
     return out.map(c => {
         const cutlery=PULL_ITEMS.some(p=>p.code===c.key&&p.flatware);
@@ -1780,13 +1800,14 @@ function resolveOverride(s, c) {
     const o = s.overrides[c.key];
     if (!o || !hasText(String(o.value))) return { ...c, value: c.computed, source: { type: 'computed', rule: c.rule, inputs: { [c.basisKind]: c.basisValue } }, stale: false };
     const typed = num(o.value);
-    const was = o.basis ? o.basis[c.basisKind] : undefined;
-    const stale = was !== undefined && was !== c.basisValue;
+    const was = o.basis ? (c.basisKind==='coffeeHeadCount'?(o.basis.coffeeHeadCount??o.basis.headCount):o.basis[c.basisKind]) : undefined;
+    const scopeChanged=c.basisKind==='coffeeHeadCount'&&o.basis&&(o.basis.coffeeCountBasis||'event')!==(s.coffee.countBasis||'event');
+    const stale = scopeChanged || was !== undefined && was !== c.basisValue;
     return { ...c, value: typed, typed, stale, approved: !!o.approved, wasBasis: was,
         source: stale ? { type: 'conflict', values: [{ value: c.computed, source: 'computed', rule: c.rule, inputs: { [c.basisKind]: c.basisValue } }, { value: typed, source: 'typed', basis: o.basis }], waitingOn: 'Lino', safeNowApproved: !!o.approved }
             : { type: 'typed', note: 'override of computed ' + c.computed, basis: o.basis } };
 }
-function basisLabel(kind) { return kind === 'tableCount' ? 'table count' : 'head count'; }
+function basisLabel(kind) { return kind === 'tableCount' ? 'table count' : kind==='coffeeHeadCount'?'coffee guest count or scope':'head count'; }
 function conflictText(c) {
     const lower = Math.min(c.computed, c.typed), diff = Math.abs(c.computed - c.typed);
     let t = c.name + ': ' + c.computed + ' computed (' + basisLabel(c.basisKind) + ' ' + c.basisValue + ') / ' + c.typed + ' typed (when ' + basisLabel(c.basisKind) + ' was ' + c.wasBasis + '), waiting on Lino.';
@@ -1859,6 +1880,7 @@ function rememberAcceptedSources(suggestion, value, rowRef, edited) {
     const source = Object.assign({}, suggestion.source, edited ? { editedOnAccept: true } : {});
     const put = (key, field) => { const part = field && (Array.isArray(suggestion.source.parts) ? suggestion.source.parts : []).find(part => part && part.from === field); state.sources[key] = Object.assign({}, part || source, edited ? { editedOnAccept: true } : {}); };
     if (suggestion.path) put(suggestion.path);
+    if(suggestion.kind==='coffeeSetup')Object.keys(value).forEach(k=>put('coffee.'+k));
     if (suggestion.kind === 'roomCount') put('rooms.tables.' + suggestion.rid + '.' + suggestion.tid);
     if (suggestion.kind === 'custom' && rowRef) ['name', 'qty'].forEach(field => put('custom.' + suggestion.rid + '.' + rowRef + '.' + field));
     if (suggestion.kind === 'station' && rowRef) put('row.stations.' + rowRef + '.name');
@@ -1901,24 +1923,30 @@ function categorizedRoomBlocks(blocks) {
 // Presentation only: preserve accepted menu text and source order.
 function menuBlocks(text) {
     return String(text || '').split(/\r?\n|\s*[•▪]\s*/).map(line=>line.trim()).filter(Boolean).map(line=>{
-        const heading=/^(?:(?:first|second|third|main|salad|dessert) course|appetizers?|starters?|salads?|soups?|entr[ée]es?|main dishes|sides?|accompaniments|desserts?|late[- ]night(?: snacks?)?|children[’']?s menu|kids[’']? menu|(?:an? |elegant )?(?:plated|family[- ]style|buffet)(?: dinner| service)?|(?:\d+|a|one|two|three) stations?)\s*:?$/i.test(line);
-        const note=/^(?:with\b|served\b|accompanied\b|choice of\b|note\s*:|\()/i.test(line);
+        const heading=/^(?:(?:gold|silver|bronze|platinum) entr[ée]es|(?:\d+|one|two|three) buffets? set[- ]ups?|specialty dietary meal|children[’']s meal \(plated and served\)|kids entree|tableside coffee and tea service|coffee and tea station)$/i.test(line)||/^(?:i|ii|iii|iv|v|vi|vii|viii|ix|x)[.)]?$/i.test(line)||!!menuHeading(line)||/^(?:~\s*)?(?:cheeses?|charcuterie|accompaniments|proteins?|toppings?|sauces?|dips?|breads?)(?:\s*~)?\s*:?$/i.test(line)||/^(?:(?:first|second|third|main|salad|dessert) course|appetizers?|starters?|salads?|soups?|entr[ée]es?|main dishes|sides?|accompaniments|desserts?|late[- ]night(?: snacks?)?|children[’']?s menu|kids[’']? menu|(?:an? |elegant )?(?:plated|family[- ]style|buffet)(?: dinner| service)?|(?:\d+|a|one|two|three) stations?)\s*:?$/i.test(line);
+        const note=/^(?:&|and)$/i.test(line)||(/^[a-z]/.test(line)&&/[,|]/.test(line))||/^(?:with\b|served\b|accompanied\b|choice of\b|note\s*:|\()/i.test(line);
         return {type:'text', text:line, menuRole:heading?'heading':note?'note':'dish'};
     });
 }
 
-const TABLE_SERVICE_CATEGORIES = ['Dinnerware', 'Cutlery', 'Linens', 'Table accessories', 'Children’s meals', 'Bread service', 'Coffee and tea', 'Special tables', 'Additional items'];
+const TABLE_SERVICE_CATEGORIES = ['Dinnerware', 'Cutlery', 'Linens', 'Glassware', 'Table accessories', 'Children’s meals', 'Bread service', 'Coffee and tea', 'Special tables', 'Additional items'];
+function equipmentPrimaryText(text){return String(text).split(/\n|\s+[–—-]\s+/)[0];}
 function tableServiceCategory(text) {
-    if (/\b(?:kids|children|crudites|crudités|chicken tenders)\b/i.test(text)) return 'Children’s meals';
-    if (/\b(?:bread|butter)\b/i.test(text)) return 'Bread service';
-    if (/\b(?:cake knife|cake server|cake cutting|sweetheart)\b/i.test(text)) return 'Special tables';
-    if (/\b(?:forks?|knife|knives|spoons?|cutlery|flatware)\b/i.test(text)) return 'Cutlery';
-    if (/\b(?:coffee|tea|creamers?|sugar caddies|sugar caddy)\b/i.test(text)) return 'Coffee and tea';
-    if (/\b(?:napkins?|linens?)\b/i.test(text)) return 'Linens';
-    if (/\b(?:shakers?|goblets?|salt|pepper)\b/i.test(text)) return 'Table accessories';
-    if (/\b(?:plates?|bowls?|ramekins?|dinnerware)\b/i.test(text)) return 'Dinnerware';
-    return 'Additional items';
+    const category=t=>{
+        if (/\b(?:kids|children|crudites|crudités|chicken tenders)\b/i.test(t)) return 'Children’s meals';
+        if (/\b(?:bread|butter)\b/i.test(t)) return 'Bread service';
+        if (/\b(?:cake knife|cake server|cake cutting|sweetheart)\b/i.test(t)) return 'Special tables';
+        if (/\b(?:forks?|knife|knives|spoons?|cutlery|flatware)\b/i.test(t)) return 'Cutlery';
+        if (/\b(?:coffee|tea|creamers?|sugar caddies|sugar caddy)\b/i.test(t)) return 'Coffee and tea';
+        if (/\b(?:napkins?|linens?)\b/i.test(t)) return 'Linens';
+        if (/\b(?:goblets?|glasses|glass)\b/i.test(t)) return 'Glassware';
+        if (/\b(?:shakers?|salt|pepper)\b/i.test(t)) return 'Table accessories';
+        if (/\b(?:plates?|bowls?|ramekins?|dinnerware)\b/i.test(t)) return 'Dinnerware';
+        return '';
+    };
+    return category(equipmentPrimaryText(text))||category(text)||'Additional items';
 }
+
 function splitTableServiceLine(line) {
     // Only explicit, bounded pairs. Other compound or uncertain wording stays verbatim.
     if (/^sugar caddies\s*,\s*creamers\s*$/i.test(line)) return ['Sugar caddies', 'Creamers'];
@@ -1943,17 +1971,27 @@ function barSetupBlocks(s, bar, roomCode) {
 
 function tableServiceBlocks(s) {
     const item = (code,text,extra) => ({type:'item',code,text,...extra});
-    const rows = [], headings = []; let context = '', last = null;
+    const rows = [], headings = [], standaloneNotes=[]; let context = '', rentalContext='', supplier='', last = null;
     String(s.equipment.tableServiceText || '').split(/\r?\n/).forEach(raw => {
         // Lino, 2026-11-02: omit the tea storage/request note, retaining the equipment.
         const line = raw.trim().replace(/(?:for tea requests\.?\s*(?:in storage;\s*ask lino\.?|\(they are in storage\)\s*[–—-]\s*ask lino\.?))/ig, '').trim(); if (!line || excludedSetupItem(line)) return;
-        if (/^(?:440\s*ELM\s+Inventory|Rented)\s*[–—:-]\s*On the (?:Tables?|Buffets?)$/i.test(line) || /^(?:Robertson|440\s*ELM|4440\s*ELM|[A-Za-z][A-Za-z .]{0,60}[’']s|Table setting:?)$/i.test(line)) {
-            context = line; headings.push({text:line, used:false}); last = null; return;
+        const explicitRental=/^Rented(?:\s*:?$|\s*[–—:-]\s*On the (?:Tables?|Buffets?)$)/i.test(line);
+        const explicitHouse=/^(?:440\s*ELM\s+Inventory)\s*[–—:-]\s*On the (?:Tables?|Buffets?)$/i.test(line);
+        const supplierHeading=/^Supplier:\s*.+/i.test(line);
+        const equipmentHeading=/^(?:Note on Dinner Plates|Dessert Display|Coffee)$/i.test(line);
+        if (explicitRental || explicitHouse || supplierHeading || equipmentHeading || /^(?:Robertson|440\s*ELM|4440\s*ELM|[A-Za-z][A-Za-z .]{0,60}[’']s|Table setting:?)$/i.test(line)) {
+            if(explicitRental){rentalContext=line;supplier='';}
+            else if(explicitHouse||/\b44?0\s*ELM\b|^Table setting/i.test(line)){rentalContext='';supplier='';}
+            if(supplierHeading)supplier=line.replace(/^Supplier:\s*/i,'');
+            context = supplierHeading&&rentalContext?rentalContext+' / '+line:line; headings.push({text:line, used:false}); last = null; return;
         }
+        if(/^Disposables only$/i.test(line)){standaloneNotes.push({type:'note',text:(context?context+': ':'')+line});headings.forEach(h=>{if(context.includes(h.text))h.used=true;});last=null;return;}
+        if(last&&/^Have available\s*[–—-]\s*not ordering more for such a large set[- ]up$/i.test(line)&&/^Salt\s*&\s*pepper$/i.test(last.text)){last.text+='\n'+line;last.original+='\n'+raw.trim();return;}
+        if (/^notes?:\s*.+$/i.test(line)) { if(last&&!/^notes?:\s*(?:no\b|do not\b|never\b)/i.test(line)){last.text+='\n'+line;last.original+='\n'+raw.trim();}else{standaloneNotes.push({type:'note',text:line});last=null;}return; }
         if (last && (/^simple rectangle fold$/i.test(line) && /napkins?/i.test(last.text) || /^(?:notes?|note):\s*.+$/i.test(line))) { last.text += '\n' + line; return; }
         splitTableServiceLine(line).forEach(text => {
-            last = {text, context, original:raw.trim(), category:tableServiceCategory(text)}; rows.push(last);
-            if (headings.length) headings[headings.length - 1].used = true;
+            last = {text, context, rentalContext, supplier, original:raw.trim(), category:tableServiceCategory(text)==='Additional items'&&/^Note on Dinner Plates$/i.test(context)?'Dinnerware':tableServiceCategory(text)}; rows.push(last);
+            headings.forEach(h=>{if(context.includes(h.text))h.used=true;});
         });
     });
     const used = new Set(), counts = new Map();
@@ -1961,15 +1999,17 @@ function tableServiceBlocks(s) {
         const identity = row.context + '\n' + row.text, base = 'PU-41.' + fnv1a(identity).toUpperCase();
         let n = (counts.get(base) || 0) + 1; counts.set(base,n);
         let code = base + (n > 1 ? '.' + n : ''); while (used.has(code)) code = base + '.' + (++n); used.add(code);
-        const quantity = row.text.match(/^\s*(\d+)\s+(?=[A-Za-z])/) || row.text.match(/\((\d+)\s+only\)/i);
-        row.block = item(code, row.text, {compact:true, qty:quantity ? Number(quantity[1]) : null, source:Object.assign({}, fieldSource(s,'equipment.tableServiceText'), {from:'equipment.tableServiceText' + (row.context ? ' / ' + row.context : ''), originalLine:row.original})});
+        const quantityLine=row.text.split('\n')[0];
+        const quantity = quantityLine.match(/^\s*(\d+)\s+(?=[A-Za-z])/) || quantityLine.match(/\((\d+)\s+only\)/i) || quantityLine.match(/\(QTY:\s*(\d+)\)/i) || quantityLine.match(/\((\d+)\)\s*$/);
+        row.block = item(code, row.text, {compact:true, qty:quantity ? Number(quantity[1]) : null, source:Object.assign({}, fieldSource(s,'equipment.tableServiceText'), {from:'equipment.tableServiceText' + (row.context ? ' / ' + row.context : ''), originalLine:row.original, ...equipmentSourceHint({code,text:row.text},row)})});
     });
-    const blocks = [];
+    const blocks = standaloneNotes.slice();
     TABLE_SERVICE_CATEGORIES.forEach(category => {
         const matching = rows.filter(row => row.category === category);
         const contexts = [...new Set(matching.map(row => row.context))];
         contexts.forEach(context => {
-            blocks.push({type:'sub',text:category + (context ? ' · ' + context : ''),compact:true});
+            blocks.push({type:'sub',text:category,compact:true});
+            if(context)blocks.push({type:'note',text:context});
             blocks.push(...matching.filter(row => row.context===context).map(row=>row.block));
         });
     });
@@ -1977,10 +2017,152 @@ function tableServiceBlocks(s) {
     return blocks;
 }
 
+
+// One paper check per accepted disposable requirement. Kits and uncertain counts stay verbatim.
+function disposablesBlocks(s) {
+    const blocks=[],counts=new Map();let last=null;
+    const clean=setupTextOnly(s.equipment.disposablesText||'');
+    String(clean).replace(/([•▪])/g,'\n$1').split(/\r?\n/).forEach(raw=>{
+        const marked=/^\s*(?:[-*]\s+|[☐□•▪])/.test(raw);
+        const line=raw.trim().replace(/^(?:[-*]\s+|[☐□•▪]\s*)/,'').trim();
+        if(!line){last=null;return;}
+        if(/^(?:DISPOSABLES\s*:|DISPOSABLES|LIST(?:\s*\([^)]*\))?|Supplier:\s*.+)$/i.test(line)||/^(?:notes?:\s*|no\s+|do not\b|never\b)/i.test(line)){
+            if(last&&/^notes?:\s*.+/i.test(line)&&!/^notes?:\s*(?:no\b|do not\b|never\b)/i.test(line)){
+                last.text+='\n'+line;last.source.originalLine+='\n'+raw;
+            }else{blocks.push({type:'note',text:line});last=null;}
+            return;
+        }
+        const previous=last?.text||'';
+        const open=(previous.match(/\(/g)||[]).length-(previous.match(/\)/g)||[]).length;
+        const closes=(line.match(/\)/g)||[]).length-(line.match(/\(/g)||[]).length;
+        const wrapped=!marked&&last&&line.length<=160&&(
+            open>0&&closes===open&&/^[a-z)]/.test(line)||
+            /\bfor\s*$/.test(previous)&&/^(?:the )?rest of\b/.test(line)
+        );
+        if(wrapped){last.text+=' '+line;last.source.originalLine+='\n'+raw;return;}
+        last={type:'item',text:line,compact:true,qty:null,source:{...fieldSource(s,'equipment.disposablesText'),from:'equipment.disposablesText',originalLine:raw}};
+        blocks.push(last);
+    });
+    blocks.forEach(b=>{if(b.type!=='item')return;const base=DISPOSABLES_LINE.code+'.'+fnv1a(b.text).toUpperCase(),n=(counts.get(base)||0)+1;counts.set(base,n);b.code=base+(n>1?'.'+n:'');});
+    return blocks;
+}
+
+// Reviewed equipment ownership and supplier mapping; completion remains on paper.
+function equipmentExternal(source){return source==='rental'||source==='client';}
+function equipmentSourceHint(item,row){
+    const client=/\bclient[- ]provided\b|\bprovided by (?:the )?client\b/i.test(item.text)||/^Client is bringing\b/i.test(row.supplier||'');
+    if(equipmentIsWaterGoblet(item))return client?{equipmentSourceConflict:'The source says client provided water goblets. Water goblets remain house inventory under the standing rule; review this source.'}:{};
+    if(client)return {equipmentSource:'client',supplierContext:row.context};
+    const inlineRental=/\(\s*Rented\b([^)]*)\)/i.exec(item.text);
+    if(inlineRental)return {equipmentSource:'rental',rentalContext:inlineRental[0],rentalSupplier:inlineRental[1].replace(/^\s*[–—:-]\s*/,'').trim()};
+    return row.rentalContext?{equipmentSource:'rental',rentalContext:row.rentalContext,rentalSupplier:row.supplier}:{};
+}
+function equipmentSourceLabel(source){return source==='client'?'Client provided':source==='rental'?'Rental':'House inventory';}
+
+function equipmentFingerprint(b){return fnv1a(JSON.stringify([b.code,b.text,b.qty??null,b.source||null]));}
+function equipmentBaseItems(s=state){return flattenItems(buildEventSheet(s,{skipEquipmentPlan:true})).filter(i=>i.stages);}
+function equipmentIsWaterGoblet(b){return b.code==='PU-06'||/\bwater\s*goblets?\b/i.test(b.text);}
+function equipmentPlanProblem(code,p,items,plans){
+    const item=items.find(i=>i.code===code);if(!item)return 'The source item is no longer on this sheet.';
+    if(equipmentFingerprint(item)!==p.fingerprint)return 'The source item or its quantity changed. Review this plan before using it.';
+    if(equipmentExternal(p.source)&&equipmentIsWaterGoblet(item))return 'Water goblets are house inventory. Review this supplied-item source choice.';
+    if(equipmentExternal(p.source)&&p.replacesCode){
+        const match=items.find(i=>i.code===p.replacesCode);
+        if(!match||equipmentFingerprint(match)!==p.replacesFingerprint)return 'The matched house requirement changed. Its pull has been restored for review.';
+        if(match.section!=='PULL LIST')return 'The matched item is not an event house pull. Review the mapping.';
+        if(equipmentIsWaterGoblet(match))return 'Water goblets cannot be covered by a rented or client provided mapping.';
+        if(equipmentExternal(plans[p.replacesCode]?.source))return 'The matched requirement also has a supplied-equipment plan. Review the overlapping mappings.';
+        if(Object.entries(plans).some(([k,v])=>k!==code&&equipmentExternal(v.source)&&v.replacesCode===p.replacesCode))return 'More than one supplied-equipment plan covers this house requirement. Review the overlap.';
+    }
+    return '';
+}
+function equipmentSourceRentals(items,plans){return items.filter(b=>equipmentExternal(b.source?.equipmentSource)&&!equipmentIsWaterGoblet(b)&&!plans[b.code]);}
+function equipmentPlanWarnings(s,items){const plans=s.equipmentPlan||{},warnings=Object.entries(plans).map(([code,p])=>{const problem=equipmentPlanProblem(code,p,items,plans);return problem?(items.find(i=>i.code===code)?.text||'Saved equipment plan')+': '+problem:null;}).filter(Boolean);const pending=equipmentSourceRentals(items,plans);items.filter(b=>b.source?.equipmentSourceConflict&&!plans[b.code]).forEach(b=>warnings.push(b.source.equipmentSourceConflict));if(pending.length)warnings.push(pending.length+' supplied item(s) need a review of matching house pulls, requested backups and team assignments. No house pull has been removed automatically.');return warnings;}
+function equipmentQuantityText(text,quantity){
+    // The accepted rental count is separate from any old source quantity in the preserved note.
+    const [first,...notes]=String(text).split('\n');
+    const label=first.replace(/\s*\(QTY:\s*[^)]+\)/ig,'').replace(/^\s*\d+\s+(?=[A-Za-z])/,'').replace(/\s*\(\d+\s+only\)/ig,'').replace(/\s*\(\d+\)\s*$/,'');
+    return [label+' (QTY: '+(quantity||'____')+')',...notes].join('\n');
+}
+function applyEquipmentPlan(sections,s){
+    const plans=s.equipmentPlan||{},base=sections.flatMap(sec=>sec.blocks.filter(b=>b.stages).map(b=>({...b,section:sec.title}))),warnings=equipmentPlanWarnings(s,base),valid={};
+    Object.entries(plans).forEach(([code,p])=>{if(!equipmentPlanProblem(code,p,base,plans))valid[code]=p;});
+    const suppressed=new Set(Object.values(valid).filter(p=>equipmentExternal(p.source)&&p.replacesCode).map(p=>p.replacesCode));
+    const additions=[];let settingException=false;
+    sections.forEach(sec=>{sec.blocks=sec.blocks.filter(b=>!suppressed.has(b.code));sec.blocks.forEach(b=>{
+        if(!b.stages)return;
+        // Existing delegated setup survives as a team label and its own paper checkbox.
+        const spec=PULL_ITEMS.find(p=>p.code===b.code);
+        const placeSetting=!!b.placeSettingsBy||(sec.title==='PULL LIST'&&spec&&['head','table'].includes(spec.basis))||((sec.title==='TABLE SERVICE'||sec.room)&&/\b(forks?|knives|knife|spoons?|plates?|bowls?|goblets?|napkins?|flatware|cutlery|water glass)\b/i.test(b.text));
+        const delegated=b.stages.set!=='check'&&b.stages.set!=='N/A'?b.stages.set:(placeSetting?(s.food.placeSettingsBy==='servers'?'Servers':'Ops'):'');
+        b.stages={...b.stages,pullTeam:'Unassigned',setTeam:delegated||'Unassigned'};
+        if(delegated)b.stages.set='check';
+        const reviewed=valid[b.code],p=reviewed||(equipmentExternal(b.source?.equipmentSource)&&!equipmentIsWaterGoblet(b)?{source:b.source.equipmentSource,quantity:b.qty==null?'':String(b.qty),supplier:b.source.rentalSupplier||'',prepTeam:'',setTeam:'',replacesCode:'',backupQty:'',confirmedAt:''}:null);if(!p)return;
+        if(p.source==='house'&&equipmentExternal(b.source?.equipmentSource)){b.source={...b.source,equipmentSource:'house',rentalSourceOverride:'Explicit equipment review'};roundCutleryItem(b);}
+        b.stages.pullTeam=p.prepTeam||'Unassigned';b.stages.setTeam=p.setTeam||delegated||'Unassigned';
+        const defaultTeam=s.food.placeSettingsBy==='servers'?'servers':'ops';
+        if(placeSetting&&reviewed&&[p.setTeam,p.backupQty?p.backupSetTeam:''].some(team=>team&&team.trim().toLowerCase()!==defaultTeam))settingException=true;
+        if(equipmentExternal(p.source)){
+            const sourceText=b.text,match=base.find(i=>i.code===p.replacesCode),backupBase={...(match||b)};
+            b.text=(p.source==='client'?'Receive and stage client provided equipment: ':'Receive and stage rental: ')+equipmentQuantityText(b.text,p.quantity)+(p.supplier?' · Supplier: '+p.supplier:'');b.qty=p.quantity?Number(p.quantity):null;
+            b.source={type:'typed',equipmentPlan:{source:p.source,supplier:p.supplier,originalText:sourceText,matchedRequirement:p.replacesCode||null,confirmedAt:p.confirmedAt,sourceReview:reviewed?'reviewed':'accepted supplied-item wording; house comparison still needs review'},parts:b.source?[b.source]:[]};
+            if(p.backupQty){const backup={...backupBase,code:b.code+'.HOUSE-BACKUP',text:'House backup requested: '+equipmentQuantityText(backupBase.text,p.backupQty),qty:Number(p.backupQty),stages:{pull:'check',set:backupBase.stages.set==='N/A'?'N/A':'check',pullTeam:p.backupPrepTeam||'Unassigned',setTeam:p.backupSetTeam||'Unassigned'},source:{type:'typed',rule:'Explicitly requested house backup',requestedQuantity:Number(p.backupQty)}};roundCutleryItem(backup);additions.push({sec,backup});}
+        }
+    });});
+    const backupSections=new Set();additions.forEach(({sec,backup})=>{if(!backupSections.has(sec)){sec.blocks.push({type:'sub',text:'Requested house backups'});backupSections.add(sec);}sec.blocks.push(backup);});
+    if(settingException)sections.forEach(sec=>sec.blocks.forEach(b=>{if(b.placeSettingsBy)b.text=b.text.replace(/ Place settings(?: delegated to servers|: ops)\.$/,' Default place-setting team: '+(s.food.placeSettingsBy==='servers'?'Servers':'Ops')+'; see item teams for exceptions.');}));
+    // Remove an empty category only where a reviewed mapping removed its last item.
+    sections.filter(sec=>sec.title==='PULL LIST').forEach(sec=>{sec.blocks=sec.blocks.filter((b,i,all)=>b.type!=='sub'||all.slice(i+1).some((x,j,a)=>x.type!=='sub'&&a.slice(0,j).every(t=>t.type!=='sub')));});
+    return warnings;
+}
+function renderEquipmentPlan(){
+    const host=$('equipmentPlanContent');if(!host)return;
+    const selected=$('equipmentPlanPick')?.value||'',items=equipmentBaseItems(),plans=state.equipmentPlan||{},printed=flattenItems(buildEventSheet(state));
+    const problems=equipmentPlanWarnings(state,items),pending=equipmentSourceRentals(items,plans);
+    host.innerHTML='<p class="hint">Review one item at a time. Identify rented or client provided equipment, confirm any matching house pull, and assign the team for each paper checkbox. Quantities and matches are never combined automatically.</p>'+ (problems.length?'<div class="warnings" role="status"><strong>Equipment plans need review</strong><ul>'+problems.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul></div>':'')+
+      '<div class="staff-toolbar"><label for="equipmentPlanPick">Checklist item</label><select id="equipmentPlanPick">'+staffSelectOptions(items.map(i=>[i.code,i.section+': '+i.text]),selected,'Choose an item')+'</select><button type="button" class="btn-secondary" data-equipment-plan="edit">Review source and teams</button></div>'+
+      (pending.length?'<details open><summary>'+pending.length+' supplied item(s) to review</summary>'+pending.map(b=>'<div class="staff-card"><strong>'+escapeHtml(b.text)+'</strong><p>Receive and stage. House comparison and teams still need review.</p><button type="button" class="btn-secondary" data-equipment-plan="edit" data-code="'+escapeHtml(b.code)+'">Review supplied item</button></div>').join('')+'</details>':'')+
+      Object.entries(plans).map(([code,p])=>{const b=items.find(i=>i.code===code),shown=printed.find(i=>i.code===code);return '<div class="staff-card"><strong>'+escapeHtml(b?.text||'Item no longer on this sheet')+'</strong><p>'+escapeHtml((equipmentExternal(p.source)?equipmentSourceLabel(p.source)+': receive and stage':'House inventory: pull and stage')+' · Preparation: '+(p.prepTeam||'Unassigned')+' · Set: '+(shown?.stages?stageTeam(shown,'set')||'N/A':p.setTeam||'Unassigned'))+'</p><button type="button" class="btn-secondary" data-equipment-plan="edit" data-code="'+escapeHtml(code)+'"'+(!b?' disabled':'')+'>Review</button> <button type="button" class="btn-text danger" data-equipment-plan="remove" data-code="'+escapeHtml(code)+'">Remove plan</button></div>';}).join('');
+}
+function editEquipmentPlan(code){
+    const items=equipmentBaseItems(),b=items.find(i=>i.code===code);if(!b)return;
+    const current=(state.equipmentPlan||{})[code]||{source:equipmentExternal(b.source?.equipmentSource)?b.source.equipmentSource:'house',supplier:b.source?.rentalSupplier||'',quantity:equipmentExternal(b.source?.equipmentSource)&&b.qty!=null?String(b.qty):'',prepTeam:'',setTeam:'',replacesCode:'',replacesFingerprint:'',backupQty:''};
+    const candidates=items.filter(i=>i.code!==code&&i.section==='PULL LIST'&&!equipmentIsWaterGoblet(i));
+    const teamField=(label,id,value)=>'<label class="staff-field" for="'+id+'">'+label+'<input type="text" id="'+id+'" value="'+escapeHtml(value)+'" maxlength="60" list="equipmentTeams"></label>';
+    staffDialog('Review equipment source and teams','<p>'+escapeHtml(b.text)+'</p><p class="hint">Original source: '+escapeHtml((b.source?.from||b.source?.type||'Current event answers').replace(/^equipment\.tableServiceText/,'Table service needs'))+(b.source?.originalLine?'<br>'+escapeHtml(b.source.originalLine):'')+'</p>'+
+      '<label class="staff-field" for="epSource">Equipment source<select id="epSource"><option value="house"'+(current.source==='house'?' selected':'')+'>House inventory</option>'+(!equipmentIsWaterGoblet(b)?'<option value="rental"'+(current.source==='rental'?' selected':'')+'>Rental</option><option value="client"'+(current.source==='client'?' selected':'')+'>Client provided</option>':'')+'</select></label>'+(equipmentIsWaterGoblet(b)?'<p class="hint">Water goblets are always house inventory.</p>':'')+
+      '<div id="epRental">'+staffInput('Supplier or source, if known','epSupplier',current.supplier)+staffInput('Quantity to receive, confirm from the source','epQuantity',current.quantity,'number')+'<p class="hint">Leave the quantity blank if unknown. The original source wording remains in the export.</p>'+
+      '<label class="staff-field" for="epMatch">House pull fully covered by these supplied items<select id="epMatch">'+staffSelectOptions(candidates.map(i=>[i.code,i.text]),current.replacesCode,'No additional house pull matched')+'</select></label><label class="check"><input type="checkbox" id="epConfirmMatch"> I confirm these supplied items cover the same complete requirement, so its duplicate house pull can be removed.</label><p class="hint">Do not match a similar name or a partial allocation. Leave unmatched when the item or scope is uncertain.</p>'+staffInput('House backup quantity, only when requested','epBackup',current.backupQty,'number')+'<div id="epBackupTeams" class="staff-grid">'+teamField('House backup preparation team','epBackupPrep',current.backupPrepTeam||'')+teamField('House backup set team','epBackupSet',current.backupSetTeam||'')+'</div></div>'+
+      '<div class="staff-grid">'+teamField('Preparation team','epPrep',current.prepTeam)+teamField('Set team','epSet',current.setTeam)+'</div><datalist id="equipmentTeams"><option value="Ops"><option value="Event staff"><option value="Servers"><option value="Bar staff"><option value="Scullery"><option value="Vendor"></datalist><p class="hint">Leave unknown teams blank. Existing place-setting assignments still apply; other blank steps print Unassigned. This assigns work, without recording completion or dividing task time.</p>',()=>{
+        const source=$('epSource').value,quantity=$('epQuantity').value,backup=$('epBackup').value,matchCode=equipmentExternal(source)?$('epMatch').value:'',match=items.find(i=>i.code===matchCode);
+        for(const n of [quantity,backup])if(n!==''&&(!Number.isSafeInteger(Number(n))||Number(n)<=0))throw Error('Quantities must be positive whole numbers or blank.');
+        if(matchCode&&!$('epConfirmMatch').checked)throw Error('Confirm the same complete requirement before removing its house pull.');
+        if(matchCode&&Object.entries(state.equipmentPlan||{}).some(([key,p])=>key!==code&&equipmentExternal(p.source)&&(p.replacesCode===matchCode||key===matchCode)))throw Error('That house requirement already has a supplied-equipment plan. Review it first.');
+        state.equipmentPlan=state.equipmentPlan||{};state.equipmentPlan[code]={fingerprint:equipmentFingerprint(b),source,supplier:equipmentExternal(source)?$('epSupplier').value.trim():'',quantity:equipmentExternal(source)?quantity:'',prepTeam:$('epPrep').value.trim(),setTeam:$('epSet').value.trim(),replacesCode:matchCode,replacesFingerprint:match?equipmentFingerprint(match):'',backupQty:equipmentExternal(source)?backup:'',backupPrepTeam:equipmentExternal(source)&&backup?$('epBackupPrep').value.trim():'',backupSetTeam:equipmentExternal(source)&&backup?$('epBackupSet').value.trim():'',confirmedAt:nowStamp()};
+    });
+    const visibility=()=>{$('epRental').hidden=!equipmentExternal($('epSource').value);$('epBackupTeams').hidden=!$('epBackup').value;};$('epSource').addEventListener('change',visibility);$('epBackup').addEventListener('input',visibility);visibility();
+}
+function equipmentPlanAction(button){
+    const action=button.dataset.equipmentPlan,code=button.dataset.code||$('equipmentPlanPick')?.value;
+    if(action==='edit'){editEquipmentPlan(code);return;}
+    if(action==='remove'&&state.equipmentPlan?.[code]&&confirm('Remove this equipment plan? Original house pulls and unassigned teams will return.')){delete state.equipmentPlan[code];saveDraft(true);renderLive();}
+}
+function validateEquipmentPlan(plans,fail){
+    if(!plans||typeof plans!=='object'||Array.isArray(plans))fail('equipmentPlan');
+    for(const [code,p] of Object.entries(plans)){
+        if(!code||!p||typeof p!=='object'||Array.isArray(p)||['fingerprint','source','supplier','quantity','prepTeam','setTeam','replacesCode','replacesFingerprint','backupQty','confirmedAt'].some(k=>typeof p[k]!=='string'))fail('equipmentPlan.'+code);
+        if(!['house','rental','client'].includes(p.source)||!p.fingerprint||p.prepTeam.length>60||p.setTeam.length>60||p.replacesCode===code||['quantity','backupQty'].some(k=>p[k]!==''&&(!Number.isSafeInteger(Number(p[k]))||Number(p[k])<=0)))fail('equipmentPlan.'+code);
+        if(['backupPrepTeam','backupSetTeam'].some(k=>p[k]!==undefined&&(typeof p[k]!=='string'||p[k].length>60)))fail('equipmentPlan.'+code+'.backupTeam');
+        if(p.replacesCode&&!p.replacesFingerprint||!p.replacesCode&&p.replacesFingerprint)fail('equipmentPlan.'+code+'.match');
+    }
+}
+function stageTeam(b,key){return key==='set'&&b.stages.set==='N/A'?'':b.stages[key+'Team']||'Unassigned';}
+
 // Completion marks are independent paper checkboxes, derived without changing saved answers.
 function equipmentStages(sec,b,s) {
     if(b.type!=='item')return null;
     if(b.barSetup)return {pull:'check',set:'check'};
+    if(sec.group==='BUFFET'&&/^PU-42\./.test(b.code))return {pull:'check',set:'check'};
     if(sec.group==='BUFFET'&&PULL_ITEMS.some(p=>p.code===b.code&&p.cat==='Buffet Equipment'))return {pull:'check',set:'check'};
     if(sec.title==='PULL LIST'){const spec=PULL_ITEMS.find(p=>p.code===b.code);const settings=spec&&['head','table'].includes(spec.basis);return {pull:'check',set:settings?(s.food.placeSettingsBy==='servers'?'Servers':'check'):'N/A'};}
     const roomEquipment=sec.room && !b.card && (b.qty!=null || /^(Tables|Seating|Linens|Cutlery|Dinnerware|Glassware|Table accessories)$/.test(roomSetupCategory(b.text))) && !/^(Receive|Set up|Review|Ensure|Verify|Prepare|Stage|Check|Bar \d)/i.test(b.text);
@@ -1988,12 +2170,14 @@ function equipmentStages(sec,b,s) {
     const placeSetting=/\b(forks?|knives|knife|spoons?|plates?|bowls?|goblets?|napkins?|flatware|cutlery|water glass)\b/i.test(b.text);
     return {pull:'check',set:s.food.placeSettingsBy==='servers'&&placeSetting?'Servers':'check'};
 }
-function stageCellHtml(value,label) { return value==='check'?'<span class="box" aria-label="'+label+'"></span>':escapeHtml(value); }
-function stageHeaderHtml(){return '<div class="stage-row stage-head"><span>Item and quantity</span><span>Pulled /<br>staged</span><span>Set</span></div>';}
+function stageCellHtml(value,label,team) { return (value==='check'?'<span class="box" aria-label="'+label+'"></span>':escapeHtml(value))+(team?'<small class="stage-team">'+escapeHtml(team)+'</small>':''); }
+function stageHeaderHtml(){return '<div class="stage-row stage-head"><span>Item and quantity</span><span>Pull / receive<br>and stage</span><span>Set</span></div>';}
 
 function roundCutleryItem(b) {
-    if(b.type!=='item'||!/(?:\bforks?\b|\bknives\b|\bknife\b|\b(?:tea|table|dessert)?spoons?\b|\bcutlery\b|\bflatware\b)/i.test(b.text)||/\b(?:cake\s+(?:knife|knives|servers?)|serving|carving|slotted|sets?|collection|rolled|roll[- ]?ups?)\b/i.test(b.text)||b.source?.type==='conflict')return;
-    const match=b.text.match(/\(QTY:\s*(\d+)\)/i)||b.text.match(/^(\d+)\s+/)||b.text.match(/\((\d+)\s+only\)/i);
+    const primary=equipmentPrimaryText(b.text);
+    if(b.type!=='item'||equipmentExternal(b.source?.equipmentSource)||!/(?:\bforks?\b|\bknives\b|\bknife\b|\b(?:tea|table|dessert)?spoons?\b|\bcutlery\b|\bflatware\b)/i.test(primary)||/\b(?:cake\s+(?:knife|knives|servers?)|serving|carving|slotted|sets?|collection|rolled|roll[- ]?ups?)\b/i.test(primary)||b.source?.type==='conflict')return;
+    const quantityLine=b.text.split('\n')[0];
+    const match=quantityLine.match(/\(QTY:\s*(\d+)\)/i)||quantityLine.match(/^(\d+)\s+/)||quantityLine.match(/\((\d+)\s+only\)/i)||quantityLine.match(/\((\d+)\)\s*$/);
     const quantity=b.qty??(match?Number(match[1]):null);if(!Number.isFinite(quantity)||quantity<=0)return;
     const rounded=Math.ceil(quantity/25)*25;if(rounded===quantity)return;
     b.qty=rounded;
@@ -2001,7 +2185,7 @@ function roundCutleryItem(b) {
     b.source={type:'computed',rule:'Cutlery rounded up to the next 25',originalQuantity:quantity,parts:b.source?[b.source]:[]};
 }
 
-function buildEventSheet(s) {
+function buildEventSheet(s, options={}) {
     const v = vis(s); const head = num(s.event.headCount); const tables = num(s.food.guestTables);
     const roomsInUse = selectedRoomObjects(s);
     const comp = {}; computedLines(s).forEach(c => { comp[c.key] = c; });
@@ -2061,9 +2245,18 @@ function buildEventSheet(s) {
     if (pull.blocks.length) sections.push(pull);
 
     // Disposables, right after the pull list
-    if (hasText(setupTextOnly(s.equipment.disposablesText))) sections.push({ title: 'DISPOSABLES', group: 'PU', blocks: [item(DISPOSABLES_LINE.code, DISPOSABLES_LINE.text, { source: { type: 'typed' } }), { type: 'text', text: setupTextOnly(s.equipment.disposablesText) }] });
+    const disposableRows=disposablesBlocks(s);
+    if(disposableRows.length)sections.push({title:'DISPOSABLES',group:'PU',compact:true,blocks:disposableRows});
     if (hasText(s.equipment.tableServiceText)) sections.push({ title: 'TABLE SERVICE', group: 'PU', compact:true, blocks: tableServiceBlocks(s) });
 
+    if (v.buffet && hasText(s.food.specialMealsEquipment)) {
+        const temp=clone(s); temp.equipment.tableServiceText=s.food.specialMealsEquipment;
+        const blocks=tableServiceBlocks(temp).map(b=>{
+            if(b.type==='item'){b.code=b.code.replace(/^PU-41\./,'PU-42.');b.source=Object.assign({},fieldSource(s,'food.specialMealsEquipment'),{from:'food.specialMealsEquipment',originalLine:b.source.originalLine});}
+            return b;
+        });
+        buffetPage.blocks.push({type:'sub',text:'Extra equipment for limited plated meals'},...blocks);
+    }
     // Whole venue
     const wv = bucket('');
     wv.blocks.push(item(WV_LINES.review.code, WV_LINES.review.text, { source: { type: 'standard' } }));
@@ -2166,7 +2359,8 @@ function buildEventSheet(s) {
     if (v.coffee) {
         kb.blocks.push({ type: 'sub', text: 'Coffee' });
         const br = comp['KB-76.brewers'], bo = comp['KB-76.boilers'];
-        const part = (c, label) => c.stale ? conflictText(c) : label + ': ' + (c.value || 'needs head count') + '.';
+        const part = (c, label) => c.stale ? conflictText(c) : label + ': ' + (c.value || 'needs coffee guest count') + '.';
+        if(hasText(s.coffee.scopeNotes))kb.blocks.push({type:'note',text:'Coffee service: '+s.coffee.scopeNotes.trim()});
         kb.blocks.push(item(KB_LINES.coffeeBoh.code, 'Coffee (' + (COFFEE_OPTIONS[s.coffee.option] || 'option not selected') + '): back of house ' + cardRef('coffee') + '. ' + part(br, 'Brewers') + ' ' + part(bo, 'Boilers') + ' ' + finishText(s.coffee.whoFinishes), { source: { type: 'computed', parts: [br.source, bo.source] }, card: 'coffee', whoFinishes: s.coffee.whoFinishes }));
     }
     if (v.family) {
@@ -2187,7 +2381,7 @@ function buildEventSheet(s) {
         sections.push({ title: b.room.printName.toUpperCase() + (b.room.printName !== b.room.name && b.room.name ? ' (' + b.room.name + ')' : ''), group: b.room.code, room: b.room, blocks: blocks.concat(b.blocks) });
     });
     sections.push(kb);
-    if(v.buffet){if(hasText(s.food.menus.buffet)){buffetPage.blocks.push({type:'sub',text:'Buffet menu'});buffetPage.blocks.push(...menuBlocks(s.food.menus.buffet));}sections.push(buffetPage);}
+    if(v.buffet){if(hasText(s.food.specialMealsNotes))buffetPage.blocks.push({type:'sub',text:'Limited plated meal notes'},{type:'text',text:s.food.specialMealsNotes.trim()});if(hasText(s.food.menus.buffet)){buffetPage.blocks.push({type:'sub',text:'Buffet menu'});buffetPage.blocks.push(...menuBlocks(s.food.menus.buffet));}sections.push(buffetPage);}
     const fc = { title: 'FINAL CHECK', group: 'FC', newPage:!!v.buffet, blocks: [] };
     FC_LINES.forEach(l => { if (!l.standardOnly || s.equipment.standard) fc.blocks.push(item(l.code, l.text, { source: { type: 'standard' } })); });
     sections.push(fc);
@@ -2214,9 +2408,11 @@ function buildEventSheet(s) {
     });
 
     sections.forEach(sec=>{
-        sec.blocks.forEach(b=>{roundCutleryItem(b);const stages=equipmentStages(sec,b,s);if(stages)b.stages=stages;});
+        sec.blocks.forEach(b=>{if(sec.title!=='DISPOSABLES')roundCutleryItem(b);const stages=equipmentStages(sec,b,s);if(stages)b.stages=stages;});
         if(sec.title==='PULL LIST'&&sec.blocks.some(b=>b.stages))sec.blocks.unshift({type:'note',text:'Event totals: do not add room allocations to these quantities. Mark Set when the full quantity is in place. N/A means setting is tracked on the separate setup task. Repeated source descriptions are not combined automatically.'});
     });
+
+    const equipmentWarnings=options.skipEquipmentPlan?[]:applyEquipmentPlan(sections,s);
 
     // Reference menus follow every checklist section, including return to ready and misc work.
     [['plated','PLATED MENU'],['family','FAMILY STYLE MENU'],['stations','FOOD STATION MENU']].forEach(([key,title])=>{
@@ -2224,10 +2420,14 @@ function buildEventSheet(s) {
         if(v[key]&&blocks.length)sections.push({title,group:'MENU',referenceOnly:true,newPage:true,blocks});
     });
 
+    if(hasText(s.food.menus.additional))sections.push({title:'ADDITIONAL MENUS',group:'MENU',referenceOnly:true,newPage:true,blocks:menuBlocks(s.food.menus.additional)});
+
     const warnings = []; const warningLinks = [];
     const warn = (text, key, short) => { warnings.push(text); warningLinks.push({ text, key, short }); };
+    equipmentWarnings.forEach(text=>warn(text,'service','Equipment plan needs review'));
+    if(v.coffee&&!coffeeGuestCount(s))warn(s.coffee.countBasis==='separate'?'Confirm the separate coffee guest count before calculating brewers and boilers. No event head count is substituted.':'Enter the event head count or choose a separately confirmed coffee count before calculating brewers and boilers.','coffee','Coffee count missing');
     const needsHead = (PULL_ITEMS.some(p => p.basis === 'head' && pulledSettings(s).includes(p.id)) || cakeService(s)) && v.tableSettings && !v.noTableSettings;
-    if (!head && (needsHead || v.rollUps || v.coffee)) warn('Head count is blank, so place settings, roll-ups and coffee counts cannot be computed and will be left off.', 'event', 'Head count missing');
+    if (!head && (needsHead || v.rollUps || v.coffee&&s.coffee.countBasis!=='separate')) warn('Head count is blank, so place settings, roll-ups and coffee counts cannot be computed and will be left off.', 'event', 'Head count missing');
     if (!eventIdFor(s)) warn('The event id needs both the event date and the client / event name.', 'event', 'Date or name missing');
     if (!tables && v.tableSettings && !v.noTableSettings && (s.tableSettings.includes('saltPepper') || s.tableSettings.includes('breadBaskets'))) warn('Sit-down table count is blank, so Salt & Pepper and Bread Baskets & Liners will be left off.', 'food', 'Table count missing');
     // A room id that no longer matches a room (an Other room removed in an older draft) counts as not set
@@ -2351,7 +2551,10 @@ function validateEventFile(data) {
     if (data.intake && data.intake.water && typeof data.intake.water.dispensers === 'string') defaults.water.dispensers = '';
     shape(data.intake, defaults, 'intake');
     const v = data.intake;
+    if(v.coffee?.countBasis!==undefined&&!['event','separate'].includes(v.coffee.countBasis))fail('coffee.countBasis');
+    if(v.coffee?.headCount!==undefined&&v.coffee.headCount!==''&&(!Number.isSafeInteger(Number(v.coffee.headCount))||Number(v.coffee.headCount)<=0))fail('coffee.headCount');
     if(v.staffing!==undefined)validateStaffingPlan(v.staffing,fail);
+    if(v.equipmentPlan!==undefined)validateEquipmentPlan(v.equipmentPlan,fail);
     if (v.meta && (v.meta.format !== undefined && v.meta.format !== FILE_FORMAT || v.meta.formatVersion !== undefined && v.meta.formatVersion !== FILE_FORMAT_VERSION)) fail('intake.meta');
     Object.keys(ROW_LISTS).forEach(k => list(getPath(v, ROW_LISTS[k].path), ROW_LISTS[k].make(1), 'intake.' + ROW_LISTS[k].path));
     ['food.types', 'rooms.selected', 'tableSettings'].forEach(k => list(getPath(v, k), '', 'intake.' + k));
@@ -2407,17 +2610,28 @@ function validateEventFile(data) {
                 shape(c.value, { pieces: 0, typeKnown: false, glassKnown: false, bartenders: '' }, path + '.value');
                 if (['room', 'pieces', 'type', 'typeKnown', 'glassware', 'glassKnown', 'disposablesText', 'bartenders'].some(k => !Object.prototype.hasOwnProperty.call(c.value, k))) fail(path + '.value');
             }
+            if(c.kind==='coffeeSetup'&&(!object(c.value)||c.value.has!=='yes'||c.value.countBasis!=='separate'||typeof c.value.scopeNotes!=='string'||!c.value.scopeNotes.trim()||Object.keys(c.value).some(k=>!['has','countBasis','scopeNotes','option'].includes(k))||c.value.option!==undefined&&!Object.prototype.hasOwnProperty.call(COFFEE_OPTIONS,c.value.option)))fail(path+'.value');
             if (c.kind === 'station' && typeof c.value.name !== 'string') fail(path + '.value.name');
             if (c.kind === 'vendor' && ['name', 'loadInTime', 'loadOutTime', 'loadInDate', 'loadOutDate', 'bookedBy'].some(k => typeof c.value[k] !== 'string')) fail(path + '.value');
-            if (['set', 'roomCount', 'buffets', 'foodType', 'room'].includes(c.kind) && !['string', 'number'].includes(typeof c.value)) fail(path + '.value');
+            if (['set', 'roomCount', 'buffets', 'foodType', 'room'].includes(c.kind) && !['string', 'number'].includes(typeof c.value) && !(c.kind==='set'&&['equipment.standard','equipment.disposables'].includes(c.path)&&typeof c.value==='boolean')) fail(path + '.value');
             if (c.kind === 'set' && (typeof c.path !== 'string' || c.path.split('.').some(k => ['__proto__', 'prototype', 'constructor'].includes(k)))) fail(path + '.path');
-            if (c.kind === 'set' && !c.pianoGate && (typeof getPath(defaults, c.path) !== 'string' || typeof c.value !== 'string')) fail(path + '.value');
+            if (c.kind === 'set' && !c.pianoGate && !(['equipment.standard','equipment.disposables'].includes(c.path)&&typeof c.value==='boolean') && (typeof getPath(defaults, c.path) !== 'string' || typeof c.value !== 'string')) fail(path + '.value');
         });
         list(it.docs, { fp: '', name: '', kind: '', format: '', versionLabel: '', facts: {} }, 'intake.intake.docs');
         (it.docs || []).forEach((doc, i) => {
             const path = 'intake.intake.docs[' + i + '].facts';
             if (doc.kind === 'jobsheet') {
-                shape(doc.facts, extractJobSheet([]), path);
+                const factTemplate=extractJobSheet([]); delete factTemplate.serviceWare;
+                shape(doc.facts, factTemplate, path);
+                if(doc.facts.serviceWare!==undefined){
+                    const sw=doc.facts.serviceWare;
+                    if(!object(sw)||['standard','disposables'].some(k=>sw[k]!==null&&typeof sw[k]!=='boolean'))fail(path+'.serviceWare');
+                    ['evidence','conflicts'].forEach(k=>{if(!Array.isArray(sw[k]))fail(path+'.serviceWare.'+k);list(sw[k],'',path+'.serviceWare.'+k);});
+                }
+                if(doc.facts.coffee!==undefined)['evidence','conflicts'].forEach(k=>list(doc.facts.coffee[k],'',path+'.coffee.'+k));
+                list(doc.facts.venueContacts,'',path+'.venueContacts');
+                list(doc.facts.tableServiceSourceNotes,'',path+'.tableServiceSourceNotes');
+                ['cakeEvidence','cakeConflicts'].forEach(k=>list(doc.facts[k],'',path+'.'+k));
                 ['times', 'bar', 'foodTypes', 'menus'].forEach(k => { if (!object(doc.facts[k])) fail(path + '.' + k); });
                 ['vendors', 'flags', 'disposables', 'tableService'].forEach(k => { if (!Array.isArray(doc.facts[k])) fail(path + '.' + k); });
                 map(doc.facts.times, '', path + '.times');
@@ -2588,7 +2802,7 @@ function renderPreview(sheet) {
         const staged=sec.blocks.some(b=>b.stages);let stageOpen=false;
         if (sec.compact&&!staged) html += '<div class="compact-service">';
         sec.blocks.forEach(b => {
-            if(b.stages){if(!stageOpen)html+=stageHeaderHtml();stageOpen=true;html+='<div class="stage-row" data-item-code="'+escapeHtml(b.code)+'"><span>'+escapeHtml(pdfSafe(b.text))+'</span><span>'+stageCellHtml(b.stages.pull,'Pulled / staged')+'</span><span>'+stageCellHtml(b.stages.set,'Set')+'</span></div>';return;}
+            if(b.stages){if(!stageOpen)html+=stageHeaderHtml();stageOpen=true;html+='<div class="stage-row" data-item-code="'+escapeHtml(b.code)+'"><span>'+escapeHtml(pdfSafe(b.text))+'</span><span>'+stageCellHtml(b.stages.pull,'Preparation',stageTeam(b,'pull'))+'</span><span>'+stageCellHtml(b.stages.set,'Set',stageTeam(b,'set'))+'</span></div>';return;}
             stageOpen=false;
             if (sec.compact && !staged && b.type === 'item') html += '<div class="service-cell' + (b.text.length > 110 ? ' service-wide' : '') + '" data-item-code="' + escapeHtml(b.code) + '"><div class="service-line"><span class="box"></span><span>' + escapeHtml(pdfSafe(b.text)) + '</span></div></div>';
             else if (b.type === 'item') html += '<div class="item" data-item-code="' + escapeHtml(b.code) + '"><span class="box"></span><span>' + escapeHtml(pdfSafe(b.text)) + '</span></div>';
@@ -2607,7 +2821,7 @@ function schedulePreview() { clearTimeout(previewTimer); previewTimer = setTimeo
 function renderLive() {
     clearTimeout(previewTimer);
     const sheet = buildEventSheet(state);
-    renderPreview(sheet); renderNav(sheet); renderReviewWork(); renderStaffing();
+    renderPreview(sheet); renderNav(sheet); renderReviewWork(); renderStaffing(); renderEquipmentPlan();
 }
 function prefersReducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function setPreviewOpen(open) {
@@ -2686,18 +2900,40 @@ const itemTextX = ctx => ctx.m + ctx.st.codeW + ctx.st.box + 8;
 function blockNeed(ctx, b) {
     if (!b) return 0;
     const st = ctx.st;
-    if (b.menuRole) { setFont(ctx,b.menuRole==='heading'?'bold':'normal',st.note);return Math.min(3,wrap(ctx,b.text,ctx.w-2*ctx.m-24).length)*st.noteStep+(b.menuRole==='heading'?9:5); }
+    if (b.menuRole) { const heading=b.menuRole==='heading',dish=b.menuRole==='dish';setFont(ctx,heading?'bold':b.menuRole==='note'?'italic':'normal',st.note);return wrap(ctx,b.text,ctx.w-2*ctx.m-(heading?0:dish?14:24)).length*st.noteStep+(heading?10:5); }
     if (b.type === 'item') { setFont(ctx, 'normal', st.item); const need = Math.max(st.itemMin, wrap(ctx, b.text, ctx.w - ctx.m - itemTextX(ctx)).length * st.itemStep + 6); return need > ctx.h - ctx.bottom - ctx.m - st.contStep ? st.itemStep * 3 : need; }
     if (b.type === 'sub') { setFont(ctx, 'bold', st.sub); return 7 + st.sub - 9.5 + wrap(ctx, b.text, ctx.w - 2 * ctx.m).length * st.subStep; }
     if (b.type === 'note') { setFont(ctx, 'italic', st.note); return Math.min(3, wrap(ctx, b.text, ctx.w - 2 * ctx.m).length) * st.noteStep + 3; }
     if (b.type === 'text') { setFont(ctx, 'normal', st.note); return Math.min(3, wrap(ctx, String(b.text).split('\n')[0] || ' ', ctx.w - 2 * ctx.m - 14).length) * st.noteStep + 3; }
     return 0;
 }
+function menuFlowNeed(ctx,blocks,index) {
+    const b=blocks[index];if(!b?.menuRole)return 0;
+    let need=blockNeed(ctx,b),i=index+1;
+    if(b.menuRole==='heading'){const end=blocks.findIndex((x,j)=>j>index&&(x.type==='sub'||x.menuRole==='heading'||!x.menuRole));const group=blocks.slice(index,end<0?blocks.length:end),whole=group.reduce((n,x)=>n+blockNeed(ctx,x),0);if(whole<=300)return whole;}
+    if(b.menuRole==='heading'){
+        while(i<blocks.length&&['heading','note'].includes(blocks[i].menuRole)){need+=blockNeed(ctx,blocks[i]);i++;}
+        if(blocks[i]?.menuRole==='dish'){need+=blockNeed(ctx,blocks[i]);i++;}
+    }
+    if(b.menuRole==='dish'||b.menuRole==='heading'){while(blocks[i]?.menuRole==='note'){need+=blockNeed(ctx,blocks[i]);i++;}if(/^(?:&|and)$/i.test(blocks[i-1]?.text||'')&&blocks[i]?.menuRole==='dish'){need+=blockNeed(ctx,blocks[i]);i++;while(blocks[i]?.menuRole==='note'){need+=blockNeed(ctx,blocks[i]);i++;}}}
+    // Lowercase source lines may continue a dish even without commas. Keep their
+    // page placement together without changing their text or classifying them as notes.
+    const pageNeed=ctx.h-ctx.bottom-ctx.m-ctx.st.contStep-20;
+    let joinedNeed=need;
+    while(blocks[i]?.menuRole==='dish'&&/^[a-z]/.test(blocks[i].text)){
+        joinedNeed+=blockNeed(ctx,blocks[i++]);
+        while(blocks[i]?.menuRole==='note')joinedNeed+=blockNeed(ctx,blocks[i++]);
+    }
+    // An oversized run must still be able to continue across pages normally.
+    if(joinedNeed<=pageNeed)need=joinedNeed;
+    return Math.min(need,pageNeed);
+}
 const notesNeed = ctx => ctx.st.notesSpace + 8;
 // Draws a section's blocks. A sub heading stays with the line after it, and the last line stays with the Notes space.
 function drawBlocks(ctx, blocks, withNotes) {
     blocks.forEach((b, i) => {
         const last = i === blocks.length - 1, notes = withNotes ? notesNeed(ctx) : 0;
+        if(b.menuRole)ensure(ctx,menuFlowNeed(ctx,blocks,i)+(last?notes:0));
         if (b.type === 'sub' || b.menuRole === 'heading') {
             const next=blocks.findIndex((x,j)=>j>i&&(x.type==='sub'||x.menuRole==='heading'));
             const group=blocks.slice(i,next<0?blocks.length:next), groupNeed=group.reduce((n,x)=>n+blockNeed(ctx,x),0)+(next<0?notes:0);
@@ -2717,15 +2953,17 @@ function drawSectionTitle(ctx, text, firstNeed) {
 }
 function stagedRowNeed(ctx,b) {
     setFont(ctx,'normal',ctx.st.item);
-    return wrap(ctx,b.text,ctx.w-2*ctx.m-150).length*ctx.st.itemStep+8;
+    const textNeed=wrap(ctx,b.text,ctx.w-2*ctx.m-150).length*ctx.st.itemStep+8;
+    setFont(ctx,'normal',9);const teamNeed=Math.max(...['pull','set'].map(key=>stageTeam(b,key)?wrap(ctx,stageTeam(b,key),62).length*10+ctx.st.box+8:ctx.st.box+8));return Math.max(textNeed,teamNeed);
 }
 function sectionOpeningNeed(ctx,blocks) {
     let need=0, reserve=0;
     for(const b of blocks){
-        if(b.stages){need+=18+Math.max(stagedRowNeed(ctx,b),ctx.st.itemStep*3);break;}
+        if(b.stages){need+=30+Math.max(stagedRowNeed(ctx,b),ctx.st.itemStep*3);break;}
         if(b.type==='sub')reserve=Math.max(reserve,need+blockNeed(ctx,b)+ctx.st.itemStep*4);
         if(b.type==='note'){setFont(ctx,'italic',ctx.st.note);need+=wrap(ctx,b.text,ctx.w-2*ctx.m).length*ctx.st.noteStep+3;}
         else need+=blockNeed(ctx,b);
+        if(b.menuRole==='dish'){const i=blocks.indexOf(b);need+=menuFlowNeed(ctx,blocks,i)-blockNeed(ctx,b);}
         if(b.type==='item'||b.menuRole==='dish')break;
     }
     return Math.min(Math.max(need,reserve),ctx.h-ctx.bottom-ctx.m-ctx.st.secBefore-ctx.st.secAfter-30);
@@ -2798,7 +3036,7 @@ function drawCompactBlocks(ctx,blocks,withNotes) {
                 const firstNeed=next?.type==='item' ? (pair?Math.max(compactNeed(ctx,next,col),compactNeed(ctx,after,col)):Math.min(compactNeed(ctx,next,width),st.itemStep*5)) : st.itemMin;
                 ensure(ctx,blockNeed(ctx,b)+firstNeed+7);
                 drawBlock(ctx,b);category=b.text;
-            } else { if(b.menuRole==='heading')ensure(ctx,blockNeed(ctx,b)+blockNeed(ctx,blocks[i+1]));drawBlock(ctx,b); }
+            } else { if(b.menuRole)ensure(ctx,menuFlowNeed(ctx,blocks,i));drawBlock(ctx,b); }
             continue;
         }
         const next=blocks[i+1], half=compactText(ctx,b,col);
@@ -2827,17 +3065,17 @@ function drawStagedBlocks(ctx,blocks,withNotes) {
     const st=ctx.st,right=ctx.w-ctx.m,pullX=right-103,setX=right-32;
     const textX=ctx.m,textW=ctx.w-2*ctx.m-150;
     let open=false,category='';
-    const header=()=>{ensure(ctx,st.itemStep*3);setFont(ctx,'bold',10);ctx.pdf.text('Item and quantity',ctx.m,ctx.y);ctx.pdf.text('Pulled / staged',pullX,ctx.y,{align:'center'});ctx.pdf.text('Set',setX,ctx.y,{align:'center'});ctx.y+=18;open=true;};
+    const header=()=>{ensure(ctx,st.itemStep*3);setFont(ctx,'bold',10);ctx.pdf.text('Item and quantity',ctx.m,ctx.y);ctx.pdf.text(['Pull / receive','and stage'],pullX,ctx.y-4,{align:'center'});ctx.pdf.text('Set',setX,ctx.y,{align:'center'});ctx.y+=30;open=true;};
     blocks.forEach((b,index)=>{
-        if(!b.stages){open=false;if(b.type==='sub'){category=b.text;ensure(ctx,blockNeed(ctx,b)+st.itemStep*4);}else if(b.menuRole==='heading'){category='';ensure(ctx,blockNeed(ctx,b)+blockNeed(ctx,blocks[index+1]));}drawBlock(ctx,b);return;}
+        if(!b.stages){open=false;if(withNotes&&index===blocks.length-1){let tail=blockNeed(ctx,b);if(['text','note'].includes(b.type)&&!b.menuRole){setFont(ctx,b.type==='note'?'italic':'normal',st.note);tail=String(b.text).split('\n').reduce((n,p)=>n+wrap(ctx,p||' ',ctx.w-2*ctx.m-(b.type==='text'?14:0)).length*st.noteStep+(b.type==='text'?3:0),b.type==='note'?3:0);}ensure(ctx,Math.min(tail+notesNeed(ctx),ctx.h-ctx.bottom-ctx.m-st.contStep-20));}if(b.type==='sub'){category=b.text;let next=index+1,need=blockNeed(ctx,b);while(next<blocks.length&&blocks[next].type==='note'){need+=blockNeed(ctx,blocks[next]);next++;}need+=blocks[next]?.stages?30+stagedRowNeed(ctx,blocks[next]):st.itemStep*4;ensure(ctx,Math.min(need,ctx.h-ctx.bottom-ctx.m-st.contStep-20));}if(b.menuRole){if(b.menuRole==='heading')category='';ensure(ctx,menuFlowNeed(ctx,blocks,index));}drawBlock(ctx,b);return;}
         setFont(ctx,'normal',st.item);const lines=wrap(ctx,b.text,textW);
         const rowNeed=stagedRowNeed(ctx,b);
         const startNeed=rowNeed>ctx.h-ctx.bottom-ctx.m-st.contStep-80?st.itemStep*3:rowNeed;
-        const page=ctx.pdf.internal.getNumberOfPages();ensure(ctx,startNeed+(open?0:18)+(withNotes&&index===blocks.length-1?notesNeed(ctx):0));if(page!==ctx.pdf.internal.getNumberOfPages()){open=false;if(category)drawBlock(ctx,{type:'sub',text:category+' (continued)'});}
-        if(!open)header();
+        const page=ctx.pdf.internal.getNumberOfPages();ensure(ctx,startNeed+(open?0:30)+(withNotes&&index===blocks.length-1?notesNeed(ctx):0));if(page!==ctx.pdf.internal.getNumberOfPages()){open=false;if(category)drawBlock(ctx,{type:'sub',text:category+' (continued)'});}
+        if(!open)header();const rowPage=ctx.pdf.internal.getNumberOfPages();
         // No code column on the staff sheet; descriptions use the reclaimed width.
-        for(const [key,x] of [['pull',pullX],['set',setX]]){const value=b.stages[key];if(value==='check'){ctx.pdf.setLineWidth(.9);ctx.pdf.rect(x-st.box/2,ctx.y-st.box+2.5,st.box,st.box);}else{setFont(ctx,'normal',10);ctx.pdf.text(value,x,ctx.y,{align:'center'});}}
-        lines.forEach(line=>{if(ctx.y+st.itemStep>ctx.h-ctx.bottom){ensure(ctx,st.itemStep*4);header();setFont(ctx,'bold',st.code);ctx.pdf.text('(continued)',ctx.m,ctx.y);ctx.y+=st.code+5;}setFont(ctx,'normal',st.item);ctx.pdf.text(line,textX,ctx.y);ctx.y+=st.itemStep;});ctx.y+=6;
+        for(const [key,x] of [['pull',pullX],['set',setX]]){const value=b.stages[key];if(value==='check'){ctx.pdf.setLineWidth(.9);ctx.pdf.rect(x-st.box/2,ctx.y-st.box+2.5,st.box,st.box);}else{setFont(ctx,'normal',10);ctx.pdf.text(value,x,ctx.y,{align:'center'});}const team=stageTeam(b,key);if(team){setFont(ctx,'normal',9);wrap(ctx,team,62).forEach((line,n)=>ctx.pdf.text(line,x,ctx.y+14+n*10,{align:'center'}));}}
+        const rowStart=ctx.y;lines.forEach(line=>{if(ctx.y+st.itemStep>ctx.h-ctx.bottom){ensure(ctx,st.itemStep*4);header();setFont(ctx,'bold',st.code);ctx.pdf.text('(continued)',ctx.m,ctx.y);ctx.y+=st.code+5;}setFont(ctx,'normal',st.item);ctx.pdf.text(line,textX,ctx.y);ctx.y+=st.itemStep;});ctx.y+=6;if(ctx.pdf.internal.getNumberOfPages()===rowPage)ctx.y=Math.max(ctx.y,rowStart+rowNeed);
     });
 }
 
@@ -2862,7 +3100,7 @@ function renderSheetPdf(title, headerLns, sections, footerLabel, withNotes, styl
     sections.forEach(sec => {
         if (sec.newPage) newPage(ctx);
         const first = sec.blocks[0], sectionNotes=withNotes&&!sec.referenceOnly;
-        const totalNeed=sec.blocks.reduce((n,b)=>n+blockNeed(ctx,b)+(b.stages?18:0),0)+(sectionNotes?notesNeed(ctx):0);
+        const totalNeed=sec.blocks.reduce((n,b)=>n+blockNeed(ctx,b)+(b.stages?30:0),0)+(sectionNotes?notesNeed(ctx):0);
         let opening=Math.max(totalNeed<=320?totalNeed:0,sectionOpeningNeed(ctx,sec.blocks));
         // Match drawBlocks' first subgroup reservation so the section title cannot be stranded.
         if(first?.type==='sub' && !sec.blocks.some(b=>b.stages)) {
@@ -3036,6 +3274,45 @@ function pdfPageLines(items, mode) {
     return out;
 }
 
+// Keep PDF page context and table cell boundaries for the job sheet parser. Floor plans retain their own reader.
+function jobSheetPdfLines(pages, mode) {
+    const out = []; out.pageNumbers = []; out.tableServiceSourceNotes=[];
+    const footer = l => /^Last Saved on/i.test(l) || /^\d{1,3}$/.test(l);
+    pages.forEach((items, pi) => {
+        let pageLines;
+        const head = items.find(it => /^Item List$/i.test(it.str)) || items.find(it => /^Table Setting$/i.test(it.str) && items.some(other => /^Vendor$/i.test(other.str) && Math.abs(other.y-it.y)<3));
+        const vendor = head && items.find(it => /^Vendor(?: Notes)?$/i.test(it.str) && Math.abs(it.y - head.y) < 3);
+        if (head && vendor && mode !== 'rows') {
+            const end = items.filter(it => it.y < head.y && /^(?:Setup notes|BAR NOTES|PHOTOGRAPHY|Theme\s*\/\s*Decor Notes|Disposables)\b/i.test(it.str)).sort((a,b) => b.y-a.y)[0];
+            const bottom = end ? end.y : 75;
+            const body = items.filter(it => it.y < head.y - 3 && it.y > bottom + 3);
+            const hist = {};
+            body.filter(it => it.x >= vendor.x - 60 && it.x < vendor.x + 70).forEach(it => { const x=Math.round(it.x/3)*3;hist[x]=(hist[x]||0)+1; });
+            const starts=Object.keys(hist).sort((a,b)=>hist[b]-hist[a] || +a-+b);
+            const edge=starts.length && hist[starts[0]]>=3 ? +starts[0]-3 : vendor.x-4;
+            const notesHead=items.find(it=>/^Notes$/i.test(it.str)&&Math.abs(it.y-head.y)<3&&it.x>vendor.x);
+            const metadata=pdfPageLines(body.filter(it=>it.x>=edge),'rows');
+            if(metadata.length)out.tableServiceSourceNotes.push('Page '+(pi+1)+' table supplier and notes columns: '+metadata.join(' / '));
+            const left=body.filter(it=>it.x<edge);
+            // An operational note column remains attached to its item row; supplier text is kept as source context.
+            if(notesHead){
+                const notes=body.filter(it=>it.x>=notesHead.x-25);
+                notes.forEach(note=>{const row=left.filter(it=>Math.abs(it.y-note.y)<3).sort((a,b)=>a.x-b.x);if(row.length)left.push({...note,x:Math.max(...row.map(it=>it.x+it.w))+3,str:'('+note.str+')'});});
+            }
+            const rows=pdfPageLines(left,'rows');
+            const merged=[];
+            rows.forEach(l=>{
+                const prev=merged[merged.length-1]||'';
+                if(prev && (/^(?:SWEETHEART TABLE ONLY|ONLY\s*\(|get VIP Services?|VIP Service\)|and the\b)/i.test(l) || (/\bFOR\s*$/i.test(prev) && /^SWEETHEART/i.test(l)))) merged[merged.length-1]+=' '+l;
+                else merged.push(l);
+            });
+            pageLines=[...pdfPageLines(items.filter(it=>it.y>=head.y-3),'columns'), ...merged, ...pdfPageLines(items.filter(it=>it.y<=bottom+3),'columns')];
+        } else pageLines=pdfPageLines(items,mode||'columns');
+        pageLines.filter(l=>!footer(l)).forEach(l=>{out.push(l);out.pageNumbers.push(pi+1);});
+    });
+    return out;
+}
+
 /* -- Which kind of document is it? -- */
 function looksLikeFloorPlan(pages) { const all = pages.map(p => p.map(i => i.str).join(' ')).join(' '); return /Each count represents the total/.test(all) || (/ITEM NAME/.test(all) && /VENUE PROVIDED/i.test(all)); }
 function looksLikeJobSheet(lines) { const t = lines.join('\n'); return /^Guest count:/mi.test(t) || /^Event Date:/mi.test(t) || /Timeline\s*\/\s*Event Schedule/i.test(t); }
@@ -3043,8 +3320,18 @@ function looksLikeJobSheet(lines) { const t = lines.join('\n'); return /^Guest c
 /* -- Job sheet extraction. Labels are the ones used on all three template generations Lino sent. -- */
 // Menu headings, as they appear on the three template generations (often written "| Dinner |").
 const MENU_HEADINGS = [
-    [/^(the )?cocktail hour$/i, 'cocktail'], [/^(?:tray[- ]?passed|passed) (?:hors.*|bites|appetizers|apps)$/i, 'cocktail'], [/^(reception )?dinner$/i, 'dinner'], [/^dessert$/i, 'dessert'], [/^late[- ]night( snacks?)?$/i, 'latenight'],
-    [/^at the bar$/i, 'bar'], [/^sips$/i, 'bar'], [/^on[e]? the buffet$/i, 'buffetmenu']
+    [/^(?:the |a )?cocktail hour(?:\s*[-–—].*)?$/i, 'cocktail'],
+    [/^(?:tray[- ]?passed|passed)\s+(?:hors.*|bites.*|appetizers.*|apps.*)$/i, 'cocktail'],
+    [/^(?:tray[- ]?passed|passed)\s+(?:desserts?|sweets?)(?:\b.*)?$/i, 'passed'],
+    [/\|\s*tray[- ]?passed desserts?(?:\s+bites?)?$/i, 'passed'],
+    [/^(?:reception )?dinner$/i, 'dinner'], [/^(?:the )?desserts?(?: bar| display)?$/i, 'dessert'],
+    [/^late[- ]night(?: snacks?)?$/i, 'latenight'],
+    [/^(?:at the bar\b.*|sips)$/i, 'bar'],
+    [/^on[e]? the (?:dinner )?buffet$/i, 'buffetmenu'],
+    [/^on display\s*\|\s*stations?$/i, 'stations'], [/^grazing display$/i, 'display'],
+    [/^(?!(?:trio|assorted|mini)\b)[a-z][a-z '’-]{1,40} sweets$/i,'dessert'],
+    [/^(?:pasta\b.*|queso|.+ (?:food|carving|grilled cheese)) station$/i, 'station'],
+    [/^\*?(?:specialty plated\b.*|plated meal for\b.*)\*?$/i, 'specialmeals']
 ];
 function headingText(l) { return String(l || '').replace(/^\|\s*/, '').replace(/\s*\|$/, '').trim(); }
 function menuHeading(l) { const h = headingText(l); const m = MENU_HEADINGS.find(([re]) => re.test(h)); return m ? m[1] : null; }
@@ -3053,22 +3340,39 @@ const MENU_EQUIPMENT = [
     [/\bskewers?\b/i, 'skewers'], [/\bcones?\b/i, 'cones'], [/\bbaskets?\b/i, 'baskets'], [/\bjars?\b/i, 'jars'],
     [/\bboats?\b/i, 'boats'], [/\bbowls?\b/i, 'bowls'], [/\bplates?\b/i, 'plates'], [/\bcups?\b/i, 'cups'], [/\bgoblets?\b/i, 'goblets']
 ];
-const MENU_STOP =/^(staff meals?|vendor meals?|disposables\b|needed from kitchen|ice\b|uniforms?\b|bar notes|theme|setup notes|closing checklist|kitchen lead|real glasses or disposables)/i;
+const MENU_STOP =/^(staff meals?|vendor meals?|disposables\b|needed from kitchen|ice(?:\s*[:–—-]|$)|uniforms?\b|bar notes|theme|setup notes|closing checklist|kitchen lead|real glasses or disposables)/i;
 const VENDOR_WORDS = /(florist|floral|flowers|photographer|photo|video|videographer|\bdj\b|\bband\b|musician|violinist|harpist|quartet|guitarist|pianist|rentals?|hair|make-?up|valet|security|cigar|officiant|baker|bakery|decor|lighting|\bav\b|photo ?booth)/i;
-const NOT_VENDOR = /(site manager|server|staff|\bteam\b|bartender|captain|chef|kitchen|scullery|houseman|guest|b&g|bride|groom|client|vendor meal|photog shoots|all vendors|ceremony|cocktail hour|dinner|dessert|toast|speech|dance|last call|service|set-?up|gates|details|babysit)/i;
+const NOT_VENDOR = /(site manager|server|staff|\bteam\b|bartender|captain|chef|kitchen|scullery|houseman|guest|b&g|bride|groom|client|vendor meal|photog shoots|all vendors|ceremony|cocktail hour|dinner|dessert|toast|speech|dance|last call|service|set-?up|gates?\b|details|babysit)/i;
 const NUM_WORDS = { a: 1, one: 1, two: 2, three: 3, four: 4, five: 5 };
 
 function extractJobSheet(rawLines) {
     const lines = rawLines.map(cleanLine);
-    const facts = { times: {}, menus: {}, foodTypes: {}, bar: {}, vendors: [], flags: [], disposables: [], barDisposables: [], tableService: [] };
+    const pageNumbers=rawLines.pageNumbers||[];
+    // These are wrapped continuations, never a reason to combine similarly named equipment rows.
+    lines.forEach((l,i)=>{if(i && lines[i-1].length>60 && !menuHeading(l) && /^(?:(?:and|with|on|for|tables while)\b|on rim$|chefs$|SWEETHEART TABLE ONLY\b|get VIP Services?\b|VIP Service\))/i.test(l)){lines[i-1]+=' '+l;lines[i]='';}});
+    const facts = { times: {}, menus: {}, foodTypes: {}, bar: {}, vendors: [], flags: [], disposables: [], barDisposables: [], tableService: [], headCountUncertain: '', cakeConflicts: [], cakeEvidence: [], buffetCountUncertain: '', tableServiceSourceNotes: [], venueContacts: [], coffee: {has:'',option:'',evidence:[],conflicts:[],hasConflict:false,optionConflict:false,scopeNotes:''}, serviceWare:{standard:null,disposables:null,evidence:[],conflicts:[]}, specialMealsNotes:'',specialMealsEquipment:'' };
+    facts.tableServiceSourceNotes=(rawLines.tableServiceSourceNotes||[]).slice();
     const where = {};
     const first = (re, key) => { for (let i = 0; i < lines.length; i++) { const m = re.exec(lines[i]); if (m) { if (key) where[key] = lines[i]; return m; } } return null; };
     let m;
     if ((m = first(/^Event Date:\s*(.+)$/i, 'date'))) facts.date = parseLongDate(m[1]);
     if ((m = first(/^Client Name:\s*(.+)$/i, 'client'))) facts.clientName = m[1].trim();
     if ((m = first(/^Event Name:\s*(.+)$/i, 'eventName'))) facts.eventName = m[1].trim();
-    if ((m = first(/^Guest count:\s*(\d+)/i, 'headCount'))) facts.headCount = parseInt(m[1], 10);
-    if ((m = first(/^Venue contact\s*[–—-]\s*([A-Za-z]+)/i, 'venueContact'))) facts.venueContact = m[1];
+    if ((m = first(/^Guest count:\s*(.+)$/i, 'headCount'))) {
+        const value=m[1].trim(), food=/(?:^|\s)(\d+(?:\s*(?:[-–—]|to|or)\s*\d+)?)\s*\(\s*food\s*\)|\bfood\s*[:=]?\s*(\d+(?:\s*(?:[-–—]|to|or)\s*\d+)?)/i.exec(value);
+        if(food){const basis=food[1]||food[2];if(/^\d+$/.test(basis))facts.headCount=parseInt(basis,10);else facts.headCountUncertain=m[0];}
+        else if(/^\d+\s*(?:[-–—]|to|or)\s*\d+\b/i.test(value) || /\b(?:approx(?:imately)?|estimated?|TBD|to confirm)\b/i.test(value)) facts.headCountUncertain=m[0];
+        else if(/^\d+(?:\s*$|\s*\(?\s*(?:including|includes?|total|guests?)\b)/i.test(value))facts.headCount=parseInt(value,10);
+        else facts.headCountUncertain=m[0];
+    }
+    lines.slice(0,60).forEach((l,i)=>{
+        const vc=/^(?:(?:AM|PM)\s+)?Venue contacts?\s*(?:[–—:-]\s*(.*))?$/i.exec(l);
+        if(!vc)return;
+        const values=vc[1]?[vc[1]]:lines.slice(i+1,i+4).filter(x=>/^(?:AM|PM)\b\s*[:–—-]/i.test(x));
+        values.flatMap(v=>v.split(/\s*\/\s*|\s+&\s+(?=[A-Z])/)).forEach(v=>{if(v.trim()&&!facts.venueContacts.includes(v.trim()))facts.venueContacts.push(v.trim());});
+        where.venueContact=l;
+    });
+    if(facts.venueContacts.length===1){const name=/^(?:(?:AM|PM)\s*[:–—-]\s*)?([A-Za-z]+)/i.exec(facts.venueContacts[0]);if(name)facts.venueContact=name[1];}
     if ((m = first(/^Planners?\s*[–—-]\s*(.+)$/i, 'clientPlanner'))) facts.clientPlanner = m[1].trim();
     const tl = [['kitchen', /^Chef\s*\/\s*Staff at Kitchen:\s*(.+)$/i], ['arriveOnsite', /^Arrive Onsite:\s*(.+)$/i], ['eventStart', /^Event Starts?:\s*(.+)$/i], ['eventEnd', /^Event Ends?\s*\/\s*Strike:\s*(.+)$/i], ['staffDeparts', /^Staff departs:\s*(.+)$/i]];
     tl.forEach(([k, re]) => { const mm = first(re, 'time.' + k); if (mm) { const t = normTime(mm[1]); if (t) facts.times[k] = t; } });
@@ -3076,76 +3380,178 @@ function extractJobSheet(rawLines) {
     if ((m = first(/^(\d{1,2}(?::\d{2})?\s*[AaPp]\.?[Mm]\.?)\s*(?:[–—-]\s*)?Set-?\s?Up 100% complete/i, 'time.setupComplete'))) facts.times.setupComplete = normTime(m[1]);
     if ((m = first(/#\s*of Staff Meals[^:]*:\s*(\d+)/i, 'staffMeal'))) facts.staffMealCount = parseInt(m[1], 10);
 
-    // Menu sections first. Only the first section of each kind is read: later tables repeat the menu in short form.
-    // Menus come before the Disposables block. A "Dinner" or "Dessert" after it is a setup note or blank template text.
-    const di = lines.findIndex(l => /^Disposables\s*[–—-]/i.test(l));
-    const sections = []; let cur = null; const seenKinds = new Set();
-    // Decorated course headings mark the menu after the service timeline.
-    const timelineStart = lines.findIndex(l => /^Service Timeline$/i.test(l.trim()));
-    const menuStart = timelineStart < 0 ? -1 : lines.findIndex((l,i) => i > timelineStart && /^\|.*\|$/.test(l.trim()) && ['cocktail','dinner','buffetmenu'].includes(menuHeading(l)));
-    lines.forEach((l, i) => {
-        if ((di >= 0 && i > di) || (menuStart >= 0 && i < menuStart)) return;
-        const kind = menuHeading(l);
-        if (kind === 'cocktail' && cur?.kind === 'cocktail' && /^(?:tray[- ]?passed|passed) /i.test(headingText(l))) return;
-        if (kind) { if (seenKinds.has(kind)) { cur = null; return; } seenKinds.add(kind); cur = { kind, lines: [] }; sections.push(cur); return; }
-        if (!cur) return;
-        if (MENU_STOP.test(l) || cur.lines.length > 80) { cur = null; return; }
-        if (l && !/^\*{5,}$/.test(l)) cur.lines.push(l);
+    // Page context prevents the service timeline from becoming a menu. Once operations sections start,
+    // later setup tables cannot reopen the menu. Word paragraphs use the decorated heading fallback.
+    const di=lines.findIndex(l=>/^Disposables(?:\s*[–—:-].*)?$/i.test(l));
+    const sections=[];let cur=null,menuClosed=false;
+    const timelinePages=new Set(lines.map((l,i)=>/^(?:Service Timeline|Timeline\s*\/\s*Event Schedule)$/i.test(l)?pageNumbers[i]:null).filter(Boolean));
+    const timelineStart=lines.findIndex(l=>/^Service Timeline$/i.test(l));
+    const decoratedStart=timelineStart<0?-1:lines.findIndex((l,i)=>i>timelineStart&&/^\|.*\|$/.test(l)&&['cocktail','dinner','buffetmenu'].includes(menuHeading(l)));
+    lines.forEach((l,i)=>{
+        if(menuClosed || (di>=0&&i>di) || (pageNumbers.length?timelinePages.has(pageNumbers[i]):decoratedStart>=0&&i<decoratedStart))return;
+        if(MENU_STOP.test(l)){if(sections.length)menuClosed=true;cur=null;return;}
+        const customBeverageBar=/^(?:\|\s*)?the .+ bar(?:\s*\|)?$/i.test(l)&&lines.slice(i+1,i+7).some(x=>/^(?:Bubbles\s*[-–—:]|Free[- ]Flowing Bubbles|Wine\s*:|Beer\s*:|Non[- ]Alcoholic\s*:|Signature Cocktails?\s*:|Full (?:House |Premium )?Bar|Premium (?:Soft |House )?Bar)/i.test(x));
+        const kind=customBeverageBar?'bar':menuHeading(l);
+        if(kind){
+            if(kind==='cocktail'&&cur?.kind==='latenight'){cur.lines.push(l);return;}
+            if(cur && ((kind==='cocktail'&&cur.kind==='cocktail') || (kind==='specialmeals'&&cur.kind==='specialmeals'))){if(kind==='specialmeals')cur.lines.push(l);return;}
+            cur={kind,heading:headingText(l),lines:[]};sections.push(cur);return;
+        }
+        if(/^\|.*\|$/.test(l)){if(cur)cur.lines.push(headingText(l));return;}
+        if(!cur)return;
+        if(l&&!/^\*{5,}$/.test(l))cur.lines.push(l);
     });
-    const secText = (k) => sections.filter(x => x.kind === k).map(x => x.lines.join('\n')).join('\n');
-    const isTemplateOrTimed = (l) => /^[\u2610\u25a1]/.test(l) || TIME_RE.test(l);
-    const trayLines=sections.filter(sec=>sec.kind==='cocktail').flatMap(sec=>sec.lines);
-    const trayNotes=new Set();
-    trayLines.forEach((line,i)=>{
-        const vessel=MENU_EQUIPMENT.some(([re,word])=>word!=='skewers'&&re.test(line))||/\bvessels?\b|\bplatters?\b|\btrays?\b|^notes?:|^serve[ds]?\b|\bspecial\b|\bTBD\b|\bto confirm\b|\?\?\?/i.test(line);
-        if(!vessel)return;
-        if(i>0&&!/^(?:tray[- ]passed|passed appetizers)/i.test(trayLines[i-1]))trayNotes.add(i-1);
-        trayNotes.add(i);
-        if(/^(?:use|with|bring|keep|extra|reserve|\d+)\b/i.test(trayLines[i+1]||''))trayNotes.add(i+1);
+    const secText=k=>sections.filter(x=>x.kind===k).map(x=>x.lines.join('\n')).join('\n');
+    const isTemplateOrTimed=l=>/^[\u2610\u25a1]/.test(l)||TIME_RE.test(l);
+    const isPassed=sec=>sec.kind==='cocktail'||sec.kind==='passed'||(sec.kind==='latenight'&&sec.lines.some(l=>/tray[- ]?passed|passed in|\bpass with\b/i.test(l)));
+    const traySections=sections.filter(isPassed);
+    if(traySections.length)facts.foodTypes.tray_pass=traySections[0].heading;
+    const trayLines=traySections.flatMap(sec=>sec.lines);
+    const trayNotes=[];
+    traySections.forEach(sec=>sec.lines.forEach((line,i)=>{
+        // A food description can mention an edible cup, cone or boat. Keep explicit serving instructions instead.
+        const explicit=/\b(?:cloche|cast iron pans?|(?:taco|cone|caprese|empanada|pedestal|devilled egg|concession|serving) (?:holder|trays?|platters?)|cigar box)\b/i.test(line)
+            || /\b(?:presentation|presented|serve[ds]?|use|send|holder|supply|provide|bring)\b.*\b(?:vessels?|platters?|trays?|spoons?|forks?|plates?|cups?|glasses|boats?|cones?|pans?|box)\b/i.test(line)
+            || /\b(?:vessels?|platters?|trays?|boats?)\b.*\b(?:presentation|present|wood|bamboo|holder|drip)\b/i.test(line)
+            || /^(?:tasting spoons?|shot glasses|individual mini plates|cone holder|served up|served on)\b/i.test(line);
+        const edibleContainer=/\b(?:wonton(?:\s+crisp)?|filo|phyllo|pastry|tortilla|edible)\s+(?:cups?|cones?|boats?)\b/i.test(line);
+        const separateVessel=/\b(?:cloche|cast iron pans?|trays?|platters?|holders?|tasting spoons?|shot glasses)\b/i.test(line);
+        if(!explicit||(edibleContainer&&!separateVessel))return;
+        const previous=sec.lines[i-1]||'';
+        if(/^Staff roaming\b/i.test(previous)){
+            const dish=sec.lines[i-2]||'';if(dish&&!TIME_RE.test(dish)&&!menuHeading(dish))trayNotes.push(dish);
+            trayNotes.push(previous);
+        }else if(previous&&!TIME_RE.test(previous)&&!/^(?:\d+\s*(?:PM|AM)|chef|server|staff)/i.test(previous)){
+            const dish=sec.lines[i-2]||'';
+            if(/^presented in\b/i.test(line)&&(previous.match(/,/g)||[]).length>=2&&dish&&dish.length<100&&!/[,;:]/.test(dish)&&!TIME_RE.test(dish)&&!menuHeading(dish)&&!/^(?:use|send|serve|present|chef|staff|server|add|continue)\b/i.test(dish))trayNotes.push(dish);
+            trayNotes.push(previous);
+        }
+        trayNotes.push(line);
+        if(/^(?:with|on rim|chefs\b)/i.test(sec.lines[i+1]||''))trayNotes.push(sec.lines[i+1]);
+    }));
+    const sourceVesselLine=(l,i)=>l+((l.match(/\(/g)||[]).length>(l.match(/\)/g)||[]).length&&lines[i+1]?' '+lines[i+1]:'');
+    // Preparation sections may hold the only vessel note. Require both a passed context and an actual instruction.
+    lines.forEach((l,i)=>{if(/\b(?:tray[- ]?passed|tray[- ]?pass|caprese)\b/i.test(l)&&/\b(?:wood|vessel|serving tray|platter)\b/i.test(l)&&!/^(?:\d+\s*(?:PM|AM)|\d+\s+(?:servers?|staff))\b/i.test(l))trayNotes.push(sourceVesselLine(l,i));});
+    let trayPrep=false;
+    lines.forEach((l,i)=>{
+        if(/^Trays for passing\b/i.test(l)){trayPrep=true;return;}
+        if(trayPrep&&/^(?:Buffet|Bar Equipment|Beverage Display|Theme|Table Service|Disposables|Setup notes)\b/i.test(l))trayPrep=false;
+        if(!trayPrep||!l||/^Bussing Trays, Large Oval Trays|^General Display Builds/i.test(l))return;
+        if(/\b(?:trays?|platters?|vessels?|holders?)\b/i.test(l))trayNotes.push(sourceVesselLine(l,i));
     });
-    facts.trayVesselNotes=[...trayNotes].sort((a,b)=>a-b).map(i=>trayLines[i]).join('\n');
-    facts.trayMenuLines=trayLines;
-    // Food service (lines starting with an unticked box are template text, lines starting with a time are the timeline)
-    lines.forEach(l => {
-        if (isTemplateOrTimed(l)) return;
-        if (/^(?:tray[- ]?passed|passed)\s+(hors|bites|appetizers|apps)/i.test(l)) facts.foodTypes.tray_pass = facts.foodTypes.tray_pass || l;
-        if (/^(an? )?(elegant )?plated( service| dinner)?$/i.test(l)) facts.foodTypes.plated = facts.foodTypes.plated || l;
-        if (/^(an? )?(elegant )?family[- ]style( service| dinner)?$/i.test(l)) facts.foodTypes.family = facts.foodTypes.family || l;
-        const b = /^(\d+|one|two|three|four)\s+buffet(s|\s+set-?ups?)?\b/i.exec(l) || /^Buffet\s+Set-?ups?\s*\((\d+)\)/i.exec(l) || /^(?:Ballroom|Sanctuary|Parlor|Plaza)\s*[–—:-].*?\b(\d+)\s+Buffets?\b/i.exec(l);
-        if (b) { const n = /^\d/.test(b[1]) ? parseInt(b[1], 10) : NUM_WORDS[b[1].toLowerCase()]; facts.foodTypes.buffet = facts.foodTypes.buffet || l; facts.buffetCounts = [...new Set([...(facts.buffetCounts || []),n])]; if (!facts.buffetCount) { facts.buffetCount = n; where.buffetCount = l; } }
-        if (menuHeading(l) === 'buffetmenu') facts.foodTypes.buffet = facts.foodTypes.buffet || headingText(l);
+    facts.trayVesselNotes=[...new Set(trayNotes)].join('\n');facts.trayMenuLines=trayLines;
+    let mealTable=false,buffetTable=false;
+    lines.forEach((l,lineIndex)=>{
+        if(/^(?:Staff Meals?|Vendor Meals?)\s*$/i.test(l))mealTable=true;
+        if(/^(?:Disposables|Service Presentation|Food Service|Buffet Set[- ]?ups?|Setup notes|Table Service Needs|Table Settings?|BAR NOTES|Needed From Kitchen|Coffee Setup)\b/i.test(l))mealTable=false;
+        if(mealTable||isTemplateOrTimed(l))return;
+        const clean=headingText(l);
+        if(/^Buffet \/ Stations?\b/i.test(l))buffetTable=true;
+        else if(buffetTable&&/^(?:BAR NOTES|Water Service|Coffee|Bread|Setup notes|Layouts|Table Service|Disposables)\b/i.test(l))buffetTable=false;
+        if(menuHeading(l)==='cocktail')facts.foodTypes.tray_pass=facts.foodTypes.tray_pass||clean;
+        if(/^(?:an? )?(?:elegant )?plated(?: service| dinner)?$/i.test(clean))facts.foodTypes.plated=facts.foodTypes.plated||l;
+        if(/^(?:an? )?(?:elegant )?family[- ]style(?: service| dinner)?$/i.test(clean))facts.foodTypes.family=facts.foodTypes.family||l;
+        const dbl=/^(?:(\d+|one|two|three|four)\s+)?double\s+buffet(?:s|\b)/i.exec(clean)||/^Buffet\s+Set[- ]?ups?\s*[–—:-]\s*Double\s+Sided\b/i.exec(clean);
+        const single=/^(\d+|one|two|three|four)\s+buffet(?:s|\s+set[- ]?ups?)?\b/i.exec(clean)||/^Buffet\s+Set[- ]?ups?\s*\((\d+)\)/i.exec(clean)||/^(?:Ballroom|Sanctuary|Parlor|Plaza)\s*[–—:-].*?\b(\d+)\s+Buffets?\b/i.exec(clean);
+        const setup=buffetTable?/^(\d+|one|two|three|four)\s+set[- ]?ups?$/i.exec(clean):null;
+        const setupContext=setup?lines.slice(lineIndex,lineIndex+6).join(' / '):'';
+        const eachDouble=!!(setup&&/\beach\b.*\bdouble\b/i.test(setupContext));
+        const b=single||dbl||setup;
+        if(b){const raw=b[1]||'one',n=(/^\d/.test(raw)?parseInt(raw,10):NUM_WORDS[raw.toLowerCase()])*(single?1:setup?(eachDouble?2:1):2);if(n){facts.foodTypes.buffet=facts.foodTypes.buffet||l;facts.buffetCounts=[...new Set([...(facts.buffetCounts||[]),n])];if(!facts.buffetCount){facts.buffetCount=n;where.buffetCount=l;}}}
+        if(menuHeading(l)==='buffetmenu'||/^Double Buffet\b/i.test(clean))facts.foodTypes.buffet=facts.foodTypes.buffet||clean;
     });
-    if ((facts.buffetCounts || []).length > 1) { delete facts.buffetCount; delete where.buffetCount; }
-    // Cake service: a cake line that mentions serving or cutting (the timeline counts, template lines do not)
-    lines.forEach(l => { if (facts.cake || /^[\u2610\u25a1]/.test(l)) return; if (/\bcake\b/i.test(l) && /\b(service|serve[sd]?|cutting|cut)\b/i.test(l)) facts.cake = l; });
-    const dinnerText = secText('dinner');
-    const dinnerHead = dinnerText.split('\n').slice(0, 3).join(' ');
-    if (!facts.foodTypes.plated && /\bplated (service|dinner)\b/i.test(dinnerHead)) facts.foodTypes.plated = 'Dinner: ' + dinnerText.split('\n')[0];
-    if (!facts.foodTypes.family && /\bfamily[- ]style\b/i.test(dinnerHead)) facts.foodTypes.family = 'Dinner: ' + dinnerText.split('\n')[0];
-    if (!facts.foodTypes.buffet && /\bbuffet (?:service|dinner)\b/i.test(dinnerHead)) facts.foodTypes.buffet = 'Dinner: ' + dinnerText.split('\n')[0];
-    // The dinner service style (batch 9 rule: the final job sheet always states it). A late-night station is not a dinner style.
-    facts.dinnerStyle = /\bplated\b/i.test(dinnerHead) ? 'plated' : /\bfamily[- ]style\b/i.test(dinnerHead) ? 'family' : /\bbuffets?\b/i.test(dinnerHead) ? 'buffet' : /\bstations?\b/i.test(dinnerHead) ? 'stations'
-        : facts.foodTypes.plated ? 'plated' : facts.foodTypes.family ? 'family' : facts.foodTypes.buffet ? 'buffet' : '';
-    // Food stations: "A Station" / "2 Stations" headings, the name is the next line
-    for (let i = 0; i < lines.length; i++) {
-        const s = /^(a|one|two|three|four|\d+)\s+stations?$/i.exec(lines[i]); if (!s) continue;
-        const n = /^\d/.test(s[1]) ? parseInt(s[1], 10) : NUM_WORDS[s[1].toLowerCase()];
-        let j = i + 1; while (j < lines.length && !lines[j]) j++;
-        const name = j < lines.length && lines[j].length <= 60 && !MENU_HEADINGS.some(([re]) => re.test(lines[j])) ? lines[j] : '';
-        facts.foodTypes.stations = facts.foodTypes.stations || lines[i];
-        for (let k = 0; k < n; k++) facts.stations = (facts.stations || []).concat([{ name: k === 0 ? name : '', where: lines[i] + (name ? ' / ' + name : '') }]);
+    if((facts.buffetCounts||[]).length>1||facts.buffetCountUncertain){delete facts.buffetCount;delete where.buffetCount;}
+    // A private cutting and a guest cake service are different facts. Conflicting explicit guest instructions
+    // remain unresolved; equipment for a private cutting does not contradict a no-guest-service statement.
+    const cakePositive=[],cakeExplicitPositive=[],cakeNegative=[];
+    lines.forEach((l,i)=>{
+        if(/^[\u2610\u25a1]/.test(l)||!/\bcake\b/i.test(l))return;
+        const next=lines[i+1]||'';
+        const wrapped=(l.match(/\(/g)||[]).length>(l.match(/\)/g)||[]).length || /\b(?:not served|Bite (?:cuts?|slices?) and)\s*$/i.test(l);
+        const continuation=wrapped||/^Bite\b.*\b(?:cuts?|slices?|serves?)\b/i.test(next);
+        const context=l+(continuation?' '+next:'');
+        if(!/\b(?:service|serve[sd]?|cutting|cuts?|slices?)\b/i.test(context))return;
+        if(/\b(?:not served|no (?:guest )?cake service|not for guests|bride and groom only|bride & groom only)\b/i.test(context)){cakeNegative.push(context.trim());return;}
+        cakePositive.push(context.trim());
+        if(/\bcake service\s*:\s*yes\b|\bserve[sd]?\s+(?:the cake\s+)?to guests\b|\bbite\b.*\b(?:cuts?|slices?)\s+and\s+serves?\b/i.test(context))cakeExplicitPositive.push(context.trim());
+    });
+    facts.cakeEvidence=[...new Set([...cakePositive,...cakeNegative])];
+    if(cakePositive.length&&!cakeNegative.length)facts.cake=cakePositive[0];
+    if(cakeNegative.length)facts.cakeNotServed=cakeNegative[0];
+    if(cakeNegative.length&&cakeExplicitPositive.length)facts.cakeConflicts=[...new Set([...cakeExplicitPositive,...cakeNegative])];
+    const dinnerText=secText('dinner'),dinnerHead=dinnerText.split('\n').slice(0,3).join(' ');
+    if(!facts.foodTypes.plated&&/\bplated (?:service|dinner)\b/i.test(dinnerHead))facts.foodTypes.plated='Dinner: '+dinnerText.split('\n')[0];
+    if(!facts.foodTypes.family&&/\bfamily[- ]style\b/i.test(dinnerHead))facts.foodTypes.family='Dinner: '+dinnerText.split('\n')[0];
+    if(!facts.foodTypes.buffet&&/\bbuffet (?:service|dinner)\b/i.test(dinnerHead))facts.foodTypes.buffet='Dinner: '+dinnerText.split('\n')[0];
+    facts.dinnerStyle=facts.foodTypes.plated?'plated':facts.foodTypes.family?'family':facts.foodTypes.buffet?'buffet':/\bstations?\b/i.test(dinnerHead)?'stations':'';
+    for(let i=0;i<lines.length;i++){
+        const st=/^(a|one|two|three|four|\d+)\s+stations?$/i.exec(lines[i]);if(!st)continue;
+        const n=/^\d/.test(st[1])?parseInt(st[1],10):NUM_WORDS[st[1].toLowerCase()];let j=i+1;while(j<lines.length&&!lines[j])j++;
+        const name=j<lines.length&&lines[j].length<=60&&!menuHeading(lines[j])?lines[j]:'';facts.foodTypes.stations=facts.foodTypes.stations||lines[i];
+        for(let k=0;k<n;k++)facts.stations=(facts.stations||[]).concat([{name:k===0?name:'',where:lines[i]+(name?' / '+name:'')}]);
     }
-    const dinnerStyle = facts.dinnerStyle || null;
-    const addMenu = (box, text) => { if (!text.trim()) return; facts.menus[box] = (facts.menus[box] ? facts.menus[box] + '\n\n' : '') + text.trim(); };
-    sections.forEach(sec => {
-        const text = sec.lines.join('\n');
-        if (sec.kind === 'dinner') { const head3 = sec.lines.slice(0, 3).join(' '); const st = /\bplated\b/i.test(head3) ? 'plated' : /\bfamily[- ]style\b/i.test(head3) ? 'family' : /\bbuffets?\b/i.test(head3) ? 'buffet' : /\bstations?\b/i.test(head3) ? 'stations' : dinnerStyle; if (st) addMenu(st, text); }
-        else if (sec.kind === 'buffetmenu') addMenu('buffet', text);
-        else if (sec.kind === 'dessert') { const firstLine = sec.lines[0] || ''; const st = /station/i.test(firstLine) ? 'stations' : dinnerStyle; if (st) addMenu(st, 'Dessert\n' + text); }
-        else if (sec.kind === 'latenight') addMenu('stations', 'Late-night\n' + text);
-        else if (sec.kind === 'bar') facts.barText = (facts.barText || '') + '\n' + text;
-        // cocktail hour (tray passed) is excluded by ruling 5.14
+    sections.filter(sec=>['stations','station'].includes(sec.kind)).forEach(sec=>{
+        facts.foodTypes.stations=facts.foodTypes.stations||sec.heading;
+        const name=sec.kind==='station'?sec.heading:(sec.lines.find(l=>/\b(?:display|station)\b/i.test(l))||'');
+        if(name&&!(facts.stations||[]).some(st=>st.name===name))facts.stations=(facts.stations||[]).concat([{name,where:sec.heading}]);
     });
+    const dinnerStyle=facts.dinnerStyle||null;
+    const addMenu=(box,text)=>{if(text.trim())facts.menus[box]=(facts.menus[box]?facts.menus[box]+'\n\n':'')+text.trim();};
+    sections.forEach(sec=>{
+        const text=sec.lines.join('\n');
+        if(sec.kind==='dinner'){if(dinnerStyle)addMenu(dinnerStyle,text);}
+        else if(sec.kind==='buffetmenu')addMenu('buffet',text);
+        else if(sec.kind==='dessert'){const st=/station/i.test(sec.lines[0]||'')?'stations':dinnerStyle;if(st)addMenu(st,'Dessert\n'+text);else addMenu('additional','Dessert\n'+text);}
+        else if(sec.kind==='latenight'){const station=sec.lines.some(l=>/^(?:a|\d+) stations?$/i.test(l));addMenu(station?'stations':'additional',sec.heading+'\n'+text);}
+        else if(sec.kind==='passed'||sec.kind==='display')addMenu('additional',sec.heading+'\n'+text);
+        else if(['stations','station'].includes(sec.kind))addMenu('stations',sec.heading+'\n'+text);
+        else if(sec.kind==='specialmeals')facts.specialMealsNotes+=(facts.specialMealsNotes?'\n':'')+sec.heading+'\n'+text;
+        else if(sec.kind==='bar')facts.barText=(facts.barText||'')+'\n'+text;
+        // The initial cocktail menu remains excluded by ruling 5.14.
+    });
+    if(facts.foodTypes.buffet){lines.forEach((l,i)=>{if(/^Special Dietary Requirements.*\bPlated\b/i.test(l))facts.specialMealsNotes+=(facts.specialMealsNotes?'\n':'')+l+(/^[a-z]|^vegan\b/i.test(lines[i+1]||'')?' '+lines[i+1]:'');});}
+    const coffeeYes=[],coffeeNo=[],coffeeOptions=[],coffeeExcluded=[];
+    lines.forEach((l,i)=>{
+        if(/^[\u2610\u25a1]/.test(l))return;
+        if(/^Beverage\s*\/\s*Coffee Station\/Coffee Service/i.test(l)){
+            const answer=lines.slice(i+1,i+4).find(x=>!/^#|^Any special notes/i.test(x)&&x);
+            if(answer&&/^Yes\b/i.test(answer)){coffeeYes.push(answer);if(/tableside/i.test(answer))coffeeOptions.push({option:'table_service',line:answer});}
+            if(answer&&/^(?:0\s+NONE|No)\b/i.test(answer))coffeeNo.push(answer);
+            return;
+        }
+        const next=lines[i+1]||'',context=l+' '+next;
+        const negative=/\bno coffee (?:service|setup)\b|^coffee (?:service|setup)(?: is)? not (?:required|needed)\b/i.test(l)||/^Coffee (?:Setup|Service)\s*:\s*(?:no|none)\b/i.test(l)||(/^Coffee Service\b/i.test(l)&&/^0\s+NONE\b/i.test(next));
+        const positive=/^Coffee Setup\s*:\s*(?:yes|for\b)/i.test(l)||/^(?:Tableside )?coffee and tea (?:service|station|display)\b/i.test(l)||/^Tableside coffee\b/i.test(l)||/^coffee(?:\s*(?:and|&|\/)\s*tea)?\s+(?:station|display)\b/i.test(l)||/^Includes coffee and tea display\b/i.test(l)||(/^Coffee Service\b/i.test(l)&&/^Yes\b/i.test(next));
+        if(negative)coffeeNo.push(l+(/^Coffee Service$/i.test(l)?' '+next:''));
+        else if(/\bcoffee\b/i.test(l)&&/\b(?:no|not|without|omit(?:ted)?|excluded)\b/i.test(l)){coffeeExcluded.push(l);return;}
+        else if(positive)coffeeYes.push(l+(/^Coffee Service$/i.test(l)?' '+next:''));
+        if(negative)return;
+        if(/\b(?:staffed|server[- ]run|staff[- ]served|served by|servers? attend)\b/i.test(l)&&/\bcoffee\b/i.test(l))return;
+        if(/\b(?:tableside|table service)\b.*\b(?:coffee|tea)\b|\bcoffee\b.*\b(?:tableside|table service)\b/i.test(l)||(/^Coffee Service\b/i.test(l)&&/\bTableside\b/i.test(next)))coffeeOptions.push({option:'table_service',line:context.trim()});
+        else if(/\bcoffee(?:\s*(?:and|&|\/)\s*tea)?\s+(?:station|display)\b/i.test(l))coffeeOptions.push({option:'self_serve',line:l});
+        else if(/\bcoffee\b.*\b(?:upon|on) request\b/i.test(l))coffeeOptions.push({option:'upon_request',line:l});
+    });
+    const modes=[...new Set(coffeeOptions.map(x=>x.option))];
+    facts.coffee.evidence=[...new Set([...coffeeYes,...coffeeNo,...coffeeExcluded,...coffeeOptions.map(x=>x.line)])];
+    facts.coffee.scopeNotes=facts.coffee.evidence.filter(l=>/\bfor (?:chaperones|staff|vendors|VIPs|a limited group)\b/i.test(l)).join('\n');
+    facts.coffee.hasConflict=!!(coffeeNo.length&&(coffeeYes.length||coffeeOptions.length));facts.coffee.optionConflict=modes.length>1;
+    facts.coffee.has=facts.coffee.hasConflict?'':coffeeYes.length||coffeeOptions.length?'yes':coffeeNo.length?'no':'';
+    facts.coffee.option=!facts.coffee.hasConflict&&!facts.coffee.optionConflict&&modes.length===1?modes[0]:'';
+    if(facts.coffee.hasConflict)facts.coffee.conflicts.push('Coffee is both requested and explicitly excluded in the job sheet.');
+    if(facts.coffee.optionConflict)facts.coffee.conflicts.push('The job sheet names more than one coffee setup: '+modes.map(mode=>COFFEE_OPTIONS[mode]||mode).join(', ')+'.');
+    const wareNegated=l=>/\b(?:no|not|without|omit(?:ted)?|excluded)\b/i.test(l);
+    const allDisposableStatements=lines.filter(l=>!wareNegated(l)&&/\ball disposables?\b/i.test(l));
+    const disposableDinner=allDisposableStatements.filter(l=>/^(?:Sales\s*[–—:-]\s*)?All disposables?\s*[.!]?$/i.test(l)||(/\bplates?\b/i.test(l)&&/\b(?:roll[- ]?ups?|cutlery)\b/i.test(l)));
+    const partialDisposable=allDisposableStatements.filter(l=>!disposableDinner.includes(l));
+    const reusableDinner=lines.filter(l=>!wareNegated(l)&&/\b(?:reusable|china)\s+(?:dinnerware|dinner plates?|cutlery)\b/i.test(l)&&!/^Table Service Needs|^Disposables\//i.test(l));
+    const noReusable=lines.filter(l=>/^(?:No|Without)\s+(?:china|reusable)\s+(?:dinnerware|dinner plates?|cutlery)\b/i.test(l));
+    const noDisposable=lines.filter(l=>/^(?:No|Without)\s+disposable\s+(?:dinnerware|dinner plates?|cutlery)\b/i.test(l));
+    const qualifiedWare=lines.filter(l=>wareNegated(l)&&/\ball disposables?\b|\b(?:reusable|china|disposable)\s+(?:dinnerware|dinner plates?|cutlery)\b/i.test(l));
+    facts.serviceWare.evidence=[...new Set([...disposableDinner,...reusableDinner,...qualifiedWare,...partialDisposable])];
+    if((disposableDinner.length&&reusableDinner.length)||(disposableDinner.length&&noDisposable.length)||(reusableDinner.length&&noReusable.length))facts.serviceWare.conflicts.push('The job sheet gives conflicting dinnerware instructions.');
+    else if(disposableDinner.length){facts.serviceWare.standard=false;facts.serviceWare.disposables=true;}
+    else if(reusableDinner.length){facts.serviceWare.standard=true;}
+    else if(noReusable.length||noDisposable.length||partialDisposable.length)facts.serviceWare.conflicts.push('The job sheet specifies only part of the service ware setup. Review plates, flatware and glassware separately before choosing an overall service ware mode.');
     // Bar section
     const glassOf = (t) => /dispos/i.test(t) ? 'disposable' : /real/i.test(t) ? 'real' : '';
     if ((m = first(/\bReal Glasses or Disposables\??:\s*(.+)$/i, 'barGlass'))) {
@@ -3186,31 +3592,32 @@ function extractJobSheet(rawLines) {
     // Disposables block. The PDF has no blank lines, so the next table's heading ends it.
     if (di >= 0) {
         let blanks = 0;
-        for (let i = di + 1; i < lines.length && i < di + 30; i++) {
+        for (let i = di + 1; i < lines.length; i++) {
             const l = lines[i];
             if (!l) { if (facts.disposables.length || facts.barDisposables.length || ++blanks >= 2) break; continue; } blanks = 0;
-            if (/^(Real Glasses|Bite Bar Kit|Staff Meals?|Vendor Meals?|Ice\b|Needed From Kitchen|Theme|Setup notes|Closing|Linens?\b|Uniform|Table Service Needs|Table Setting)/i.test(l)) break;
+            if (/^(Real Glasses|Bite Bar Kit|Staff Meals?|Vendor Meals?|Ice\b|Needed From Kitchen|Theme|Setup notes|Closing|Linens?\b|Uniform|Table Service Needs|Table\s?Settings?)/i.test(l)) break;
             if (/^Sales\s*[–—-]/i.test(l) || /^Ops\s*[–—-]\s*List additional disposables/i.test(l)) continue;     // template instructions
             if (/^Bar disposables/i.test(l)) facts.barDisposables.push(l); else facts.disposables.push(l);
         }
     }
-    // Table Service Needs and Table Setting: china, glass and silver to pull. The blank template's prompts are skipped,
-    // and so is the vendor column printed under Table Setting ("Vendor Notes", "Jomar", "440 ELM", ...).
-    const ti = lines.findIndex(l => /^Table Service Needs/i.test(l));
-    if (ti >= 0) {
-        let inSetting = false;
-        for (let i = ti + 1; i < lines.length && i < ti + 250; i++) {
-            const l = lines[i];
-            if (/^(Setup notes|BAR NOTES)\b/i.test(l)) break;
-            if (!l || (i === ti + 1 && /^(for table service|Ops delivers)/i.test(l))) continue;
-            if (/^Table Setting \(Delete if N\/A\)$/i.test(l)) { inSetting = true; continue; }
-            if (/^(LIST|Item List Vendor Notes|Chargers, Plates, Silver, Glassware|Are coffee cups\/saucers needed\b.*|Bread Plates\?|Remember plates for butter\b.*)$/i.test(l)) continue;
-            const ts = /^Table\s?setting\b(?:\s*Vendor Notes)?\s*:?\s*(.*)$/i.exec(l);
-            if (ts) { inSetting = true; facts.tableService.push('Table setting:'); if (ts[1]) facts.tableService.push(ts[1]); continue; }
-            if (inSetting && /^(Vendor Notes|440 ELM|Jomar|Robertson)$/i.test(l)) continue;
-            facts.tableService.push(l);
+    // Preserve each equipment row and its quantities. Supplier headings and prohibitions are context, not pulls.
+    const ti=lines.findIndex(l=>/^Table Service Needs\b|^Table\s?settings?\b/i.test(l));
+    if(ti>=0){
+        let inSetting=/^Table\s?settings?/i.test(lines[ti]);
+        const initialSetting=/^Table\s?settings?\s*:\s*(.+)$/i.exec(lines[ti]);if(initialSetting)facts.tableService.push(initialSetting[1]);
+        for(let i=ti+1;i<lines.length&&i<ti+250;i++){
+            const l=lines[i];
+            if(/^(?:Setup notes|BAR NOTES|PHOTOGRAPHY|Photographer Name|Theme\s*\/\s*Decor Notes)\b|^Disposables(?:\s*[–—:-].*)?$/i.test(l))break;
+            if(!l||/^ALL DISPOSABLES?$/i.test(l)||/^(?:for table service|Ops delivers)\b/i.test(l))continue;
+            if(/^Table\s?settings?\b/i.test(l)){inSetting=true;facts.tableService.push('Table setting:');const tail=/^Table\s?settings?\s*:\s*(.+)$/i.exec(l);if(tail)facts.tableService.push(tail[1]);continue;}
+            if(/^(?:LIST|Item List(?: Vendor)?(?: Notes)?|Vendor Notes|Chargers, Plates, Silver, Glassware|Are coffee cups\/saucers needed\b.*|Bread Plates\?|Remember plates for butter\b.*)$/i.test(l))continue;
+            if(inSetting&&/^(?:\d*440 ELM|Jomar|Robertson|Bright Rentals and|440 Elm \(See|breakdown above|and on rentals\))$/i.test(l))continue;
+            if(/^(?:NO\s+.+|Do not\b.*|Never\b.*)$/i.test(l)){facts.tableService.push('Note: '+l.replace(/\s+J$/,''));continue;}
+            if(/^(?:Coming From\b|Using from\b|Client is bringing\b)/i.test(l)||/^(?:Robertson|440 ELM|Jomar)$/i.test(l)){facts.tableService.push('Supplier: '+l);continue;}
+            const prev=facts.tableService[facts.tableService.length-1]||'';
+            if(prev&&/^(?:and the\b|SWEETHEART TABLE ONLY\b|get VIP Services?\b|VIP Service\)|location with Captain\))/i.test(l))facts.tableService[facts.tableService.length-1]+=' '+l;
+            else facts.tableService.push(l);
         }
-        if (facts.tableService.length && facts.tableService[facts.tableService.length - 1] === 'Table setting:') facts.tableService.pop();
     }
     // Pull items named only in a menu ("Mini ramekins for bbq dipping sauce"): flagged when the Disposables and
     // Table Service Needs lists never name them. Rev 8 scope ruling: only equipment that is pulled matters.
@@ -3225,7 +3632,7 @@ function extractJobSheet(rawLines) {
     const seenEquip = new Set();
     sections.forEach(sec => sec.lines.forEach(l => {
         MENU_EQUIPMENT.forEach(([re, word]) => {
-            if(sec.kind==='cocktail')return;
+            if(isPassed(sec)||sec.kind==='bar')return;
             if(word==='baskets'&&/\bbread\b/i.test(l)&&['dinner','buffetmenu'].includes(sec.kind)&&facts.dinnerStyle==='buffet')return;
             if (seenEquip.has(word) || !re.test(l) || re.test(listText)) return;
             seenEquip.add(word); facts.menuEquipment.push({ word, line: l });
@@ -3238,7 +3645,7 @@ function extractJobSheet(rawLines) {
     const listLines = listText.split('\n').filter(l => countOf(l));
     facts.countConflicts = [];
     sections.forEach(sec => sec.lines.forEach((l, li) => {
-        if(sec.kind==='cocktail')return;
+        if(isPassed(sec))return;
         const n = countOf(l); if (!n) return;
         MENU_EQUIPMENT.forEach(([re, word]) => {
             if (!re.test(l) || facts.countConflicts.some(c => c.word === word)) return;
@@ -3286,7 +3693,7 @@ function extractJobSheet(rawLines) {
     facts.startHints = lines.filter(l => /^[A-Za-z ]*start( time)?:\s*\S/i.test(l) && !/^Event Starts?:/i.test(l)).slice(0, 4);
     // Open flags inside the document
     const seen = new Set();
-    lines.forEach(l => { if(trayLines.includes(l))return; if (/\bops to confirm\b|\bto confirm\b|\bTBD\b|\?\?\?/i.test(l) && !seen.has(l)) { seen.add(l); facts.flags.push(l); } });
+    lines.forEach(l => { if(trayLines.includes(l)||facts.trayVesselNotes.includes(l))return; if (/\bops to confirm\b|\bto confirm\b|\bTBD\b|\?\?\?/i.test(l) && !seen.has(l)) { seen.add(l); facts.flags.push(l); } });
     facts.where = where;
     return facts;
 }
@@ -3434,9 +3841,19 @@ function buildCandidates() {
         const flabels = { tray_pass: 'Tray passed appetizers', plated: 'Plated', buffet: 'Buffet', family: 'Family style', stations: 'Food stations' };
         Object.keys(flabels).forEach(t => { if (f.foodTypes[t]) add(js, 'food.type.' + t, 'food', 'foodType', 'Food service', t, flabels[t], f.foodTypes[t]); });
         if(f.trayVesselNotes)add(js,'food.trayVesselNotes','food','set','Special tray passed vessels',f.trayVesselNotes,f.trayVesselNotes,'Tray passed menu',{path:'food.trayVesselNotes'});
-        if (f.buffetCount) add(js, 'buffets.count', 'food', 'buffets', 'Buffets', f.buffetCount, f.buffetCount + ' buffet' + (f.buffetCount === 1 ? '' : 's') + ' (pick the rooms from the floor plan)', w.buffetCount);
+        if (f.buffetCount && !f.buffetCountUncertain) add(js, 'buffets.count', 'food', 'buffets', 'Buffets', f.buffetCount, f.buffetCount + ' buffet' + (f.buffetCount === 1 ? '' : 's') + ' (pick the rooms from the floor plan)', w.buffetCount);
         (f.stations || []).forEach((st, i) => add(js, 'station.' + (i + 1), 'food', 'station', 'Food station', { name: st.name }, st.name || 'Food station ' + (i + 1), st.where));
-        ['plated', 'buffet', 'family', 'stations'].forEach(b => { if (f.menus[b]) add(js, 'food.menus.' + b, 'food', 'set', { plated: 'Plated menu', buffet: 'Buffet menu', family: 'Family style menu', stations: 'Food station menu' }[b], f.menus[b], f.menus[b].split('\n').slice(0, 3).join(' / ') + (f.menus[b].split('\n').length > 3 ? ' ...' : ''), 'Menu sections', { path: 'food.menus.' + b }); });
+        ['plated', 'buffet', 'family', 'stations', 'additional'].forEach(b => { if (f.menus[b]) add(js, 'food.menus.' + b, 'food', 'set', { plated: 'Plated menu', buffet: 'Buffet menu', family: 'Family style menu', stations: 'Food station menu', additional: 'Additional menu references' }[b], f.menus[b], f.menus[b].split('\n').slice(0, 3).join(' / ') + (f.menus[b].split('\n').length > 3 ? ' ...' : ''), 'Menu sections', { path: 'food.menus.' + b }); });
+        ['specialMealsNotes','specialMealsEquipment'].forEach(key=>{if(f[key])add(js,'food.'+key,'food','set',key==='specialMealsNotes'?'Limited plated meal notes':'Extra equipment for limited plated meals',f[key],null,'Buffet meal exceptions',{path:'food.'+key});});
+        if(f.coffee?.scopeNotes&&f.coffee.has==='yes'&&!f.coffee.hasConflict){
+            const value={has:'yes',countBasis:'separate',scopeNotes:f.coffee.scopeNotes};
+            if(f.coffee.option&&!f.coffee.optionConflict)value.option=f.coffee.option;
+            add(js,'coffee.limitedSetup','coffee','coffeeSetup','Coffee for a limited group',value,f.coffee.scopeNotes+'. Use a separately confirmed coffee guest count'+(value.option?' with '+COFFEE_OPTIONS[value.option]:'')+'. No quantity is supplied.',f.coffee.evidence.join(' / '));
+        } else {
+            if(f.coffee?.has&&!f.coffee.hasConflict)add(js,'coffee.has','coffee','set','Coffee and tea service',f.coffee.has,f.coffee.has==='yes'?'Coffee and tea service is needed':'No coffee and tea service',f.coffee.evidence.join(' / '),{path:'coffee.has'});
+            if(f.coffee?.option&&!f.coffee.hasConflict&&!f.coffee.optionConflict)add(js,'coffee.option','coffee','set','Coffee service style',f.coffee.option,COFFEE_OPTIONS[f.coffee.option],f.coffee.evidence.join(' / '),{path:'coffee.option'});
+        }
+        if(f.serviceWare&&!f.serviceWare.conflicts.length)['standard','disposables'].forEach(key=>{if(typeof f.serviceWare[key]==='boolean')add(js,'equipment.'+key,'service','set',key==='standard'?'China, flatware and glassware':'Disposables',f.serviceWare[key],(key==='standard'?'China, flatware and glassware: ':'Disposables: ')+(f.serviceWare[key]?'Yes':'No'),f.serviceWare.evidence.join(' / '),{path:'equipment.'+key});});
         if (f.cake) add(js, 'food.cakeService', 'food', 'set', 'Cake service', 'yes', 'Yes (salad forks equal to the head count)', f.cake, { path: 'food.cakeService' });
         if (f.staffMealCount) add(js, 'boh.staffMeal.count', 'kitchen', 'set', 'Staff meal count', String(f.staffMealCount), null, w.staffMeal, { path: 'boh.staffMeal.count' });
         if (f.disposables.length) add(js, 'equipment.disposablesText', 'service', 'set', 'Disposables on the job sheet', f.disposables.join('\n'), f.disposables.slice(0, 3).join(' / ') + (f.disposables.length > 3 ? ' ...' : ''), 'Disposables block', { path: 'equipment.disposablesText' });
@@ -3522,6 +3939,7 @@ function suggestionRowChoiceNeeded(s) {
     return null;
 }
 function replacementValue(s) {
+    if(s.kind==='coffeeSetup')return Object.fromEntries(Object.keys(s.value).map(k=>[k,state.coffee[k]||'']));
     if (s.kind === 'buffets') return state.food.buffets.length || null;
     if (s.kind === 'foodType') return state.food.types.includes('none') ? 'No food service' : null;
     if (s.kind === 'set' || s.kind === 'roomCount') return String(currentValueFor(s));
@@ -3545,7 +3963,8 @@ function refreshAcceptanceConflict(s, value) {
     const current = replacementValue(s);
     const previous = suggestionComparisons.has(s) ? suggestionComparisons.get(s) : s.conflict ? s.conflict.value : null;
     const changed = previous !== null && !sameValue(previous, current);
-    let differs = s.kind === 'foodType' && current !== null && value !== 'none';
+    let differs = s.kind === 'coffeeSetup' && !sameValue(current,value);
+    differs = differs || s.kind === 'foodType' && current !== null && value !== 'none';
     if (s.kind === 'set' || s.kind === 'roomCount') differs = current !== '' && current !== String(value);
     if (s.kind === 'buffets') differs = current !== null && current !== num(value);
     if (s.kind === 'custom') differs = current !== null && !sameValue(current, { name: value.name, qty: String(value.qty) });
@@ -3593,6 +4012,7 @@ function mergeCandidates(cands) {
         const s = Object.assign({}, c, { id: 'sg' + (++it.n), status: 'pending', change });
         const accFrom = acc ? 'accepted from ' + (acc.source && acc.source.document ? acc.source.document : 'an earlier document') : '';
         if (scalar) { if (cur !== '') s.conflict = { value: cur, display: String(cur), label: acc && String(acc.value) === String(cur) ? accFrom : 'typed by you' }; }
+        else if(c.kind==='coffeeSetup'&&!sameValue(replacementValue(s),s.value))s.conflict={value:replacementValue(s),display:suggestionCurrentDisplay(s,replacementValue(s)),label:'Current coffee answers'};
         else if (acc) s.conflict = { value: acc.value, display: acc.display, label: accFrom };
         suggestionComparisons.set(s, clone(replacementValue(s)));
         it.suggestions.push(s);
@@ -3637,13 +4057,19 @@ function runScan(manualHeadBefore) {
     const add = (key, section, kind, text, doc, extra) => { const issue = Object.assign({ key, section, kind, text, docFp: doc ? doc.fp : '', docName: doc ? doc.name : '' }, extra || {}); if (isOperationsIssue(issue)) issues.push(issue); };
     if (js) {
         const f = js.facts; const working = js.format === 'docx';
-        if ((f.buffetCounts || []).length > 1) add('buffets.conflictingCounts','food','question','The job sheet gives different buffet counts: '+f.buffetCounts.join(' and ')+'. Confirm the count and enter the buffet rows.',js);
+        if(f.buffetCountUncertain)add('buffets.qualifiedCount','food','question','Buffet arrangement needs review: '+f.buffetCountUncertain+'. Confirm the number of buffet units. No count was chosen automatically.',js);
+        else if ((f.buffetCounts || []).length > 1) add('buffets.conflictingCounts','food','question','The job sheet gives different buffet counts: '+f.buffetCounts.join(' and ')+'. Confirm the count and enter the buffet rows.',js);
         const blank = (key, section, label) => add('blank.' + key, section, working ? 'not filled yet' : 'question', working ? label + ' is not filled in yet on the working job sheet.' : label + ' is blank on the finalized job sheet.', js);
-        if (!f.headCount) blank('headCount', 'event', 'Guest count');
+        if (f.headCountUncertain) add('headCount.range','event','question','The job sheet gives a qualified guest count: '+f.headCountUncertain+'. Enter the Ops count to use. No count was chosen automatically.',js);
+        else if (!f.headCount) blank('headCount', 'event', 'Guest count');
+        if(f.cakeConflicts?.length)add('cake.conflictingSource','food','question','Guest cake service needs review: '+f.cakeConflicts.join(' / ')+'. Confirm whether cake will be served to guests before adding cake forks.',js);
+        if(f.coffee?.hasConflict||f.coffee?.optionConflict)add('coffee.conflictingSource','coffee','question','Coffee statements need review: '+f.coffee.conflicts.join(' / ')+'. Confirm the coffee setup before using it.',js);
+        if(f.serviceWare?.conflicts?.length)add('serviceWare.conflictingSource','service','question','Dinnerware statements need review: '+f.serviceWare.conflicts.join(' / ')+'. Choose the required dinnerware; no source priority was assumed.',js);
         if (!f.date) blank('date', 'event', 'Event date');
         if (!f.clientName) blank('clientName', 'event', 'Client name');
         if (!f.dinnerStyle) blank('food', 'food', 'Dinner service style (no plated, buffet, family style or station dinner found)');
-        if (!f.venueContact) blank('venueContact', 'event', 'Venue contact');
+        if ((f.venueContacts||[]).length>1) add('planner.multiple','event','question','The job sheet names more than one venue contact: '+f.venueContacts.join('; ')+'. Choose the event planner. No contact was selected automatically.',js);
+        else if (!f.venueContact) blank('venueContact', 'event', 'Venue contact');
         else if (!PLANNER_NAMES.includes(f.venueContact)) add('planner.unknown', 'event', 'info', 'Venue contact is "' + f.venueContact + '", not Hope, Elizabeth or Angela, so the Planner field was not filled in.', js);
         const noOut = f.vendors.filter(v => !v.loadOutTime && !excludedSetupItem(v.name)).map(v => v.name);
         if (noOut.length) add('vendor.loadout', 'vendors', working ? 'not filled yet' : 'question', 'No load-out time in the job sheet for: ' + noOut.join(', ') + '.', js);
@@ -3728,12 +4154,12 @@ async function ingestFile(name, buffer, lastModified) {
         if (looksLikeFloorPlan(pages)) { kind = 'floorplan'; facts = extractFloorPlan(pages); }
         else {
             const footer = (l) => /^Last Saved on\b/i.test(l) || /^\d{1,3}$/.test(l);       // page footers and page numbers
-            const lines = [].concat(...pages.map(p => pdfPageLines(p, 'columns'))).filter(l => !footer(l));
+            const lines = jobSheetPdfLines(pages, 'columns');
             if (!looksLikeJobSheet(lines)) throw new IntakeError(name + ' does not look like a job sheet or a floor plan.');
             kind = 'jobsheet'; facts = extractJobSheet(lines);
             // Labelled single values ("Guest count: 205") are also read row by row, in case the column split cut a label from its value.
-            const rowFacts = extractJobSheet([].concat(...pages.map(p => pdfPageLines(p, 'rows'))).filter(l => !footer(l)));
-            ['date', 'clientName', 'eventName', 'headCount', 'venueContact', 'clientPlanner', 'staffMealCount'].forEach(k => { if (!facts[k] && rowFacts[k]) { facts[k] = rowFacts[k]; facts.where[k] = rowFacts.where[k]; } });
+            const rowFacts = extractJobSheet(jobSheetPdfLines(pages, 'rows'));
+            ['date', 'clientName', 'eventName', 'headCount', 'venueContact', 'clientPlanner', 'staffMealCount'].forEach(k => { if (!facts[k] && rowFacts[k] && !(k === 'headCount' && facts.headCountUncertain) && !(k === 'venueContact' && facts.venueContacts.length > 1)) { facts[k] = rowFacts[k]; facts.where[k] = rowFacts.where[k]; } });
             Object.keys(rowFacts.times).forEach(k => { if (!facts.times[k] && k !== 'setupComplete') { facts.times[k] = rowFacts.times[k]; facts.where['time.' + k] = rowFacts.where['time.' + k]; } });
             if (!facts.bar.glassware && rowFacts.bar.glassware) { facts.bar.glassware = rowFacts.bar.glassware; facts.bar.realTypes = rowFacts.bar.realTypes; facts.bar.realLines = rowFacts.bar.realLines; }
         }
@@ -3772,6 +4198,7 @@ function applySuggestion(s, value) {
     const v = value === undefined ? s.value : value;
     let rowRef = null;
     switch (s.kind) {
+        case 'coffeeSetup': Object.keys(v).forEach(k=>state.coffee[k]=v[k]); break;
         case 'set': setPath(state, s.path, v); break;
         case 'foodType': {
             let t = state.food.types.filter(x => x !== 'none'); if (!t.includes(v)) t.push(v); state.food.types = t; break;
@@ -3903,11 +4330,18 @@ function renderIntake() {
 }
 function changeBadge(s) { return s.change ? '<span class="badge">' + escapeHtml(s.change) + '</span>' : ''; }
 function renderSuggestion(s) {
-    const editable = s.kind === 'set' || s.kind === 'roomCount';
+    const editable = s.kind === 'set' && typeof s.value !== 'boolean' || s.kind === 'roomCount';
     const big = s.kind === 'set' && /menus|disposables/.test(s.path || '');
     return '<div class="review-item" data-sg="' + s.id + '"><div class="ri-main"><span class="ri-label">' + escapeHtml(s.label) + '</span> <span class="ri-value">' + escapeHtml(s.display) + '</span>' + changeBadge(s) + '<div class="ri-src">' + sourceLine(s.source) + '</div>' +
         (editable ? '<div class="ri-edit is-hidden" id="edit-' + s.id + '"><label for="editval-' + s.id + '">Edited ' + escapeHtml(s.label) + '</label>' + (big ? '<textarea rows="4" id="editval-' + s.id + '">' + escapeHtml(s.value) + '</textarea>' : '<input type="text" id="editval-' + s.id + '" value="' + escapeHtml(s.value) + '">') + '<button type="button" class="btn-primary btn-sm" data-sg-accept-edit="' + s.id + '">Accept edited value</button></div>' : '') +
         '</div><div class="ri-actions"><button type="button" class="btn-primary btn-sm" data-sg-accept="' + s.id + '">Accept</button>' + (editable ? '<button type="button" class="btn-secondary btn-sm" data-sg-edit="' + s.id + '">Edit</button>' : '') + '<button type="button" class="btn-text" data-sg-dismiss="' + s.id + '">Dismiss</button></div></div>';
+}
+function suggestionCurrentDisplay(s,value) {
+    if(s.kind==='coffeeSetup')return (value.has==='yes'?'Coffee served':'Coffee not served')+'; '+(value.countBasis==='separate'?'separate guest count':'event head count')+(value.scopeNotes?'; '+value.scopeNotes:'')+(value.option?'; '+(COFFEE_OPTIONS[value.option]||value.option):'');
+    if(['equipment.standard','equipment.disposables'].includes(s.path))return String(value)==='true'?'Yes':'No';
+    if(s.path==='coffee.has')return value==='yes'?'Coffee and tea service is needed':value==='no'?'No coffee and tea service':displayValue(value);
+    if(s.path==='coffee.option')return COFFEE_OPTIONS[value]||displayValue(value);
+    return displayValue(value);
 }
 function renderPick(s) {
     const rowChoice = suggestionRowChoiceNeeded(s);
@@ -3917,7 +4351,7 @@ function renderPick(s) {
     if (s.needsPick) return '<div class="review-item pick" data-sg="' + s.id + '"><div class="ri-main"><span class="ri-label">' + escapeHtml(s.label) + '</span>' + changeBadge(s) + '<div class="ri-src">' + sourceLine(s.source) + '. Nothing is chosen for you, not even the newest export.</div></div><div class="ri-actions">' +
         s.value.map(v => '<button type="button" class="btn-secondary btn-sm" data-sg-version="' + s.id + '" data-version="' + v.version + '">Version ' + v.version + (v.seats != null ? ', ' + v.seats + ' seats' : '') + '</button>').join('') + '</div></div>';
     const actual = replacementValue(s);
-    const current = { display: displayValue(actual), label: s.conflict && sameValue(s.conflict.value, actual) ? s.conflict.label : 'Current form value' };
+    const current = { display: suggestionCurrentDisplay(s,actual), label: s.conflict && sameValue(s.conflict.value, actual) ? s.conflict.label : 'Current form value' };
     const short = value => { const text = String(value); return text.length > 36 ? text.slice(0, 33) + '...' : text; };
     return '<div class="review-item pick" data-sg="' + s.id + '"><div class="ri-main"><span class="ri-label">' + escapeHtml(s.label) + '</span>' + changeBadge(s) +
         '<div class="answer-comparison"><strong>Current answer</strong><div>' + escapeHtml(current.display) + '</div><div class="ri-src">' + escapeHtml(current.label) + '</div></div>' +
@@ -4023,7 +4457,7 @@ function navigateReview(token, origin) {
     if (el === $('reviewHeading') && token !== 'heading') $('reviewAnnouncement').textContent = 'That item is no longer waiting. All unresolved review items remain below.';
 }
 function issueField(i) {
-    if (i.key === 'seats' || i.key === 'headCount') return 'event.headCount';
+    if (i.key === 'seats' || i.key === 'headCount' || i.key === 'headCount.range') return 'event.headCount';
     return null;
 }
 function issueFieldLink(i) {
@@ -4033,6 +4467,7 @@ function issueFieldLink(i) {
 function warningTarget(w) {
     if (w.short === 'Suggestions waiting') return 'queue:all';
     if (w.short === 'Issues open') return 'queue:issues';
+    if (w.short === 'Coffee count missing') return state.coffee.countBasis==='separate'?'field:coffee.headCount':'field:event.headCount';
     if (w.short === 'Head count missing') return 'field:event.headCount';
     if (w.short === 'Date or name missing') return 'field:event.' + (!hasText(state.event.date) ? 'date' : 'clientName');
     if (w.short === 'Table count missing') return 'field:food.guestTables';
@@ -4146,6 +4581,7 @@ document.addEventListener('change', e => {
     handleBoundInput(e, true);
 });
 document.addEventListener('click', e => {
+    const equipmentButton=e.target.closest('[data-equipment-plan]');if(equipmentButton){equipmentPlanAction(equipmentButton);return;}
     const staffButton=e.target.closest('[data-staff-action]');if(staffButton){staffAction(staffButton.dataset.staffAction,staffButton.dataset.id);return;}
     const exception = e.target.closest('[data-bar-exception]');
     if (exception) { showBarException(Number(exception.dataset.barException)); return; }
