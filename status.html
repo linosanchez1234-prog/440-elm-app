@@ -219,7 +219,7 @@
         var noteBtn = owner ? '<button type="button" class="btn-text no-print" data-key="' + esc(b.key) + '" data-note="1">' + (mark.note ? 'Edit note' : 'Add note') + '</button>' : '';
         if (!b.stages) return '<div class="item' + (done ? ' is-done' : '') + '">' + box('done', b.text) + '<div class="body">' + esc(b.text) + who + note + noteBtn + '</div></div>';
         var stage = function (k, label) {
-            var team = b.stages[k + 'Team'] ? ' (' + b.stages[k + 'Team'] + ')' : '';
+            var team = b.stages[k + 'Team'] && b.stages[k + 'Team'] !== 'Unassigned' ? ' (' + b.stages[k + 'Team'] + ')' : '';
             if (b.stages[k] !== 'check') return b.stages[k] ? '<span class="stage">' + esc(label + ': ' + b.stages[k]) + '</span>' : '';
             return '<span class="stage">' + box(k, label + ': ' + b.text) + esc(label + team) + '</span>';
         };
