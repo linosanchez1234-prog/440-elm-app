@@ -3,7 +3,7 @@
    These values are identifiers, not passwords. The sign-in passwords and the
    database rules (firestore.rules) are what protect the data. */
 window.ELM_CLOUD_CONFIG = {
-    plannerEmail: "",
+    plannerEmail: "linosanchez1234+planner@gmail.com",
     // Project "440 Elm Events", created 2026-11-11. Set "firebase" to null to switch sharing off.
     firebase: {
         apiKey: "AIzaSyC1ZxsP00u86fTB3-6NIQMGcZotNYhW6gQ",

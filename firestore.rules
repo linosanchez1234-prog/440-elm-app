@@ -10,7 +10,7 @@ service cloud.firestore {
     function isOwner() {
       return request.auth != null && request.auth.token.email == 'linosanchez1234@gmail.com';
     }
-    function isPlanner() { return request.auth != null && request.auth.token.email == 'planner@example.com'; }
+    function isPlanner() { return request.auth != null && request.auth.token.email == 'linosanchez1234+planner@gmail.com'; }
     function isStaff() {
       return request.auth != null && request.auth.token.email == 'linosanchez1234+staff@gmail.com';
     }
