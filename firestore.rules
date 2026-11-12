@@ -1,15 +1,16 @@
 rules_version = '2';
 
 // 440 Elm online library and status page.
-// The two emails below must match cloud-config.js, in lowercase.
-// Only these two sign-ins can read anything. Only the owner can change events.
-// Staff can tick lines and add notes on published events, and nothing else.
+// Three shared roles, matched to cloud-config.js in lowercase (2026-11-12).
+// Only the owner changes event drafts. Planner edits are limited to shared planning records.
+// Staff can tick lines and add notes only on published events.
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function isOwner() {
       return request.auth != null && request.auth.token.email == 'linosanchez1234@gmail.com';
     }
+    function isPlanner() { return request.auth != null && request.auth.token.email == 'planner@example.com'; }
     function isStaff() {
       return request.auth != null && request.auth.token.email == 'linosanchez1234+staff@gmail.com';
     }
@@ -17,11 +18,29 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/events/$(eventId)).data.published == true;
     }
 
+    match /settings/{key} {
+      allow read, write: if isOwner();
+      allow read: if isPlanner() && key in ['roster','rules'];
+      allow read: if isStaff() && key == 'roster';
+    }
+    match /blocks/{id} { allow read, write: if isOwner(); allow read: if isPlanner(); }
     // Event summary, published checklist and shifts.
     match /events/{eventId} {
       allow read, write: if isOwner();
+      allow read: if isPlanner();
       allow read: if isStaff() && resource.data.published == true;
 
+      match /shared/{doc} {
+        allow read, write: if isOwner();
+        allow read: if isPlanner() && doc in ['vendors','confirm','questions'];
+        allow read: if isStaff() && isPublished(eventId) && doc == 'vendors';
+        // Planner schedule edits cannot alter the owner controlled vendor roster.
+        allow create: if isPlanner() && doc == 'vendors' && request.resource.data.keys().hasOnly(['schedule']);
+        allow update: if isPlanner() && doc == 'vendors' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['schedule']);
+        allow create: if isPlanner() && doc == 'confirm' && request.resource.data.keys().hasOnly(['guestCount','floorPlan','rentals']);
+        allow update: if isPlanner() && doc == 'confirm' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['guestCount','floorPlan','rentals']);
+        allow create, update: if isPlanner() && doc == 'questions';
+      }
       // Full intake answers. Owner only.
       match /draft/{part} {
         allow read, write: if isOwner();
@@ -30,7 +49,7 @@ service cloud.firestore {
       // Done marks and notes. Staff can read and mark them on published events, but cannot delete the record.
       match /status/{doc} {
         allow read, write: if isOwner();
-        allow read: if isStaff() && isPublished(eventId);
+        allow read: if (isStaff() || isPlanner()) && isPublished(eventId);
         allow create, update: if isStaff() && isPublished(eventId) && doc == 'items'
                               && request.resource.data.keys().hasOnly(['items']);
       }

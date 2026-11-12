@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Online library and staff status page (approved 2026-11-11). Off unless cloud-config.js holds a project. -->
     <script src="cloud-config.js"></script>
-    <script src="cloud.js"></script>
+    <script src="cloud.js"></script><script src="plan-core.js"></script><script src="plan-ui.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -363,6 +363,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--pen); }
     .sections-nav a.needs { border-color: #F59E0B; background: #FFFBEB; }
 }
 </style>
+<style>.plan-dialog label{display:block;min-height:44px;margin:12px 0}.plan-dialog input:not([type=checkbox]),.plan-dialog select,.plan-dialog textarea{display:block;width:100%;min-height:44px}.plan-dialog button{min-height:44px}</style>
 </head>
 
 <body>
@@ -828,7 +829,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--pen); }
    ========================================================================== */
 
 /* ---------- 1. Data block ---------- */
-const APP_VERSION = '2.9.0';
+const APP_VERSION = '2.10.0';
 const FILE_FORMAT = 'elm-event-intake';
 const FILE_FORMAT_VERSION = 1;
 const STORAGE_KEY = 'elm-event-intake-draft-v1';
@@ -1371,7 +1372,7 @@ function validateStaffingPlan(plan,fail){
     if(!plan||typeof plan!=='object'||!Array.isArray(plan.tasks)||!Array.isArray(plan.shifts)||!plan.receivers||typeof plan.receivers!=='object'||Array.isArray(plan.receivers))fail('intake.staffing');
     for(const [key,nextKey] of [['tasks','nextTask'],['shifts','nextShift']]){const ids=new Set();if(!Number.isSafeInteger(plan[nextKey])||plan[nextKey]<1)fail('staffing.'+nextKey);for(const row of plan[key]){if(!row||!Number.isSafeInteger(row.n)||row.n<1||row.n>=plan[nextKey]||ids.has(row.n))fail('staffing.'+key+'.n');ids.add(row.n);}}
     plan.tasks.forEach(t=>{if(['catalogId','quantity','shiftId','demandId','sourceHash','keptSource','keptStandard','note'].some(k=>typeof t[k]!=='string')||!Array.isArray(t.sourceCodes)||t.sourceCodes.some(c=>typeof c!=='string')||!staffValidDef(t.snapshot)||t.quantity!==''&&(!Number.isFinite(Number(t.quantity))||Number(t.quantity)<=0))fail('staffing.tasks');if(t.shiftId&&!plan.shifts.some(s=>String(s.n)===t.shiftId))fail('staffing.tasks.shiftId');});
-    plan.shifts.forEach(s=>{if(['label','people','start','end'].some(k=>typeof s[k]!=='string')||s.start&&staffDate(s.start)==null||s.end&&staffDate(s.end)==null||s.start&&s.end&&staffShiftLength(s)==null||s.goals!==undefined&&typeof s.goals!=='string')fail('staffing.shifts');});
+    plan.shifts.forEach(s=>{if(s.phase!==undefined&&!['','prep','hard','linens','tables','breakdown'].includes(s.phase))fail('staffing.shifts.phase');if(['label','people','start','end'].some(k=>typeof s[k]!=='string')||s.start&&staffDate(s.start)==null||s.end&&staffDate(s.end)==null||s.start&&s.end&&staffShiftLength(s)==null||s.goals!==undefined&&typeof s.goals!=='string')fail('staffing.shifts');});
     Object.entries(plan.receivers).forEach(([key,a])=>{if(!/^\d+:(loadIn|loadOut)$/.test(key)||!a||typeof a.shiftId!=='string'||typeof a.person!=='string')fail('staffing.receivers');});
 }
 
@@ -2270,6 +2271,10 @@ function roundCutleryItem(b) {
     b.source={type:'computed',rule:'Cutlery rounded up to the next 25',originalQuantity:quantity,parts:b.source?[b.source]:[]};
 }
 
+function vendorWhen(v,k,legacy) {
+    const base=legacy(v[k+'Date'],v[k+'Time']);
+    return base+(v[k+'TimeEnd']?' to '+(friendlyTime(v[k+'TimeEnd'])||v[k+'TimeEnd']):'')+(Object.prototype.hasOwnProperty.call(v,k+'Confirmed')&&!v[k+'Confirmed']?' (not confirmed)':'');
+}
 function buildEventSheet(s, options={}) {
     const v = vis(s); const head = num(s.event.headCount); const tables = num(s.food.guestTables);
     const roomsInUse = selectedRoomObjects(s);
@@ -2354,7 +2359,7 @@ function buildEventSheet(s, options={}) {
         const room = roomById(s, vd.room);
         const when = (d, t) => (hasText(d) || hasText(t)) ? [d, t].filter(hasText).map(x => x.trim()).join(' ') : 'unknown';
         const elev = vd.elevator === 'yes' ? 'Operate elevator.' : vd.elevator === 'no' ? 'No elevator needed.' : 'Elevator: unknown.';
-        const text = 'Receive ' + (hasText(vd.name) ? vd.name.trim() : 'vendor (name unknown)') + ' (' + (vd.bookedBy === 'client' ? 'client-booked' : vd.bookedBy === 'bite' ? 'Bite-booked' : 'booking not known') + '), ' + (room ? room.printName : 'room unknown') + '. Load-in: ' + when(vd.loadInDate, vd.loadInTime) + '. Load-out: ' + when(vd.loadOutDate, vd.loadOutTime) + '. ' + elev + (staffReceiver(s,vd,'loadIn')?' Arrival receiver: '+staffReceiver(s,vd,'loadIn')+'.':'') + (staffReceiver(s,vd,'loadOut')?' Pickup receiver: '+staffReceiver(s,vd,'loadOut')+'.':'');
+        const text = 'Receive ' + (hasText(vd.name) ? vd.name.trim() : 'vendor (name unknown)') + ' (' + (vd.bookedBy === 'client' ? 'client-booked' : vd.bookedBy === 'bite' ? 'Bite-booked' : 'booking not known') + '), ' + (room ? room.printName : 'room unknown') + '. Load-in: ' + vendorWhen(vd, 'loadIn', when) + '. Load-out: ' + vendorWhen(vd, 'loadOut', when) + '. ' + elev + (staffReceiver(s,vd,'loadIn')?' Arrival receiver: '+staffReceiver(s,vd,'loadIn')+'.':'') + (staffReceiver(s,vd,'loadOut')?' Pickup receiver: '+staffReceiver(s,vd,'loadOut')+'.':'');
         wv.blocks.push(item(WV_LINES.vendor.code + '.' + vd.n, text, { source: rowSource(s, 'vendors', vd, ['name', 'bookedBy', 'room', 'loadInDate', 'loadInTime', 'loadOutDate', 'loadOutTime', 'elevator']) }));
     });
     if (v.napkins && s.napkins.style === 'fold') wv.blocks.push(item(WV_LINES.napkinFold.code, 'Napkin fold: ' + (hasText(s.napkins.foldType) ? s.napkins.foldType.trim() : 'type not entered'), { source: { type: 'typed' } }));
@@ -2578,6 +2583,8 @@ function headerLines(s, meta, sheet) {
         staffGoals(sh).forEach(g => lines.push('   Goal: ' + g));
     });
     lines.push('Cards: ' + CARD_ORDER.map(k => CARDS[k].title + ' v' + CARDS[k].version + ' (' + cardFingerprint(CARDS[k]) + ')').join('   '));
+    const waiting=Object.values(s.plannerQuestions||{}).filter(q=>q.status==='waiting');
+    if(waiting.length)lines.push('WAITING ON PLANNER: '+waiting.map(q=>q.text+((q.values||[]).length?' ('+q.values.join(' or ')+')':'')).join('; '));
     if (sheet && sheet.gaps && sheet.gaps.length) lines.push(GAPS_LABEL + sheet.gaps.join('; '));
     return lines;
 }
@@ -2662,6 +2669,7 @@ function validateEventFile(data) {
     const v = data.intake;
     if(v.coffee?.countBasis!==undefined&&!['event','separate'].includes(v.coffee.countBasis))fail('coffee.countBasis');
     if(v.coffee?.headCount!==undefined&&v.coffee.headCount!==''&&(!Number.isSafeInteger(Number(v.coffee.headCount))||Number(v.coffee.headCount)<=0))fail('coffee.headCount');
+    (v.vendors||[]).forEach(row=>{if(row.kind!==undefined&&!['linen','laundry','rental','other'].includes(row.kind))fail('vendor.kind');['needsPresence','presenceManual','loadInConfirmed','loadOutConfirmed'].forEach(k=>{if(row[k]!==undefined&&typeof row[k]!=='boolean')fail('vendor.'+k);});['loadInTimeEnd','loadOutTimeEnd'].forEach(k=>{if(row[k]!==undefined&&typeof row[k]!=='string')fail('vendor.'+k);});});
     if(v.staffing!==undefined)validateStaffingPlan(v.staffing,fail);
     if(v.equipmentPlan!==undefined)validateEquipmentPlan(v.equipmentPlan,fail);
     if (v.meta && (v.meta.format !== undefined && v.meta.format !== FILE_FORMAT || v.meta.formatVersion !== undefined && v.meta.formatVersion !== FILE_FORMAT_VERSION)) fail('intake.meta');
@@ -4226,7 +4234,7 @@ function runScan(manualHeadBefore) {
     if (js) {
         const f = js.facts; const working = js.format === 'docx';
         if(f.buffetCountUncertain)add('buffets.qualifiedCount','food','question','Buffet arrangement needs review: '+f.buffetCountUncertain+'. Confirm the number of buffet units. No count was chosen automatically.',js);
-        else if ((f.buffetCounts || []).length > 1) add('buffets.conflictingCounts','food','question','The job sheet gives different buffet counts: '+f.buffetCounts.join(' and ')+'. Confirm the count and enter the buffet rows.',js);
+        else if ((f.buffetCounts || []).length > 1) add('buffets.conflictingCounts','food','question','The job sheet gives different buffet counts: '+f.buffetCounts.join(' and ')+'. Confirm the count and enter the buffet rows.',js,{values:f.buffetCounts.map(String)});
         const blank = (key, section, label) => add('blank.' + key, section, working ? 'not filled yet' : 'question', working ? label + ' is not filled in yet on the working job sheet.' : label + ' is blank on the finalized job sheet.', js);
         if (f.headCountUncertain) add('headCount.range','event','question','The job sheet gives a qualified guest count: '+f.headCountUncertain+'. Enter the Ops count to use. No count was chosen automatically.',js);
         else if (!f.headCount) blank('headCount', 'event', 'Guest count');
@@ -4285,7 +4293,7 @@ function runScan(manualHeadBefore) {
                 it.dismissedIssues = it.dismissedIssues.filter(k => k !== fp.fp + '|seats');
                 if (old && old.status === 'dismissed') old.status = 'open';
             }
-            add('seats', 'rooms', 'question', text, fp);
+            add('seats', 'rooms', 'question', text, fp, {values:[String(maxSeats),String(head)]});
         }
     }
     // Merge with earlier issues: keep answers and owners, mark the ones a newer document no longer has
@@ -4296,7 +4304,7 @@ function runScan(manualHeadBefore) {
         if (old) {
             const changed = old.text !== i.text;
             if (old.status === 'resolved' || ((old.status === 'dismissed' || old.status === 'answered') && changed)) { old.status = 'open'; old.change = changed ? 'changed since you last saw it' : 'found again'; }
-            Object.assign(old, { text: i.text, kind: i.kind, section: i.section, docFp: i.docFp, docName: i.docName });
+            Object.assign(old, { text: i.text, kind: i.kind, section: i.section, docFp: i.docFp, docName: i.docName, values:i.values||[] });
         }
         else it.issues.push(Object.assign(i, { id: 'is' + (++it.n), status: 'open', note: '' }));
     });
@@ -4995,7 +5003,7 @@ function cloudPublishedSheet(sheet) {
 }
 function cloudPublishedShifts() {
     const plan = staffPlan();
-    return plan.shifts.map(sh => ({ n: sh.n, label: sh.label || 'Shift ' + sh.n, start: sh.start || '', end: sh.end || '', people: staffPeople(sh), goals: sh.goals || '',
+    return plan.shifts.map(sh => ({ n: sh.n, phase: sh.phase || '', label: sh.label || 'Shift ' + sh.n, start: sh.start || '', end: sh.end || '', people: staffPeople(sh), goals: sh.goals || '',
         tasks: plan.tasks.filter(t => t.shiftId === String(sh.n)).map(t => ({ name: t.snapshot.name, qty: t.quantity || '', unit: t.snapshot.basisLabel || '', time: staffTime(t), note: t.note || '' })) }));
 }
 function cloudPublish() {
@@ -5027,7 +5035,7 @@ function initCloud() {
     $('cloudSaveBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Saving...', cloudSaveManual)); });
     $('cloudPublishBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Publishing...', cloudPublish)); });
     $('cloudStatusLink').addEventListener('click', () => window.open('status.html', '_blank', 'noopener'));
-    $('cloudEventsBtn').addEventListener('click', () => cloudOwnerThen(cloudLibrary));
+    $('cloudEventsBtn').addEventListener('click', () => { location.href='plan.html'; });
     $('cardsMenuBtn').addEventListener('click', () => $('cardsPdfBtn').click());
     $('cloudMainBtn').addEventListener('click', function () {
         const step = this.dataset.step;
@@ -5047,5 +5055,6 @@ window.ElmIntake = { catalogue: { APP_VERSION, FILE_FORMAT, FILE_FORMAT_VERSION,
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 </script>
+<script src="intake-plan.js"></script>
 </body>
 </html>
