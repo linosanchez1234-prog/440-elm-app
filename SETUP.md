@@ -78,3 +78,8 @@ node tests/storage.test.js
 ```
 
 The storage checks use an isolated transaction model. They do not validate deployed Firebase permissions. Test the rules in an emulator or a separate test project before merging and publishing this update.
+
+## Signing in with a password only (2026-11-12)
+Nobody types an email. Each page asks for a password and opens as the sign-in that password belongs to.
+The owner, planner and staff passwords must all be different. If two are the same, the app opens the first match.
+Too many wrong passwords in a row pause sign-ins for a few minutes. That is Firebase protecting the accounts.

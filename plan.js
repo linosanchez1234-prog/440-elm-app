@@ -664,13 +664,12 @@
   };
   function signIn() {
     $("app").innerHTML =
-      '<section><h2>Sign in</h2><form id="login"><label>Password<input name="password" type="password" required autocomplete="current-password"></label><details><summary>Use a different email</summary><label>Email<input name="email" type="email" value="' +
-      E(C.config.plannerEmail || C.config.ownerEmail) +
-      '" autocomplete="username"></label></details><button>Sign in</button></form></section>';
+      '<section><h2>Sign in</h2><form id="login"><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button>Sign in</button></form></section>';
     $("login").onsubmit = (e) => {
       e.preventDefault();
       const f = new FormData(e.target);
-      run(() => C.signIn(f.get("email"), f.get("password")));
+      // Password only (2026-11-12): the password decides whether this is the planner or the owner.
+      run(() => C.signInWithPassword(f.get("password"), ["planner", "owner", "staff"]));
     };
   }
   $("signOut").onclick = () => run(() => C.signOut());

@@ -157,6 +157,42 @@
         return describeUser();
       });
   }
+  // Password-only sign-in (2026-11-12). Nobody types an email: the password is tried against each configured
+  // sign-in, in the order given, and the first match opens. The three passwords must therefore be different.
+  function signInWithPassword(password, order) {
+    var emails = [];
+    (order || ["owner", "planner", "staff"]).forEach(function (r) {
+      var e = lower(cfg[r + "Email"]);
+      if (e && emails.indexOf(e) < 0) emails.push(e);
+    });
+    if (!emails.length)
+      return Promise.reject(
+        new Error("No sign-ins are set up in cloud-config.js."),
+      );
+    return init().then(function () {
+      var i = 0;
+      function next() {
+        if (i >= emails.length)
+          throw new Error("That password is not right.");
+        return auth.signInWithEmailAndPassword(emails[i++], password).then(
+          function (cred) {
+            if (cred && cred.user) user = cred.user;
+            return describeUser();
+          },
+          function (e) {
+            if (
+              /wrong-password|invalid-credential|user-not-found|invalid-login|user-disabled/.test(
+                (e && e.code) || "",
+              )
+            )
+              return next();
+            throw friendly(e);
+          },
+        );
+      }
+      return next();
+    });
+  }
   function signOut() {
     return init().then(function () {
       return auth.signOut();
@@ -517,6 +553,7 @@
     onUser: onUser,
     user: describeUser,
     signIn: signIn,
+    signInWithPassword: signInWithPassword,
     signOut: signOut,
     newId: function () {
       return init().then(newId);

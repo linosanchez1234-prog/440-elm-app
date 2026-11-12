@@ -4917,18 +4917,21 @@ function cloudDialog(id, title, body) {
 }
 function cloudSignIn(then) {
     const d = cloudDialog('cloudSignIn', 'Sign in to the online library',
-        '<p class="hint">Use the owner sign-in you created in the Firebase console. Staff use the status page instead.</p>' +
-        '<form id="cloudSignForm"><label class="staff-field" for="cloudEmail">Email<input id="cloudEmail" type="email" autocomplete="username" value="' + escapeHtml(ElmCloud.config.ownerEmail) + '"></label>' +
-        '<label class="staff-field" for="cloudPassword">Password<input id="cloudPassword" type="password" autocomplete="current-password"></label>' +
+        '<p class="hint">Enter the owner password. Staff and planners use their own pages.</p>' +
+        '<form id="cloudSignForm"><label class="staff-field" for="cloudPassword">Password<input id="cloudPassword" type="password" autocomplete="current-password"></label>' +
         '<div class="staff-toolbar"><button type="button" class="btn-secondary" id="cloudSignCancel">Cancel</button><button type="submit" class="btn-primary" id="cloudSignGo">Sign in</button></div></form>');
     $('cloudSignCancel').onclick = d.close;
     $('cloudSignForm').onsubmit = e => {
         e.preventDefault(); d.error(''); const go = $('cloudSignGo'); go.disabled = true; go.textContent = 'Signing in...';
-        ElmCloud.signIn($('cloudEmail').value, $('cloudPassword').value)
-            .then(u => { d.close(); if (then && u && u.role === 'owner') then(); })
+        // Password only (2026-11-12). A staff or planner password is turned away here, because this page is the owner's.
+        ElmCloud.signInWithPassword($('cloudPassword').value, ['owner', 'planner', 'staff'])
+            .then(u => {
+                if (!u || u.role !== 'owner') return ElmCloud.signOut().then(() => { throw new Error('That password is for the ' + (u && u.role === 'planner' ? 'Events page' : 'status page') + '. Enter the owner password here.'); });
+                d.close(); if (then) then();
+            })
             .catch(err => { d.error(err.message); go.disabled = false; go.textContent = 'Sign in'; });
     };
-    ($('cloudEmail').value ? $('cloudPassword') : $('cloudEmail')).focus();
+    $('cloudPassword').focus();
 }
 // Runs fn once the owner is signed in. Anyone else gets the sign-in dialog first.
 function cloudOwnerThen(fn) {
