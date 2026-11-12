@@ -8,6 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- PDF reader for job sheet and floor plan uploads (approved 2026-10-26). Runs in the browser only. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- Online library and staff status page (approved 2026-11-11). Off unless cloud-config.js holds a project. -->
+    <script src="cloud-config.js"></script>
+    <script src="cloud.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -299,7 +302,7 @@
 #epBackupTeams[hidden]{display:none}
 .staff-grid,.staff-receiver{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .staff-field{display:block;margin:10px 0}.staff-field input,.staff-field textarea,.staff-card select{display:block;width:100%;box-sizing:border-box}
-.staff-dialog{width:min(680px,calc(100vw - 48px));max-height:85vh;overflow:auto;border:1px solid #bcc6d5;border-radius:10px;padding:24px}.staff-dialog::backdrop{background:rgba(0,0,0,.4)}
+.staff-dialog{width:min(680px,calc(100vw - 48px));max-height:85vh;overflow:auto;border:1px solid #bcc6d5;border-radius:10px;padding:24px}.staff-dialog::backdrop{background:rgba(0,0,0,.4)}.cloud-error{color:var(--danger);min-height:1.2em}.cloud-error:empty{display:none}
 #staffingContent details{margin:16px 0}#staffingContent h3{margin-top:28px}
 @media(max-width:650px){.staff-grid,.staff-receiver{grid-template-columns:1fr}.staff-suggestion{align-items:flex-start;flex-direction:column}.staff-dialog{padding:16px}.staff-toolbar{align-items:stretch;flex-direction:column}}
 </style>
@@ -310,7 +313,7 @@
     <div class="brand"><span class="mark" aria-hidden="true"></span><span class="brand-name">440 Elm</span><span class="brand-tool">Event intake</span></div>
     <div class="event-status">
         <div id="topEventId" class="top-id empty">New event</div>
-        <div class="top-meta"><span id="versionStatus"></span><span id="autosaveStatus"></span></div>
+        <div class="top-meta"><span id="versionStatus"></span><span id="autosaveStatus"></span><span id="cloudStatus"></span></div>
     </div>
     <div class="actions">
         <button type="button" class="btn-secondary" id="previewToggle" aria-controls="previewPanel" aria-expanded="false"><span class="label-long">Preview sheet</span><span class="label-short">Preview</span></button>
@@ -323,6 +326,15 @@
                 <button type="button" id="exportBtn">Export event file</button>
                 <button type="button" id="importBtn">Import event file</button>
                 <input type="file" id="importFile" accept=".json,application/json" class="is-hidden">
+                <div id="cloudMenu" class="is-hidden">
+                    <hr><p class="menu-note"><strong>Online library and staff status</strong></p>
+                    <p class="menu-note" id="cloudWho"></p>
+                    <button type="button" id="cloudSignBtn">Sign in</button>
+                    <button type="button" id="cloudLibraryBtn">Open online library</button>
+                    <button type="button" id="cloudSaveBtn">Save this event online</button>
+                    <button type="button" id="cloudPublishBtn">Publish status page for staff</button>
+                    <button type="button" id="cloudStatusLink">Open the status page</button>
+                </div>
                 <hr>
                 <button type="button" class="danger" id="newEventBtn">Start new event</button>
                 <hr><p class="menu-note"><strong>Other output</strong></p><button type="button" id="sculleryPdfBtn">Download scullery sheet</button>
@@ -739,7 +751,9 @@
 <!-- STAFFING CATALOGUE END -->
 <script>
 /* ============================================================================
-   440 Elm Event Intake. Single file, no build step, no AI dependency.
+   440 Elm Event Intake. No build step, no AI dependency.
+   This file is the whole intake app. Three optional files add online sharing (2026-11-11):
+   cloud-config.js (settings), cloud.js (storage), status.html (phone status page for staff).
    Screen layout (2026-10-25 redesign): section list, worksheet, live sheet preview.
    Sections of this script:
      1. Data block (rooms, item catalogue with permanent codes, standard cards)
@@ -755,7 +769,7 @@
    ========================================================================== */
 
 /* ---------- 1. Data block ---------- */
-const APP_VERSION = '2.7.2';
+const APP_VERSION = '2.8.0';
 const FILE_FORMAT = 'elm-event-intake';
 const FILE_FORMAT_VERSION = 1;
 const STORAGE_KEY = 'elm-event-intake-draft-v1';
@@ -1214,6 +1228,7 @@ function staffPlanAlerts(s=state){
     }); return alerts;
 }
 function staffSelectOptions(rows,current,empty){return '<option value="">'+empty+'</option>'+rows.map(([v,t])=>'<option value="'+escapeHtml(v)+'"'+(String(current)===String(v)?' selected':'')+'>'+escapeHtml(t)+'</option>').join('');}
+function staffGoals(shift){return String(shift?.goals||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);}
 function staffShiftLabel(x){return (x.label||'Shift '+x.n)+(staffPeople(x).length?' ('+staffPeople(x).join(', ')+')':'');}
 function renderStaffing(){
     const host=$('staffingContent');if(!host)return;
@@ -1226,7 +1241,7 @@ function renderStaffing(){
     '<h3>1. Choose the work</h3><p class="hint">Suggestions use accepted event answers. Review quantities before adding. Unmatched work stays listed below; this is not a complete staffing plan until you review it.</p><div class="staff-suggestions">'+demands.map(d=>{const def=staffDef(d.id),exists=plan.tasks.some(t=>t.demandId===d.id);return '<div class="staff-suggestion"><span><strong>'+escapeHtml(def.name)+'</strong><br>'+escapeHtml(d.quantity||'Quantity needed')+' '+escapeHtml(def.basisLabel)+(d.hint?'<br><small>'+escapeHtml(d.hint)+'</small>':'')+'</span><button type="button" class="btn-secondary" data-staff-action="add-demand" data-id="'+d.id+'"'+(exists?' disabled':'')+'>'+(exists?'Added':'Review and add')+'</button></div>';}).join('')+'</div>'+
     '<div class="staff-toolbar"><label for="staffCatalogPick">Add other work from the task library</label><select id="staffCatalogPick">'+staffSelectOptions(staffDefinitions().map(d=>[d.id,d.name]),'','Choose a task')+'</select><button type="button" class="btn-secondary" data-staff-action="add-library">Review and add</button><button type="button" class="btn-secondary" data-staff-action="add-custom">Add a custom planning task</button></div>'+
     '<details><summary>Other checklist work to review ('+unmapped.length+')</summary><p class="hint">Link work to an existing planned task when its time already includes that work. Do not count the same work twice.</p>'+unmapped.map(i=>'<div class="staff-suggestion"><span>'+escapeHtml(i.text)+'</span><div><select aria-label="Task covering '+escapeHtml(i.text)+'" data-staff-cover="'+escapeHtml(i.code)+'">'+staffSelectOptions(plan.tasks.map(t=>[String(t.n),t.snapshot.name]),'','Covered by task…')+'</select><button type="button" class="btn-secondary" data-staff-action="add-item" data-id="'+escapeHtml(i.code)+'">Plan separately</button></div></div>').join('')+'</details>'+
-    '<h3>2. Build shifts and assign people</h3><p class="hint">Each shift is one person or a crew working together. Add separate shifts for independent work. Adding people does not automatically shorten task estimates.</p><button type="button" class="btn-secondary" data-staff-action="add-shift">Add a shift</button>'+plan.shifts.map(shift=>{const tasks=plan.tasks.filter(t=>t.shiftId===String(shift.n)),times=tasks.map(staffMinutes).filter(Boolean);return '<div class="staff-card"><h4>'+escapeHtml(staffShiftLabel(shift))+'</h4><p>'+escapeHtml(shift.start.replace('T',' ')||'Start needed')+' to '+escapeHtml(shift.end.replace('T',' ')||'End needed')+'</p><p>Planned work: '+staffNumber(times.reduce((n,t)=>n+t.min,0))+' to '+staffNumber(times.reduce((n,t)=>n+t.max,0))+' min'+(times.length<tasks.length?' plus tasks without estimates':'')+'. Shift length: '+(staffShiftLength(shift)==null?'not set':staffNumber(staffShiftLength(shift))+' min')+'.</p><button type="button" class="btn-secondary" data-staff-action="edit-shift" data-id="'+shift.n+'">Edit shift</button> <button type="button" class="btn-text danger" data-staff-action="remove-shift" data-id="'+shift.n+'">Remove shift</button></div>';}).join('')+
+    '<h3>2. Build shifts and assign people</h3><p class="hint">Each shift is one person or a crew working together. Add separate shifts for independent work. Adding people does not automatically shorten task estimates.</p><button type="button" class="btn-secondary" data-staff-action="add-shift">Add a shift</button>'+plan.shifts.map(shift=>{const tasks=plan.tasks.filter(t=>t.shiftId===String(shift.n)),times=tasks.map(staffMinutes).filter(Boolean);return '<div class="staff-card"><h4>'+escapeHtml(staffShiftLabel(shift))+'</h4><p>'+escapeHtml(shift.start.replace('T',' ')||'Start needed')+' to '+escapeHtml(shift.end.replace('T',' ')||'End needed')+'</p><p>Planned work: '+staffNumber(times.reduce((n,t)=>n+t.min,0))+' to '+staffNumber(times.reduce((n,t)=>n+t.max,0))+' min'+(times.length<tasks.length?' plus tasks without estimates':'')+'. Shift length: '+(staffShiftLength(shift)==null?'not set':staffNumber(staffShiftLength(shift))+' min')+'.</p>'+(hasText(shift.goals)?'<p><strong>Goals</strong></p><ul>'+staffGoals(shift).map(g=>'<li>'+escapeHtml(g)+'</li>').join('')+'</ul>':'')+'<button type="button" class="btn-secondary" data-staff-action="edit-shift" data-id="'+shift.n+'">Edit shift</button> <button type="button" class="btn-text danger" data-staff-action="remove-shift" data-id="'+shift.n+'">Remove shift</button></div>';}).join('')+
     '<h3>3. Planned tasks</h3>'+(!plan.tasks.length?'<p>No tasks added yet.</p>':'')+plan.tasks.map(t=>{const latest=staffDef(t.catalogId),standardChanged=latest&&staffHash(latest)!==staffHash(t.snapshot)&&t.keptStandard!==staffHash(latest),sourceChanged=t.sourceCodes.length&&staffHash(staffCurrentSources(t))!==t.sourceHash&&t.keptSource!==staffHash(staffCurrentSources(t));return '<div class="staff-card"><h4>'+escapeHtml(t.snapshot.name)+'</h4><p>'+escapeHtml(staffTime(t))+' · '+escapeHtml(t.quantity||'Quantity needed')+' '+escapeHtml(t.snapshot.basisLabel)+' · Crew: '+escapeHtml(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax&&t.snapshot.crewMax!==t.snapshot.crewMin?' to '+escapeHtml(t.snapshot.crewMax):'')+' · Role: '+escapeHtml(t.snapshot.role||'not specified')+'</p>'+(t.note?'<p>'+escapeHtml(t.note)+'</p>':'')+'<label>Assigned shift<select data-staff-task-shift="'+t.n+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),t.shiftId,'Not assigned')+'</select></label>'+staffTaskAlerts(t).map(a=>'<p class="staff-alert">'+escapeHtml(a)+'</p>').join('')+(standardChanged?'<p>Current standard: '+escapeHtml(latest.min||'?')+' to '+escapeHtml(latest.max||'?')+' min per '+escapeHtml(latest.basisQty+' '+latest.basisLabel)+'. Crew '+escapeHtml(latest.crewMin||'?')+' to '+escapeHtml(latest.crewMax||'?')+'.</p><button type="button" data-staff-action="update-standard" data-id="'+t.n+'">Review current standard</button> <button type="button" data-staff-action="keep-standard" data-id="'+t.n+'">Keep saved estimate</button>':'')+(sourceChanged?'<button type="button" data-staff-action="review-source" data-id="'+t.n+'">Review event changes</button>':'')+'<div class="staff-toolbar"><button type="button" class="btn-secondary" data-staff-action="edit-task" data-id="'+t.n+'">Edit task</button><button type="button" class="btn-text danger" data-staff-action="remove-task" data-id="'+t.n+'">Remove task</button></div></div>';}).join('')+
     '<h3>4. Vendor receivers</h3><p class="hint">Choose a shift and one of its people. The same assignment prints on the event sheet. Blank receivers add no flag.</p>'+state.vendors.map(v=>'<div class="staff-card"><h4>'+escapeHtml(v.name||'Vendor '+v.n)+'</h4>'+['loadIn','loadOut'].map(kind=>{const key=v.n+':'+kind,a=plan.receivers[key]||{},shift=plan.shifts.find(x=>String(x.n)===a.shiftId);return '<div class="staff-receiver"><strong>'+(kind==='loadIn'?'Arrival':'Pickup')+'</strong><span>'+escapeHtml([v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')||'Time not set')+'</span><label>Shift<select data-staff-receiver-shift="'+key+'">'+staffSelectOptions(plan.shifts.map(x=>[String(x.n),staffShiftLabel(x)]),a.shiftId,'No receiver assigned')+'</select></label><label>Receiver<select data-staff-receiver-person="'+key+'">'+staffSelectOptions(staffPeople(shift).map(n=>[n,n]),a.person,'Choose a person')+'</select></label></div>';}).join('')+'</div>').join('')+
     Object.keys(plan.receivers).filter(k=>!state.vendors.some(v=>String(v.n)===k.split(':')[0])).map(k=>'<p>Removed vendor assignment <button type="button" data-staff-action="clear-receiver" data-id="'+escapeHtml(k)+'">Clear assignment</button></p>').join('')+
@@ -1253,10 +1268,10 @@ function staffEditTask(existing,definition,demand,sourceItem){
         else {const codes=demand?.codes|| (sourceItem?[sourceItem.code]:[]);plan.tasks.push({n:plan.nextTask++,catalogId:def.id,quantity:q,shiftId:'',snapshot:clone(snapshot),demandId:demand?.id||'',sourceCodes:codes,sourceHash:staffHash(staffSources(codes)),keptSource:'',keptStandard:staffDef(def.id)?staffHash(staffDef(def.id)):'',note:$('stNote').value.trim()});}
     });
 }
-function staffEditShift(existing){const plan=staffPlan(),shift=existing||{label:'',people:'',start:'',end:''};staffDialog(existing?'Edit shift':'Add shift',staffInput('Shift name','shLabel',shift.label)+staffInput('Start, including date','shStart',shift.start,'datetime-local')+staffInput('End, including date','shEnd',shift.end,'datetime-local')+'<label class="staff-field" for="shPeople">People working together, one name per line<textarea id="shPeople" rows="4">'+escapeHtml(shift.people)+'</textarea></label>',()=>{const next={label:$('shLabel').value.trim(),people:$('shPeople').value.trim(),start:$('shStart').value,end:$('shEnd').value};if(next.start&&next.end&&staffShiftLength(next)==null)throw Error('End must be after start. Use the following date for an overnight shift.');if(existing){if(!plan.shifts.includes(existing))throw Error('This shift was removed.');Object.assign(existing,next);}else plan.shifts.push({n:plan.nextShift++,...next});});}
+function staffEditShift(existing){const plan=staffPlan(),shift=existing||{label:'',people:'',start:'',end:'',goals:''};staffDialog(existing?'Edit shift':'Add shift',staffInput('Shift name','shLabel',shift.label)+staffInput('Start, including date','shStart',shift.start,'datetime-local')+staffInput('End, including date','shEnd',shift.end,'datetime-local')+'<label class="staff-field" for="shPeople">People working together, one name per line<textarea id="shPeople" rows="4">'+escapeHtml(shift.people)+'</textarea></label><label class="staff-field" for="shGoals">Goals for this shift, one per line. A target, not a promise: estimates are never exact.<textarea id="shGoals" rows="4">'+escapeHtml(shift.goals||'')+'</textarea></label>',()=>{const next={label:$('shLabel').value.trim(),people:$('shPeople').value.trim(),start:$('shStart').value,end:$('shEnd').value,goals:$('shGoals').value.trim()};if(next.start&&next.end&&staffShiftLength(next)==null)throw Error('End must be after start. Use the following date for an overnight shift.');if(existing){if(!plan.shifts.includes(existing))throw Error('This shift was removed.');Object.assign(existing,next);}else plan.shifts.push({n:plan.nextShift++,...next});});}
 function staffEditStandard(id){const current=staffDef(id);if(!current||staffingStandardsError)return;staffDialog('Edit time standard',staffEstimateFields(current)+staffInput('Reason for this change','stReason',''),()=>{const next=staffReadDef(current),reason=$('stReason').value.trim();if(!reason)throw Error('Record a reason for the change.');next.rev=current.rev+1;const proposed=clone(staffingStandards);proposed.overrides[id]=next;proposed.changeLog.push({at:nowStamp(),id,name:next.name,from:current,to:next,note:reason,by:'Lino'});try{localStorage.setItem(STAFFING_STORAGE_KEY,JSON.stringify(proposed));}catch(e){throw Error('Time standards could not be saved. No standard was changed.');}staffingStandards=proposed;});}
 function staffReviewSource(task){const current=staffCurrentSources(task),demand=staffDemands().find(d=>d.id===task.demandId);staffDialog('Review changed event work','<p>The saved task and shift remain unchanged until you choose.</p><ul>'+current.map(x=>'<li>'+escapeHtml(x.text)+'</li>').join('')+staffInput('Quantity to plan','sourceQuantity',task.quantity,'number')+(demand?'<p>Current suggested quantity: '+escapeHtml(demand.quantity||'unknown')+' '+escapeHtml(staffDef(demand.id).basisLabel)+'.</p>':'')+'<p class="hint">Keep the quantity above if it is still right, or change it before saving. Remove the task separately if the work is no longer needed.</p>',()=>{const q=$('sourceQuantity').value;if(q!==''&&(!Number.isFinite(Number(q))||Number(q)<=0))throw Error('Enter a positive quantity or leave it blank.');task.quantity=q;task.keptSource=staffHash(current);});}
-function staffBuildPdf(){const plan=staffPlan(),alerts=staffPlanAlerts(),sections=[];if(alerts.length)sections.push({title:'NEEDS REVIEW',blocks:alerts.map(text=>({type:'text',text}))});const group=(title,tasks)=>({title,blocks:tasks.length?tasks.flatMap(t=>[{type:'text',text:t.snapshot.name+' · '+(t.quantity||'Quantity needed')+' '+t.snapshot.basisLabel+' · '+staffTime(t)+' · Crew: '+(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax!==t.snapshot.crewMin?' to '+t.snapshot.crewMax:'')},...(t.note?[{type:'note',text:t.note}]:[])]):[{type:'text',text:'No tasks assigned.'}]});plan.shifts.forEach(shift=>{const sec=group(staffShiftLabel(shift),plan.tasks.filter(t=>t.shiftId===String(shift.n)));sec.blocks.unshift({type:'text',text:(shift.start.replace('T',' ')||'Start needed')+' to '+(shift.end.replace('T',' ')||'End needed')});sections.push(sec);});sections.push(group('TASKS WITHOUT SHIFTS',plan.tasks.filter(t=>!plan.shifts.some(s=>String(s.n)===t.shiftId))));const receivers=[];state.vendors.forEach(v=>['loadIn','loadOut'].forEach(kind=>{const name=staffReceiver(state,v,kind);if(name)receivers.push({type:'text',text:(v.name||'Vendor')+' '+(kind==='loadIn'?'arrival':'pickup')+': '+name+' · '+[v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')});}));if(receivers.length)sections.push({title:'VENDOR RECEIVERS',blocks:receivers});return renderSheetPdf('STAFF ALLOCATION',[eventIdFor(state)||'Event identity incomplete','Planning only. Unassigned work and unresolved estimates remain listed.','Prepared '+nowStamp()],sections,'Staff Allocation',false);}
+function staffBuildPdf(){const plan=staffPlan(),alerts=staffPlanAlerts(),sections=[];if(alerts.length)sections.push({title:'NEEDS REVIEW',blocks:alerts.map(text=>({type:'text',text}))});const group=(title,tasks)=>({title,blocks:tasks.length?tasks.flatMap(t=>[{type:'text',text:t.snapshot.name+' · '+(t.quantity||'Quantity needed')+' '+t.snapshot.basisLabel+' · '+staffTime(t)+' · Crew: '+(t.snapshot.crewMin||'not specified')+(t.snapshot.crewMax!==t.snapshot.crewMin?' to '+t.snapshot.crewMax:'')},...(t.note?[{type:'note',text:t.note}]:[])]):[{type:'text',text:'No tasks assigned.'}]});plan.shifts.forEach(shift=>{const sec=group(staffShiftLabel(shift),plan.tasks.filter(t=>t.shiftId===String(shift.n)));sec.blocks.unshift({type:'text',text:(shift.start.replace('T',' ')||'Start needed')+' to '+(shift.end.replace('T',' ')||'End needed')},...(staffGoals(shift).length?[{type:'sub',text:'Goals for this shift'},...staffGoals(shift).map(g=>({type:'text',text:'- '+g})),{type:'sub',text:'Planned tasks'}]:[]));sections.push(sec);});sections.push(group('TASKS WITHOUT SHIFTS',plan.tasks.filter(t=>!plan.shifts.some(s=>String(s.n)===t.shiftId))));const receivers=[];state.vendors.forEach(v=>['loadIn','loadOut'].forEach(kind=>{const name=staffReceiver(state,v,kind);if(name)receivers.push({type:'text',text:(v.name||'Vendor')+' '+(kind==='loadIn'?'arrival':'pickup')+': '+name+' · '+[v[kind+'Date'],v[kind+'Time']].filter(Boolean).join(' ')});}));if(receivers.length)sections.push({title:'VENDOR RECEIVERS',blocks:receivers});return renderSheetPdf('STAFF ALLOCATION',[eventIdFor(state)||'Event identity incomplete','Planning only. Unassigned work and unresolved estimates remain listed.','Prepared '+nowStamp()],sections,'Staff Allocation',false);}
 function staffDownload(){staffBuildPdf().save('Staff-Allocation-'+fileSafe(eventIdFor(state)||NO_EVENT_ID)+'.pdf');}
 function staffAction(action,id){const plan=staffPlan(),task=plan.tasks.find(t=>String(t.n)===id),shift=plan.shifts.find(s=>String(s.n)===id);
     if(action==='add-demand'){const d=staffDemands().find(x=>x.id===id);if(d&&!plan.tasks.some(t=>t.demandId===id))staffEditTask(null,staffDef(id),d);return;}
@@ -1289,7 +1304,7 @@ function validateStaffingPlan(plan,fail){
     if(!plan||typeof plan!=='object'||!Array.isArray(plan.tasks)||!Array.isArray(plan.shifts)||!plan.receivers||typeof plan.receivers!=='object'||Array.isArray(plan.receivers))fail('intake.staffing');
     for(const [key,nextKey] of [['tasks','nextTask'],['shifts','nextShift']]){const ids=new Set();if(!Number.isSafeInteger(plan[nextKey])||plan[nextKey]<1)fail('staffing.'+nextKey);for(const row of plan[key]){if(!row||!Number.isSafeInteger(row.n)||row.n<1||row.n>=plan[nextKey]||ids.has(row.n))fail('staffing.'+key+'.n');ids.add(row.n);}}
     plan.tasks.forEach(t=>{if(['catalogId','quantity','shiftId','demandId','sourceHash','keptSource','keptStandard','note'].some(k=>typeof t[k]!=='string')||!Array.isArray(t.sourceCodes)||t.sourceCodes.some(c=>typeof c!=='string')||!staffValidDef(t.snapshot)||t.quantity!==''&&(!Number.isFinite(Number(t.quantity))||Number(t.quantity)<=0))fail('staffing.tasks');if(t.shiftId&&!plan.shifts.some(s=>String(s.n)===t.shiftId))fail('staffing.tasks.shiftId');});
-    plan.shifts.forEach(s=>{if(['label','people','start','end'].some(k=>typeof s[k]!=='string')||s.start&&staffDate(s.start)==null||s.end&&staffDate(s.end)==null||s.start&&s.end&&staffShiftLength(s)==null)fail('staffing.shifts');});
+    plan.shifts.forEach(s=>{if(['label','people','start','end'].some(k=>typeof s[k]!=='string')||s.start&&staffDate(s.start)==null||s.end&&staffDate(s.end)==null||s.start&&s.end&&staffShiftLength(s)==null||s.goals!==undefined&&typeof s.goals!=='string')fail('staffing.shifts');});
     Object.entries(plan.receivers).forEach(([key,a])=>{if(!/^\d+:(loadIn|loadOut)$/.test(key)||!a||typeof a.shiftId!=='string'||typeof a.person!=='string')fail('staffing.receivers');});
 }
 
@@ -1318,6 +1333,8 @@ function defaultState() {
         tableSettings: [], spoonType: '', noTableSettings: false,
         overrides: {},
         sources: {},
+        // Link to the online library. Empty until "Save this event online". Never holds done marks.
+        cloud: { id: '', savedAt: 0, publishedVersion: 0, publishedHash: '' },
         intake: { docs: [], suggestions: [], issues: [], accepted: {}, dismissed: [], dismissedIssues: [], versionPicks: {}, lastCandidates: {}, owners: {}, held: {}, n: 0 },
         sheetMeta: { version: 0, itemsHash: '', generatedAt: '' }
     };
@@ -1346,6 +1363,7 @@ function saveDraft(immediate) {
         if (draftRecovery) { showSaved(); return; }
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); storageOk = true; showSaved(); }
         catch (e) { storageOk = false; showSaved(); }
+        cloudAutosave();
     };
     clearTimeout(saveTimer);
     if (immediate) doSave(); else saveTimer = setTimeout(doSave, 300);
@@ -2821,7 +2839,7 @@ function schedulePreview() { clearTimeout(previewTimer); previewTimer = setTimeo
 function renderLive() {
     clearTimeout(previewTimer);
     const sheet = buildEventSheet(state);
-    renderPreview(sheet); renderNav(sheet); renderReviewWork(); renderStaffing(); renderEquipmentPlan();
+    renderPreview(sheet); renderNav(sheet); renderReviewWork(); renderStaffing(); renderEquipmentPlan(); cloudNoteSheet(sheet);
 }
 function prefersReducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function setPreviewOpen(open) {
@@ -4645,17 +4663,210 @@ function init() {
     $('newEventBtn').addEventListener('click', () => {
         if(draftRecovery){$('draftRecovery').scrollIntoView();return;}
         if (!confirm('Start a new event? The current draft will be cleared from this browser. Export it first if you need it.')) return;
-        revisionSummaries.clear(); reviewReturn = null; $('returnToReview').classList.add('is-hidden'); state = defaultState(); renderAll(); saveDraft(true);
+        // Send the last few seconds of edits to the online library before the screen is cleared.
+        if (cloudOn() && cloudIsOwner() && cloudLink().id) cloudSave(false);
+        revisionSummaries.clear(); reviewReturn = null; $('returnToReview').classList.add('is-hidden'); state = defaultState(); cloudNote = null; renderAll(); saveDraft(true);
     });
     $('unlockEventIdBtn').addEventListener('click', () => {
         if (!confirm('Edit the locked event id? Sheets and files already made keep the old id. Only do this to fix a mistake.')) return;
         state.event.idLocked = false; state.event.id = ''; renderEventId(); saveDraft();
     });
+    initCloud();
     window.addEventListener('beforeunload', () => { if(draftRecovery)return; try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } });
+}
+
+/* ---------- 12. Online library and staff status (approved 2026-11-11) ----------
+   Off unless cloud-config.js holds a project. Then, after the owner signs in:
+     - "Save this event online" puts the answers in the online library, and later edits save themselves there too.
+     - "Open online library" lists every saved event and opens one in place of the event on screen.
+     - "Publish status page for staff" sends the current checklist lines and shifts to status.html.
+   Done marks live only on the status page. They never enter the intake answers or the event file. */
+const cloudOn = () => !!(window.ElmCloud && ElmCloud.configured);
+let cloudUser = null, cloudTimer = null, cloudBusy = false, cloudAgain = false, cloudNote = null, cloudSheetHash = '';
+function cloudIsOwner() { return !!cloudUser && cloudUser.role === 'owner'; }
+function cloudLink(s = state) { if (!s.cloud || typeof s.cloud !== 'object' || Array.isArray(s.cloud)) s.cloud = defaultState().cloud; return s.cloud; }
+function cloudTime(ms) { return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+function cloudSummary() { return { eventId: eventIdFor(state), date: state.event.date || '', client: state.event.clientName || '', planner: plannerName(state) || '', headCount: String(state.event.headCount || ''), appVersion: APP_VERSION }; }
+function renderCloud() {
+    const menu = $('cloudMenu'), el = $('cloudStatus'); if (!menu || !el) return;
+    menu.classList.toggle('is-hidden', !cloudOn());
+    if (!cloudOn()) { el.textContent = ''; return; }
+    const link = cloudLink(), owner = cloudIsOwner();
+    $('cloudSignBtn').textContent = cloudUser ? 'Sign out' : 'Sign in';
+    $('cloudWho').textContent = !cloudUser ? 'Signed out. Answers stay in this browser only.' : owner ? 'Signed in as ' + cloudUser.email + '.' : 'Signed in as ' + cloudUser.email + '. This sign-in can only view the status page.';
+    let text = '', warn = false, title = '';
+    if (!cloudUser) text = 'Online: signed out';
+    else if (!owner) { text = 'Online: view only sign-in'; warn = true; }
+    else if (!link.id) { if (hasAnyAnswers(state)) { text = 'Not saved online'; warn = true; title = 'Use More, then Save this event online.'; } }
+    else if (cloudNote) { text = cloudNote.text; warn = cloudNote.warn; title = cloudNote.detail || ''; }
+    else if (link.savedAt) text = 'Saved online ' + cloudTime(link.savedAt);
+    if (owner && link.id && link.publishedVersion && !warn) {
+        if (cloudSheetHash && cloudSheetHash !== link.publishedHash) { text = 'Status page shows v' + link.publishedVersion + '. Publish again to update.'; warn = true; title = 'The checklist lines changed since the status page was published.'; }
+        else text += (text ? '. ' : '') + 'Status page: v' + link.publishedVersion;
+    }
+    el.textContent = text; el.className = warn ? 'warn' : ''; el.title = title;
+}
+function cloudPersistLocal() { if (draftRecovery) return; try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); storageOk = true; } catch (e) { storageOk = false; } showSaved(); }
+function cloudNoteSheet(sheet) { if (!cloudOn()) return; cloudSheetHash = itemsHash(flattenItems(sheet)); renderCloud(); }
+function cloudAutosave() {
+    if (!cloudOn() || !cloudIsOwner() || !cloudLink().id || draftRecovery) return;
+    clearTimeout(cloudTimer); cloudTimer = setTimeout(() => cloudSave(false), 4000);
+}
+// force: replace the online copy even if it changed somewhere else.
+function cloudSave(force) {
+    const link = cloudLink(), draft = state;
+    if (!link.id) return Promise.resolve(false);
+    if (cloudBusy) { cloudAgain = true; return Promise.resolve(false); }
+    cloudBusy = true; clearTimeout(cloudTimer);
+    const text = JSON.stringify({ format: FILE_FORMAT, formatVersion: FILE_FORMAT_VERSION, appVersion: APP_VERSION, intake: state, staffingStandards });
+    return ElmCloud.saveEvent(link.id, cloudSummary(), text, force ? false : (link.savedAt || null))
+        .then(at => {
+            if (state === draft) { cloudLink().savedAt = at; cloudPersistLocal(); }
+            cloudNote = null; return true;
+        })
+        .catch(e => { console.error(e); cloudNote = { text: e.conflict ? 'Online copy is newer. Not saved online.' : 'Online save failed', warn: true, detail: e.message }; return false; })
+        .finally(() => { cloudBusy = false; renderCloud(); if (cloudAgain) { cloudAgain = false; cloudAutosave(); } });
+}
+function cloudDialog(id, title, body) {
+    $(id)?.remove();
+    const focus = document.activeElement, dialog = document.createElement('dialog');
+    dialog.id = id; dialog.className = 'staff-dialog'; dialog.setAttribute('aria-labelledby', id + 'Title');
+    dialog.innerHTML = '<h2 id="' + id + 'Title" tabindex="-1">' + escapeHtml(title) + '</h2>' + body + '<p id="' + id + 'Error" role="alert" class="cloud-error"></p>';
+    document.body.appendChild(dialog);
+    const close = () => { dialog.close?.(); dialog.remove(); if (focus?.isConnected) focus.focus(); };
+    dialog.addEventListener('cancel', e => { e.preventDefault(); close(); });
+    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open', '');
+    return { dialog, close, error: msg => { const e = $(id + 'Error'); if (e) e.textContent = msg || ''; } };
+}
+function cloudSignIn(then) {
+    const d = cloudDialog('cloudSignIn', 'Sign in to the online library',
+        '<p class="hint">Use the owner sign-in you created in the Firebase console. Staff use the status page instead.</p>' +
+        '<form id="cloudSignForm"><label class="staff-field" for="cloudEmail">Email<input id="cloudEmail" type="email" autocomplete="username" value="' + escapeHtml(ElmCloud.config.ownerEmail) + '"></label>' +
+        '<label class="staff-field" for="cloudPassword">Password<input id="cloudPassword" type="password" autocomplete="current-password"></label>' +
+        '<div class="staff-toolbar"><button type="button" class="btn-secondary" id="cloudSignCancel">Cancel</button><button type="submit" class="btn-primary" id="cloudSignGo">Sign in</button></div></form>');
+    $('cloudSignCancel').onclick = d.close;
+    $('cloudSignForm').onsubmit = e => {
+        e.preventDefault(); d.error(''); const go = $('cloudSignGo'); go.disabled = true; go.textContent = 'Signing in...';
+        ElmCloud.signIn($('cloudEmail').value, $('cloudPassword').value)
+            .then(u => { d.close(); if (then && u && u.role === 'owner') then(); })
+            .catch(err => { d.error(err.message); go.disabled = false; go.textContent = 'Sign in'; });
+    };
+    ($('cloudEmail').value ? $('cloudPassword') : $('cloudEmail')).focus();
+}
+// Runs fn once the owner is signed in. Anyone else gets the sign-in dialog first.
+function cloudOwnerThen(fn) {
+    if (!cloudOn()) return;
+    ElmCloud.init().then(() => { if (cloudIsOwner()) fn(); else if (cloudUser) alert('This sign-in can only view the status page. Sign out, then sign in as the owner.'); else cloudSignIn(fn); })
+        .catch(e => alert(e.message));
+}
+function cloudSaveManual() {
+    if (draftRecovery) { $('draftRecovery').scrollIntoView(); return Promise.resolve(false); }
+    if (!eventIdFor(state)) { alert('Saving online needs an event id: fill in the event date and the client / event name.'); return Promise.resolve(false); }
+    const link = cloudLink(), draft = state;
+    const ready = link.id ? Promise.resolve(link.id) : ElmCloud.newId();
+    return ready.then(id => {
+        if (state !== draft) return false;
+        if (!cloudLink().id) { cloudLink().id = id; cloudLink().savedAt = 0; }
+        const idle = () => cloudBusy ? new Promise(r => setTimeout(r, 200)).then(idle) : Promise.resolve();
+        return idle().then(() => state === draft ? cloudSave(true) : false);
+    }).then(ok => { if (!ok && cloudNote) alert('The event was not saved online. ' + (cloudNote.detail || '')); cloudPersistLocal(); return ok; })
+      .catch(e => { alert('The event was not saved online. ' + e.message); return false; });
+}
+function cloudLibrary() {
+    const d = cloudDialog('cloudLibrary', 'Online library', '<p class="hint">Every event saved online. Opening one replaces the event on screen.</p><div id="cloudLibraryList"><p>Loading...</p></div><div class="staff-toolbar"><button type="button" class="btn-secondary" id="cloudLibraryClose">Close</button></div>');
+    $('cloudLibraryClose').onclick = d.close;
+    const draw = () => ElmCloud.listEvents(false).then(list => {
+        const host = $('cloudLibraryList'); if (!host) return;
+        const here = cloudLink().id;
+        host.innerHTML = list.length ? list.map((ev, i) => '<div class="staff-card"><h4>' + escapeHtml(ev.eventId || '(no event id)') + (ev.cloudId === here ? ' <span class="doc-meta">on screen now</span>' : '') + '</h4><p>' +
+            escapeHtml([ev.date || 'No date', ev.headCount ? ev.headCount + ' guests' : '', ev.published ? 'Status page: v' + (ev.sheetVersion || '?') : 'Not on the status page', ev.savedAt ? 'Saved ' + new Date(ev.savedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : ''].filter(Boolean).join('   |   ')) + '</p>' +
+            (ev.cloudId === here ? '' : '<button type="button" class="btn-secondary" data-cloud-open="' + i + '">Open</button> ') +
+            (ev.published ? '<button type="button" class="btn-text" data-cloud-hide="' + i + '">Take off the status page</button> ' : '') +
+            '<button type="button" class="btn-text danger" data-cloud-remove="' + i + '">Remove from the library</button></div>').join('') : '<p>No events are saved online yet. Use More, then Save this event online.</p>';
+        host.onclick = e => {
+            const b = e.target.closest('button'); if (!b) return; d.error('');
+            const pick = k => b.dataset[k] !== undefined ? list[Number(b.dataset[k])] : null;
+            let ev;
+            if ((ev = pick('cloudOpen'))) { b.disabled = true; cloudOpen(ev).then(ok => { if (ok) d.close(); else b.disabled = false; }).catch(err => { d.error(err.message); b.disabled = false; }); }
+            else if ((ev = pick('cloudHide'))) { ElmCloud.unpublish(ev.cloudId).then(() => { if (ev.cloudId === cloudLink().id) { cloudLink().publishedVersion = 0; cloudLink().publishedHash = ''; saveDraft(true); renderCloud(); } return draw(); }).catch(err => d.error(err.message)); }
+            else if ((ev = pick('cloudRemove'))) {
+                if (!confirm('Remove "' + (ev.eventId || 'this event') + '" from the online library? Its saved answers, its status page and its done marks are deleted. This cannot be undone. Export an event file first if you may need it.')) return;
+                ElmCloud.removeEvent(ev.cloudId).then(() => { if (ev.cloudId === cloudLink().id) { state.cloud = defaultState().cloud; cloudNote = null; saveDraft(true); renderCloud(); } return draw(); }).catch(err => d.error(err.message));
+            }
+        };
+    }).catch(err => { const host = $('cloudLibraryList'); if (host) host.innerHTML = ''; d.error(err.message); });
+    draw();
+}
+function cloudOpen(ev) {
+    if (draftRecovery) { $('draftRecovery').scrollIntoView(); return Promise.resolve(false); }
+    const link = cloudLink(), dirty = hasAnyAnswers(state);
+    if (dirty && !link.id && !confirm('The event on screen is not saved online. Opening "' + (ev.eventId || 'this event') + '" replaces it in this browser. Export or save it first if you need it.\n\nOpen anyway?')) return Promise.resolve(false);
+    const first = link.id ? cloudSave(false) : Promise.resolve(true);
+    return first.then(ok => {
+        if (!ok && link.id && !confirm('The event on screen could not be saved online' + (cloudNote && cloudNote.detail ? ' (' + cloudNote.detail + ')' : '') + '.\n\nOpen the other event anyway?')) return false;
+        return ElmCloud.loadDraft(ev.cloudId).then(saved => {
+            const data = JSON.parse(saved.text);
+            validateEventFile(data);
+            const incoming = mergeDefaults(defaultState(), data.intake);
+            incoming.cloud = { ...defaultState().cloud, ...incoming.cloud, id: ev.cloudId, savedAt: saved.savedAt };
+            clearTimeout(cloudTimer); cloudNote = null;
+            revisionSummaries.clear(); reviewReturn = null; $('returnToReview').classList.add('is-hidden');
+            state = incoming; renderAll();
+            cloudPersistLocal(); renderCloud();
+            return true;
+        });
+    });
+}
+// The checklist exactly as the sheet builder made it, with a stable key per tick line so done marks survive a new version.
+function cloudPublishedSheet(sheet) {
+    const used = new Set();
+    const keyFor = (sec, b) => { let k = hasText(b.code) ? String(b.code) : 'T-' + fnv1a(sec.title + '|' + b.text), n = 1, out = k; while (used.has(out)) out = k + '~' + (++n); used.add(out); return out; };
+    return sheet.sections.map(sec => ({ title: sec.title, group: sec.group || '', ref: !!sec.referenceOnly,
+        blocks: sec.blocks.map(b => b.type === 'item'
+            ? { t: 'item', key: keyFor(sec, b), text: b.text, ...(b.stages ? { stages: { pull: b.stages.pull, set: b.stages.set, pullTeam: stageTeam(b, 'pull'), setTeam: stageTeam(b, 'set') } } : {}) }
+            : { t: b.type, text: b.text || '', ...(b.menuRole ? { role: b.menuRole } : {}) }) }));
+}
+function cloudPublishedShifts() {
+    const plan = staffPlan();
+    return plan.shifts.map(sh => ({ n: sh.n, label: sh.label || 'Shift ' + sh.n, start: sh.start || '', end: sh.end || '', people: staffPeople(sh), goals: sh.goals || '',
+        tasks: plan.tasks.filter(t => t.shiftId === String(sh.n)).map(t => ({ name: t.snapshot.name, qty: t.quantity || '', unit: t.snapshot.basisLabel || '', time: staffTime(t), note: t.note || '' })) }));
+}
+function cloudPublish() {
+    if (draftRecovery) { $('draftRecovery').scrollIntoView(); return Promise.resolve(false); }
+    if (!eventIdFor(state)) { alert('Publishing needs an event id: fill in the event date and the client / event name.'); return Promise.resolve(false); }
+    const sheet = buildEventSheet(state);
+    if (sheet.warnings.length && !confirm('Before you publish:\n\n- ' + sheet.warnings.join('\n- ') + '\n\nPublish anyway?')) return Promise.resolve(false);
+    const draft = state;
+    // Publishing stamps the item version the same way Export does, so the status page and the printed sheet share a version.
+    const { meta } = stampVersion(sheet);
+    return cloudSaveManual().then(ok => {
+        if (!ok || state !== draft) return false;
+        const t = state.event.times;
+        const published = { ...cloudSummary(), sheetVersion: meta.version, sheetGeneratedAt: meta.generatedAt, sheetHash: meta.itemsHash,
+            times: { arriveOnsite: t.arriveOnsite || '', setupComplete: t.setupComplete || '', eventStart: t.eventStart || '', eventEnd: t.eventEnd || '', staffDeparts: t.staffDeparts || '' },
+            sheetJson: JSON.stringify(cloudPublishedSheet(sheet)), shiftsJson: JSON.stringify(cloudPublishedShifts()) };
+        return ElmCloud.publish(cloudLink().id, published).then(() => {
+            if (state === draft) { cloudLink().publishedVersion = meta.version; cloudLink().publishedHash = meta.itemsHash; cloudPersistLocal(); cloudAutosave(); renderCloud(); }
+            alert('Published. The status page now shows sheet v' + meta.version + ' and ' + staffPlan().shifts.length + ' shift(s). Done marks already made are kept.');
+            return true;
+        });
+    }).catch(e => { alert('The status page was not updated. ' + e.message); return false; });
+}
+function initCloud() {
+    renderCloud();
+    if (!cloudOn()) return;
+    $('cloudSignBtn').addEventListener('click', () => { if (cloudUser) ElmCloud.signOut().catch(e => alert(e.message)); else ElmCloud.init().then(() => cloudSignIn()).catch(e => alert(e.message)); });
+    $('cloudLibraryBtn').addEventListener('click', () => cloudOwnerThen(cloudLibrary));
+    $('cloudSaveBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Saving...', cloudSaveManual)); });
+    $('cloudPublishBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Publishing...', cloudPublish)); });
+    $('cloudStatusLink').addEventListener('click', () => window.open('status.html', '_blank', 'noopener'));
+    ElmCloud.onUser(u => { cloudUser = u; if (!u) clearTimeout(cloudTimer); renderCloud(); });
+    ElmCloud.init().catch(e => { cloudNote = { text: 'Online library unavailable', warn: true, detail: e.message }; const el = $('cloudStatus'); if (el) { el.textContent = cloudNote.text; el.className = 'warn'; el.title = e.message; } });
 }
 
 // Small hook for automated checks and for exporting the item catalogue. Read and build functions only.
 window.ElmIntake = { catalogue: { APP_VERSION, FILE_FORMAT, FILE_FORMAT_VERSION, STORAGE_KEY, OVERAGE, ROOMS, KITCHEN, WHOLE_VENUE, TABLE_TYPES, BLANK_TABLE_TYPES, UNNAMED_OUTSIDE_CHAIRS, ROOM_LINES, WV_LINES, KB_LINES, FC_LINES, PULL_ITEMS, PULL_CATEGORY_ORDER, DISPOSABLES_LINE, TABLE_SERVICE_LINE, RETIRED_CODES, NOT_OPS_WORK, NOTES, RETURN_TO_READY, CARDS, CARD_ORDER, BAR_TYPES, COFFEE_OPTIONS }, getState: () => state, buildEventSheet: () => buildEventSheet(state), flattenItems, exportObject, importText, buildScullerySheet: (m) => buildScullerySheet(state, m || state.sheetMeta), cards: CARDS, cardFingerprint, generateEventSheet, generateScullerySheet, generateCards, renderCardsPdf,
+    cloud: { publishedSheet: () => cloudPublishedSheet(buildEventSheet(state)), publishedShifts: cloudPublishedShifts, save: cloudSaveManual, publish: cloudPublish, open: cloudOpen },
     intake: { ingestFile, acceptSuggestion, dismissSuggestion, keepCurrent, pickVersion, acceptAll, resolveAttribution, removeDoc, rebuild: rebuildIntake, render: () => { renderAll(); }, extractJobSheet, extractFloorPlan, docxXmlToLines, readZipEntry, readPdfPages, pdfPageLines, chairCheck, classifyItem, state: intakeState } };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
