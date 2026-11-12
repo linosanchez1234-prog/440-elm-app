@@ -555,7 +555,7 @@
         </section>
 
         <section class="ws-section" id="sec-bars" data-section="bars" aria-labelledby="h-bars">
-            <header class="ws-head"><h2 id="h-bars">Bars</h2><p class="source">Placement from the floor plan. Type, bartenders and glassware from the job sheet bar notes.</p></header>
+            <header class="ws-head"><h2 id="h-bars">Bars</h2><p class="source">Placement from the floor plan or an exception you accept. Type, bartenders and glassware from the job sheet bar notes. Ops helps with additional bar setup when there is extra time.</p></header>
             <div class="group">
                 <div id="barRows"></div>
                 <button type="button" class="btn-add" data-add-row="bars">Add a bar</button>
@@ -721,7 +721,7 @@
    ========================================================================== */
 
 /* ---------- 1. Data block ---------- */
-const APP_VERSION = '2.6.13';
+const APP_VERSION = '2.6.14';
 const FILE_FORMAT = 'elm-event-intake';
 const FILE_FORMAT_VERSION = 1;
 const STORAGE_KEY = 'elm-event-intake-draft-v1';
@@ -922,17 +922,17 @@ const RETURN_TO_READY = {
 // Change a card's content -> raise its version. The fingerprint (content hash) catches edits made without a version change.
 const CARDS = {
     bar: {
-        key: 'bar', title: 'Bar Setup', version: 2,
-        purpose: 'How a bar is set at 440 Elm. One card for every bar. The event sheet says where each bar goes (from the floor plan), its type and its glassware.',
+        key: 'bar', title: 'Bar Setup', version: 3,
+        purpose: 'Complete every task below even when no person is assigned. Ops helps with preparation and staging when there is extra time. Use the event sheet for each bar’s location, accepted placement exception, type and glassware.',
         sections: [
             { title: 'Ops (move bars, back tables with linen, floor mats, trash and recycling)', owner: 'Ops', lines: [
-                ['BAR-01', 'Bar placement per floor plan (move if not already there). Bars stay in place between events.'],
+                ['BAR-01', 'Place bar per floor plan or Lino’s accepted exception, moving only if needed. Bars stay in place between events.'],
                 ['BAR-02', "Set up bar back tables (6' or 8') as needed per bar, with linen"],
                 ['BAR-03', 'Place Floor mats: 1 per bartender + 4 rubber mats/bar'],
                 ['BAR-04', 'Set up Trash cans with liners: 2 Slim Jim per bar + extra bags'],
                 ['BAR-05', 'Set up Recycling bins: 2 Slim Jim with black covers']
             ] },
-            { title: 'Bar manager', owner: 'Bar manager', lines: [
+            { title: 'Bar preparation', owner: 'Person not assigned', lines: [
                 ['BAR-10', 'Position Rolling carts for clean ice (include ice scoops)'],
                 ['BAR-11', 'Position Black rolling beverage cooler / brown cambro for chilling beverages'],
                 ['BAR-12', 'Set up Black chill tubs: for bar top display/chilling, if needed'],
@@ -944,9 +944,10 @@ const CARDS = {
                 ['BAR-18', 'Set up water dispenser with riser: 1 per bar with plastic cups'],
                 ['BAR-19', 'Place bar signage (e.g., menu, specialty drinks, payment info if applicable)'],
                 ['BAR-20', 'Arrange decorative elements as per event plan (glass bowls for fruit/herbs, etc.)'],
-                ['BAR-21', 'Ensure bar glassware from pull list is clean and staged (real glassware bars)']
+                ['BAR-21', 'Ensure bar glassware from pull list is clean and staged (real glassware bars)'],
+                ['BAR-22', 'Buss tubs: 1 per bar well']
             ] },
-            { title: 'Staging area (beer and wine, and full bars)', owner: 'Bar manager', lines: [
+            { title: 'Staging area (beer and wine, and full bars)', owner: 'Person not assigned', lines: [
                 ['BAR-30', 'Set up room dividers to block view'],
                 ['BAR-31', "Set up work table (6' or 8') for staging"],
                 ['BAR-32', 'Prepare extra ice storage'],
@@ -955,9 +956,9 @@ const CARDS = {
             ] }
         ],
         variants: 'Full bar and Beer & Wine: every line. Soft Drinks Only: skip BAR-13 and the staging area.',
-        eventSheetSays: 'For each bar: its room (from the floor plan), bar type and glassware (real or disposable). Bartenders do not print (staffing is out of scope). Bar disposables come from the job sheet Disposables block.',
-        perEvent: 'Stays on the event sheet: one line per bar with the ops portion, "Prepare Bar Disposables" for disposable bars, and the bar glassware counts on the pull list. Alcohol menus are not captured.',
-        after: 'Bars stay in place after an event: there is no bar breakdown. Ops washes the bar equipment and returns it to the bar rack (Return to Ready RR-10, RR-11). The bar kit itself (completeness, drying, sealing, missing items) is the bar manager’s.'
+        eventSheetSays: 'Each bar: location, accepted placement exception, type and glassware. Disposables follow the job sheet; bartender counts do not print.',
+        perEvent: 'Event sheet: Ops setup, bar disposables, glassware quantities and additional setup tasks. Alcohol menus are not captured.',
+        after: 'Bars stay in place. Ops washes bar equipment and returns it to the bar rack (Return to Ready RR-10, RR-11). Bar kit care: check completeness, dry, seal and report missing items. Person not assigned.'
     },
     scullery: {
         key: 'scullery', title: 'Scullery', version: 3,
@@ -1195,9 +1196,11 @@ const ROW_TEMPLATES = {
         fieldWrap('Setup notes', '<textarea rows="2" data-bind="food.stations.list.' + i + '.notes">' + escapeHtml(r.notes) + '</textarea>', 'wide') + '</div>',
     bars: (r, i) => '<div class="row-grid">' +
         fieldWrap('Room', roomSelectHtml('bars.' + i + '.room', r.room, 'unset')) +
+        '<div class="field wide"><button type="button" class="btn-secondary" style="white-space:normal" data-bar-exception="' + r.n + '">Record placement exception</button>' + (activeBarException(r) ? '<p class="hint">Accepted exception: ' + escapeHtml(r.placementException.by) + '. ' + escapeHtml(r.placementException.note) + '</p>' : '') + '</div>' +
         fieldWrap('Bar type', '<select data-bind="bars.' + i + '.type">' + (r.type ? '' : '<option value="" selected>Not set</option>') + optionsHtml(Object.entries(BAR_TYPES), r.type) + '</select>') +
         fieldWrap('Bartenders', '<input type="number" min="0" inputmode="numeric" data-bind="bars.' + i + '.bartenders" value="' + escapeHtml(r.bartenders) + '">') +
         fieldWrap('Glassware', '<select data-bind="bars.' + i + '.glassware" data-rerender="1">' + (r.glassware ? '' : '<option value="" selected>Not set</option>') + optionsHtml([['real', 'Real glassware'], ['disposable', 'Disposables']], r.glassware) + '</select>') +
+        fieldWrap('Additional bar setup needs, one item per line', '<textarea rows="3" data-bind="bars.' + i + '.setupNeeds">' + escapeHtml(r.setupNeeds || '') + '</textarea><p class="hint">Keep quantities and setup notes with each item. Each line prints separately; repeats are kept. Ops may help when there is extra time.</p>', 'wide') +
         (r.glassware === 'disposable' ? fieldWrap('Bar disposables, from the job sheet Disposables block', '<textarea rows="2" data-bind="bars.' + i + '.disposablesText">' + escapeHtml(r.disposablesText) + '</textarea>', 'wide') : '') + '</div>',
     coffeeStations: (r, i) => '<div class="row-grid">' + fieldWrap('Room', roomSelectHtml('coffee.stations.' + i + '.room', r.room, 'unset')) + '</div>',
     scullery: (r, i) => '<div class="row-grid">' + fieldWrap('Location', '<input type="text" data-bind="boh.scullery.' + i + '.location" value="' + escapeHtml(r.location) + '" placeholder="Kitchen dish pit">', 'wide') + '</div>',
@@ -1223,7 +1226,7 @@ const ROW_TEMPLATES = {
 const ROW_LISTS = {
     buffets: { path: 'food.buffets', container: 'buffetRows', make: (n) => ({ n, room: '' }) },
     stations: { path: 'food.stations.list', container: 'stationRows', make: (n) => ({ n, name: '', room: '', notes: '' }) },
-    bars: { path: 'bars', container: 'barRows', make: (n) => ({ n, room: '', type: 'full_bar', bartenders: '', glassware: 'real', disposablesText: '' }) },
+    bars: { path: 'bars', container: 'barRows', make: (n) => ({ n, room: '', type: 'full_bar', bartenders: '', glassware: 'real', disposablesText: '', setupNeeds: '', placementException: { room: '', by: '', note: '', acceptedAt: '' } }) },
     coffeeStations: { path: 'coffee.stations', container: 'coffeeStationRows', make: (n) => ({ n, room: '' }) },
     scullery: { path: 'boh.scullery', container: 'sculleryRows', make: (n) => ({ n, location: '' }) },
     vendors: { path: 'vendors', container: 'vendorRows', make: (n) => ({ n, name: '', bookedBy: 'bite', room: '', elevator: '', loadInDate: '', loadInTime: '', loadOutDate: '', loadOutTime: '' }) },
@@ -1231,6 +1234,38 @@ const ROW_LISTS = {
     miscTasks: { path: 'miscTasks', container: 'miscTaskRows', make: (n) => ({ n, task: '', time: '' }) },
     otherRooms: { path: 'rooms.others', container: 'otherRoomRows', make: (n) => ({ n, id: 'other_' + n, code: 'O' + n, name: '', selected: true }) }
 };
+
+function activeBarException(bar) {
+    const ex = bar.placementException;
+    return !!(ex && ex.room === bar.room && hasText(ex.room) && hasText(ex.by) && hasText(ex.note) && hasText(ex.acceptedAt));
+}
+function clearBarException(bar) { bar.placementException = { room: '', by: '', note: '', acceptedAt: '' }; }
+function showBarException(n) {
+    const bar = state.bars.find(row => row.n === n); if (!bar) return;
+    $('barExceptionChoice')?.remove();
+    const openedState = state, snapshot = JSON.stringify(bar), focus = document.activeElement;
+    const ex = activeBarException(bar) ? bar.placementException : {};
+    const dialog = document.createElement('dialog'); dialog.id = 'barExceptionChoice'; dialog.setAttribute('aria-labelledby', 'barExceptionTitle');
+    dialog.style.cssText = 'width:min(42rem,90vw);max-height:85vh;overflow:auto;padding:1.5rem;border:1px solid #999;border-radius:8px;';
+    dialog.innerHTML = '<h2 id="barExceptionTitle">Placement exception for Bar ' + n + '</h2><p>Review the location and decision. Nothing changes until you accept this exception.</p><form id="barExceptionForm"><div class="field"><label for="barExceptionRoom">Approved location</label><select id="barExceptionRoom" required><option value="">Choose a room</option>' + allRoomsForSelect().map(r => '<option value="' + escapeHtml(r.id) + '"' + (r.id === bar.room ? ' selected' : '') + '>' + escapeHtml(r.label) + '</option>').join('') + '</select></div><div class="field"><label for="barExceptionBy">Who authorized this change?</label><input type="text" id="barExceptionBy" required value="' + escapeHtml(ex.by || '') + '"></div><div class="field"><label for="barExceptionNote">Decision or source note</label><textarea id="barExceptionNote" required rows="3">' + escapeHtml(ex.note || '') + '</textarea></div><p id="barExceptionError" role="status"></p><div class="ri-actions" style="max-width:none"><button type="button" id="barExceptionCancel" class="btn-secondary">Cancel</button><button type="submit" class="btn-primary">Accept placement exception</button></div></form>';
+    document.body.appendChild(dialog);
+    const close = () => { if (dialog.close) dialog.close(); dialog.remove(); if (focus?.isConnected) focus.focus(); };
+    dialog.addEventListener('cancel', e => { e.preventDefault(); close(); });
+    $('barExceptionCancel').onclick = close;
+    $('barExceptionForm').onsubmit = e => {
+        e.preventDefault();
+        if (state !== openedState || !state.bars.includes(bar) || JSON.stringify(bar) !== snapshot) { $('barExceptionError').textContent = 'This bar changed. Cancel and review the current bar before accepting.'; return; }
+        const room = $('barExceptionRoom').value, by = $('barExceptionBy').value.trim(), note = $('barExceptionNote').value.trim();
+        if (!allRoomsForSelect().some(r => r.id === room) || !by || !note) { $('barExceptionError').textContent = 'Choose a room and enter who authorized the change and the decision or source note.'; return; }
+        bar.room = room; bar.placementException = { room, by, note, acceptedAt: nowStamp() };
+        const index = state.bars.indexOf(bar);
+        delete state.sources['bars.' + index + '.room']; delete state.sources['row.bars.' + n + '.room'];
+        close(); renderRows('bars'); runScan(); renderIntake(); onStructureChange(); renderLive();
+        document.querySelector('[data-bar-exception="' + n + '"]')?.focus();
+    };
+    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute('open', '');
+    $('barExceptionRoom').focus();
+}
 
 function addRow(kind) {
     const def = ROW_LISTS[kind]; const arr = getPath(state, def.path);
@@ -1401,6 +1436,8 @@ function handleBoundInput(e, isChange) {
     if (!el.dataset.bind) return;
     if (el.type === 'radio' && !el.checked) return;
     const priorHead = state.event.headCount;
+    const barRoom = /^bars\.(\d+)\.room$/.exec(el.dataset.bind);
+    if (barRoom && state.bars[Number(barRoom[1])].room !== readInputValue(el)) clearBarException(state.bars[Number(barRoom[1])]);
     setPath(state, el.dataset.bind, readInputValue(el));
     runScan(el.dataset.bind === 'event.headCount' ? priorHead : undefined);
     renderIntake();
@@ -1411,6 +1448,7 @@ function handleBoundInput(e, isChange) {
     }
     if (state.sources) { delete state.sources[el.dataset.bind]; delete state.sources[stableSourceKey(state, el.dataset.bind)]; }   // typed by hand now, so no longer from a document
     if (el.dataset.bind === 'noTableSettings') applyNoTableSettings();
+    if (barRoom && isChange) { renderRows('bars'); document.querySelector('[data-bind="' + el.dataset.bind + '"]')?.focus(); }
     if (structural || el.dataset.bind.startsWith('event.') || el.dataset.bind.startsWith('food.guestTables')) { onStructureChange(); }
     else saveDraft();
 }
@@ -1675,6 +1713,19 @@ function splitTableServiceLine(line) {
     if (cake) return ['Cake knife' + (cake[1] || ''), 'Cake server' + (cake[1] || '')];
     return [line];
 }
+function barSetupBlocks(s, bar, roomCode) {
+    const rows = [], seen = new Map();
+    String(bar.setupNeeds || '').split(/\r?\n/).forEach(raw => {
+        const line = raw.trim(); if (!line || excludedSetupItem(line)) return;
+        if (/^notes?:\s*.+/i.test(line) && rows.length) { rows[rows.length - 1] += '\n' + line; return; }
+        rows.push(line);
+    });
+    return rows.map(text => {
+        const hash = fnv1a(text).toUpperCase(), count = (seen.get(hash) || 0) + 1; seen.set(hash, count);
+        return { type: 'item', code: roomCode + '-30.' + bar.n + '.EXTRA.' + hash + '.' + count, text: 'Bar ' + bar.n + ': ' + text, barSetup: true, source: rowSource(s, 'bars', bar, ['setupNeeds']) };
+    });
+}
+
 function tableServiceBlocks(s) {
     const item = (code,text,extra) => ({type:'item',code,text,...extra});
     const rows = [], headings = []; let context = '', last = null;
@@ -1714,6 +1765,7 @@ function tableServiceBlocks(s) {
 // Completion marks are independent paper checkboxes, derived without changing saved answers.
 function equipmentStages(sec,b,s) {
     if(b.type!=='item')return null;
+    if(b.barSetup)return {pull:'check',set:'check'};
     if(sec.group==='BUFFET'&&PULL_ITEMS.some(p=>p.code===b.code&&p.cat==='Buffet Equipment'))return {pull:'check',set:'check'};
     if(sec.title==='PULL LIST'){const spec=PULL_ITEMS.find(p=>p.code===b.code);const settings=spec&&['head','table'].includes(spec.basis);return {pull:'check',set:settings?(s.food.placeSettingsBy==='servers'?'Servers':'check'):'N/A'};}
     const roomEquipment=sec.room && !b.card && (b.qty!=null || /^(Tables|Seating|Linens|Cutlery|Dinnerware|Glassware|Table accessories)$/.test(roomSetupCategory(b.text))) && !/^(Receive|Set up|Review|Ensure|Verify|Prepare|Stage|Check|Bar \d)/i.test(b.text);
@@ -1846,7 +1898,8 @@ function buildEventSheet(s) {
     s.bars.forEach(bar => {
         const b = bucket(bar.room); const n = bar.n;
         const typeLabel = BAR_TYPES[bar.type] || 'bar type not known';
-        b.blocks.push(item(b.room.code + '-' + ROOM_LINES.bar.n + '.' + n, 'Bar ' + n + ': ' + typeLabel + ', ' + (bar.glassware === 'disposable' ? 'disposable glassware' : bar.glassware === 'real' ? 'real glassware' : 'glassware not known') + '. Ops: bar placement per floor plan (move if not already there), bar back tables with linen, floor mats, trash cans and recycling bins, ' + cardRef('bar') + '.', { source: rowSource(s, 'bars', bar, ['room', 'type', 'glassware']), card: 'bar' }));
+        b.blocks.push(item(b.room.code + '-' + ROOM_LINES.bar.n + '.' + n, 'Bar ' + n + ': ' + typeLabel + ', ' + (bar.glassware === 'disposable' ? 'disposable glassware' : bar.glassware === 'real' ? 'real glassware' : 'glassware not known') + '. Ops: bar placement ' + (activeBarException(bar) ? 'per accepted exception' : 'per floor plan') + ' (move if not already there), bar back tables with linen, floor mats, trash cans and recycling bins, ' + cardRef('bar') + '.' + (activeBarException(bar) ? ' Placement exception accepted by Lino; authorized by ' + bar.placementException.by + ': ' + bar.placementException.note : ''), { source: Object.assign(rowSource(s, 'bars', bar, ['room', 'type', 'glassware']), activeBarException(bar) ? { placementException: clone(bar.placementException) } : {}), card: 'bar' }));
+        b.blocks.push(...barSetupBlocks(s, bar, b.room.code));
         if (bar.glassware === 'disposable') b.blocks.push(item(b.room.code + '-' + ROOM_LINES.barDisposables.n + '.' + n, 'Prepare Bar Disposables: ' + (hasText(bar.disposablesText) ? bar.disposablesText.trim() : 'see the job sheet Disposables block'), { source: rowSource(s, 'bars', bar, ['disposablesText']) }));
     });
     if (v.buffet) {
@@ -2591,7 +2644,14 @@ function renderSheetPdf(title, headerLns, sections, footerLabel, withNotes, styl
         if (sec.newPage) newPage(ctx);
         const first = sec.blocks[0], sectionNotes=withNotes&&!sec.referenceOnly;
         const totalNeed=sec.blocks.reduce((n,b)=>n+blockNeed(ctx,b)+(b.stages?18:0),0)+(sectionNotes?notesNeed(ctx):0);
-        const opening=Math.max(totalNeed<=320?totalNeed:0,sectionOpeningNeed(ctx,sec.blocks));
+        let opening=Math.max(totalNeed<=320?totalNeed:0,sectionOpeningNeed(ctx,sec.blocks));
+        // Match drawBlocks' first subgroup reservation so the section title cannot be stranded.
+        if(first?.type==='sub' && !sec.blocks.some(b=>b.stages)) {
+            const end=sec.blocks.findIndex((b,i)=>i>0&&(b.type==='sub'||b.menuRole==='heading'));
+            const group=sec.blocks.slice(0,end<0?sec.blocks.length:end);
+            const groupNeed=group.reduce((n,b)=>n+blockNeed(ctx,b),0)+(end<0&&sectionNotes?notesNeed(ctx):0);
+            if(groupNeed<=300)opening=Math.max(opening,groupNeed);
+        }
         // Keep the title with its first line, and with the Notes space too when that line is the section's only one
         drawSectionTitle(ctx, sec.title, first ? opening : (sectionNotes ? notesNeed(ctx) : st.itemMin));
         if (sec.blocks.some(b=>b.stages)) drawStagedBlocks(ctx,sec.blocks,sectionNotes); else if (sec.compact) drawCompactBlocks(ctx, sec.blocks, sectionNotes); else drawBlocks(ctx, sec.blocks, sectionNotes);
@@ -3519,7 +3579,7 @@ function applySuggestion(s, value) {
             let row = state.bars.find(b => b.n === ref) || null;
             const fresh = !row;
             if (!row) { state.counters.bars++; row = ROW_LISTS.bars.make(state.counters.bars); state.bars.push(row); }
-            if (v.room) row.room = v.room;
+            if (v.room) { if (row.room !== v.room) clearBarException(row); row.room = v.room; }
             // Rev 8 ruling 2: what the job sheet does not say stays blank on a new bar; an existing bar keeps its value.
             if (v.typeKnown) row.type = v.type; else if (fresh) row.type = '';
             if (v.glassKnown) row.glassware = v.glassware; else if (fresh) row.glassware = ''; if (v.disposablesText) row.disposablesText = v.disposablesText;
@@ -3866,6 +3926,8 @@ document.addEventListener('change', e => {
     handleBoundInput(e, true);
 });
 document.addEventListener('click', e => {
+    const exception = e.target.closest('[data-bar-exception]');
+    if (exception) { showBarException(Number(exception.dataset.barException)); return; }
     const menu = $('moreMenu');
     if (menu && menu.open && !e.target.closest('#moreMenu')) menu.open = false;
     const target = e.target.closest('[data-review-target]');
