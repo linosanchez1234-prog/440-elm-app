@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>440 Elm Setup Status</title>
+    <script src="cloud-config.js"></script>
+    <script src="cloud.js"></script>
+    <style>
+        /* Same paper and pen tokens as the intake app. Built for a phone held in one hand. */
+        :root { --desk: #E5E7EA; --paper: #FFFFFF; --ink: #1B1F24; --graphite: #5A636D; --rule: #D6DADF; --rule-strong: #B7BEC6; --pen: #2340A8; --pen-dark: #182F86; --pen-wash: #E9EDF9; --highlighter-wash: #FFF7C9; --danger: #B42318; --done: #1F7A4D; --done-wash: #E6F4EC;
+            --font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--desk); color: var(--ink); font-family: var(--font); font-size: 16px; line-height: 1.4; -webkit-text-size-adjust: 100%; }
+        button, input, select, textarea { font: inherit; color: inherit; }
+        .is-hidden { display: none !important; }
+        :focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+        .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+        .topbar strong { font-size: 16px; }
+        .topbar .grow { flex: 1; min-width: 0; color: var(--graphite); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        main { max-width: 720px; margin: 0 auto; padding: 14px 12px 60px; }
+        .card { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        h1 { font-size: 20px; margin: 0 0 4px; overflow-wrap: anywhere; }
+        h2 { font-size: 15px; margin: 0; text-transform: uppercase; letter-spacing: .03em; }
+        h3 { font-size: 16px; margin: 0 0 4px; }
+        p { margin: 4px 0; }
+        .meta { color: var(--graphite); font-size: 14px; }
+        .btn { min-height: 44px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--rule-strong); background: var(--paper); cursor: pointer; }
+        .btn-primary { background: var(--pen); border-color: var(--pen); color: #fff; font-weight: 600; }
+        .btn-text { background: none; border: 0; color: var(--pen); padding: 8px 4px; min-height: 44px; cursor: pointer; text-decoration: underline; }
+        label.field { display: block; font-size: 14px; color: var(--graphite); margin: 10px 0; }
+        label.field input, label.field select { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--rule-strong); border-radius: 8px; color: var(--ink); background: var(--paper); }
+        .error { color: var(--danger); }
+        .error:empty { display: none; }
+        .banner { background: var(--highlighter-wash); border: 1px solid #E6D36A; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; }
+        .event-link { display: block; width: 100%; text-align: left; cursor: pointer; }
+        .bar { height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; margin: 8px 0 4px; }
+        .bar span { display: block; height: 100%; background: var(--done); }
+        .counts { display: flex; gap: 10px; margin: 10px 0 2px; }
+        .count { flex: 1; border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; text-align: center; }
+        .count b { display: block; font-size: 26px; line-height: 1.1; }
+        .count.pending b { color: var(--danger); } .count.done b { color: var(--done); }
+        .seg { display: flex; border: 1px solid var(--rule-strong); border-radius: 8px; overflow: hidden; margin: 10px 0; background: var(--paper); }
+        .seg button { flex: 1; min-height: 44px; border: 0; background: none; cursor: pointer; border-right: 1px solid var(--rule); }
+        .seg button:last-child { border-right: 0; }
+        .seg button[aria-pressed="true"] { background: var(--pen-wash); color: var(--pen-dark); font-weight: 600; }
+        .sec { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+        .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--rule); background: #F6F7F8; }
+        .sec-head .meta { white-space: nowrap; }
+        .sub { padding: 8px 14px 2px; font-weight: 600; font-size: 14px; color: var(--graphite); }
+        .note { padding: 2px 14px 6px; font-size: 14px; color: var(--graphite); font-style: italic; }
+        .item { display: flex; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--rule); align-items: flex-start; }
+        .item:first-child { border-top: 0; }
+        .item.is-done { background: var(--done-wash); }
+        .item .body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .item .who { font-size: 13px; color: var(--graphite); margin-top: 2px; }
+        .item .inote { font-size: 14px; margin-top: 4px; padding: 4px 8px; background: var(--highlighter-wash); border-radius: 6px; }
+        .tick { flex: none; width: 30px; height: 30px; border: 2px solid var(--ink); border-radius: 4px; background: var(--paper); display: inline-flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: var(--done); padding: 0; }
+        button.tick { cursor: pointer; }
+        .tick.on { border-color: var(--done); }
+        .stages { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+        .stage { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--graphite); }
+        .stage .tick { width: 26px; height: 26px; font-size: 17px; }
+        .empty { padding: 14px; color: var(--graphite); }
+        details.ref summary { padding: 10px 14px; cursor: pointer; color: var(--graphite); }
+        details.ref .text { padding: 2px 14px; font-size: 14px; }
+        ul.plain { margin: 4px 0 4px 18px; padding: 0; }
+        .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        @media print {
+            body { background: #fff; font-size: 12pt; }
+            .topbar, .seg, .no-print, .btn, .btn-text, .bar { display: none !important; }
+            .sec, .card { border: 0; border-radius: 0; margin: 0 0 10pt; break-inside: auto; }
+            .item { break-inside: avoid; padding: 4pt 0; }
+            .item.is-done { background: none; }
+            main { max-width: none; padding: 0; }
+        }
+    </style>
+</head>
+
+<body>
+<header class="topbar">
+    <strong>440 Elm</strong><span class="grow" id="topInfo">Setup status</span>
+    <button type="button" class="btn-text is-hidden" id="signOutBtn">Sign out</button>
+</header>
+<main id="app" aria-live="polite"><div class="card"><p>Loading...</p></div></main>
+
+<script>
+/* 440 Elm setup status page. Reads what the intake app published. Shows what is pending, what is done, and the shifts.
+   The shared staff sign-in can only look. The owner sign-in can tick lines and add notes. Paper stays the working copy. */
+(function () {
+    'use strict';
+    var $ = function (id) { return document.getElementById(id); };
+    var app = $('app');
+    var cloud = window.ElmCloud;
+    var NAME_KEY = 'elm-status-done-by';
+    var view = { user: null, list: null, eventId: '', event: null, status: {}, filter: 'pending', tab: 'checklist', error: '', stop: [] };
+
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+    function parseJson(text, fallback) { try { var v = JSON.parse(text || ''); return Array.isArray(v) ? v : fallback; } catch (e) { return fallback; } }
+    function dayText(iso) {
+        var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ''); if (!m) return iso || 'No date';
+        return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function stampText(ms) { return ms ? new Date(ms).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : ''; }
+    function shiftTime(sh) {
+        function part(v) {
+            var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(v || ''); if (!m) return null;
+            return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]));
+        }
+        var a = part(sh.start), b = part(sh.end);
+        var day = function (d) { return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }); };
+        var time = function (d) { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); };
+        if (!a && !b) return 'Time not set';
+        if (a && b) return day(a) + ', ' + time(a) + ' to ' + (day(a) === day(b) ? '' : day(b) + ', ') + time(b);
+        return a ? day(a) + ', starts ' + time(a) : day(b) + ', ends ' + time(b);
+    }
+
+    /* ---- Checklist maths. A plain line has one tick. A pull-and-set line has one tick per stage that prints a box. ---- */
+    function ticksOf(block) {
+        if (!block.stages) return ['done'];
+        return ['pull', 'set'].filter(function (k) { return block.stages[k] === 'check'; });
+    }
+    function isDone(block, status) {
+        var mark = status[block.key] || {}, ticks = ticksOf(block);
+        return ticks.length > 0 && ticks.every(function (k) { return mark[k] === true; });
+    }
+    function sectionsOf(ev) { return parseJson(ev && ev.sheetJson, []).filter(function (s) { return s && Array.isArray(s.blocks); }); }
+    function tally(ev, status) {
+        var total = 0, done = 0;
+        sectionsOf(ev).forEach(function (sec) { if (sec.ref) return; sec.blocks.forEach(function (b) { if (b.t !== 'item' || !ticksOf(b).length) return; total++; if (isDone(b, status)) done++; }); });
+        return { total: total, done: done, pending: total - done };
+    }
+    function peopleOf(ev) {
+        var seen = {}, out = [];
+        parseJson(ev && ev.shiftsJson, []).forEach(function (sh) { (sh.people || []).forEach(function (p) { var k = String(p).toLowerCase(); if (!seen[k]) { seen[k] = true; out.push(String(p)); } }); });
+        return out;
+    }
+
+    /* ---- Views ---- */
+    function setTop(text) { $('topInfo').textContent = text; $('signOutBtn').classList.toggle('is-hidden', !view.user); }
+    function showNotConfigured() {
+        setTop('Setup status');
+        app.innerHTML = '<div class="card"><h1>Not set up yet</h1><p>The status page needs the online storage settings in cloud-config.js. The steps are in SETUP.md.</p></div>';
+    }
+    function showSignIn(message) {
+        setTop('Setup status');
+        var staff = cloud.config.staffEmail;
+        app.innerHTML = '<div class="card"><h1>' + (staff ? 'Staff sign in' : 'Sign in') + '</h1>' +
+            '<form id="signForm"><div id="emailWrap" class="' + (staff ? 'is-hidden' : '') + '"><label class="field">Email<input id="email" type="email" autocomplete="username" value="' + esc(staff) + '"></label></div>' +
+            '<label class="field">Password<input id="password" type="password" autocomplete="current-password"></label>' +
+            '<p class="error" id="signError" role="alert">' + esc(message || '') + '</p>' +
+            '<button type="submit" class="btn btn-primary" id="signGo">Sign in</button> ' +
+            (staff ? '<button type="button" class="btn-text" id="otherEmail">Use a different email</button>' : '') + '</form></div>';
+        if (staff) $('otherEmail').onclick = function () { $('emailWrap').classList.remove('is-hidden'); $('email').value = ''; $('email').focus(); this.classList.add('is-hidden'); };
+        $('signForm').onsubmit = function (e) {
+            e.preventDefault(); var go = $('signGo'); go.disabled = true; go.textContent = 'Signing in...'; $('signError').textContent = '';
+            cloud.signIn($('email').value, $('password').value).catch(function (err) { $('signError').textContent = err.message; go.disabled = false; go.textContent = 'Sign in'; });
+        };
+    }
+    function showUnknown() {
+        setTop(view.user.email);
+        app.innerHTML = '<div class="card"><h1>This sign-in is not on the list</h1><p>' + esc(view.user.email) + ' is not the owner or staff sign-in named in cloud-config.js. Sign out and use one of those.</p></div>';
+    }
+    function stopWatching() { view.stop.forEach(function (fn) { try { fn(); } catch (e) { /* already stopped */ } }); view.stop = []; }
+
+    function showList() {
+        stopWatching(); view.event = null; view.status = {};
+        setTop(view.user.role === 'owner' ? 'Owner view' : 'Staff view');
+        app.innerHTML = '<div class="card"><p>Loading events...</p></div>';
+        cloud.listEvents(true).then(function (list) {
+            return Promise.all(list.map(function (ev) { return cloud.getStatus(ev.cloudId).catch(function () { return {}; }).then(function (st) { ev._tally = tally(ev, st); return ev; }); }));
+        }).then(function (list) {
+            if (view.eventId) return;
+            view.list = list;
+            var now = new Date(), cut = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2);
+            var key = cut.getFullYear() + '-' + String(cut.getMonth() + 1).padStart(2, '0') + '-' + String(cut.getDate()).padStart(2, '0');
+            var current = list.filter(function (ev) { return !ev.date || ev.date >= key; }), past = list.filter(function (ev) { return ev.date && ev.date < key; }).reverse();
+            var card = function (ev) {
+                var t = ev._tally, pct = t.total ? Math.round(100 * t.done / t.total) : 0;
+                var shifts = parseJson(ev.shiftsJson, []);
+                return '<button type="button" class="card event-link" data-event="' + esc(ev.cloudId) + '"><h3>' + esc(ev.eventId || ev.client || 'Event') + '</h3>' +
+                    '<p class="meta">' + esc(dayText(ev.date)) + (ev.headCount ? ' · ' + esc(ev.headCount) + ' guests' : '') + '</p>' +
+                    '<div class="bar"><span style="width:' + pct + '%"></span></div>' +
+                    '<p><strong>' + t.pending + ' pending</strong> · ' + t.done + ' of ' + t.total + ' done</p>' +
+                    (shifts.length ? '<p class="meta">' + shifts.map(function (sh) { return esc(sh.label + ': ' + shiftTime(sh)); }).join('<br>') + '</p>' : '') + '</button>';
+            };
+            app.innerHTML = '<h2 style="margin:4px 2px 10px">Events</h2>' +
+                (current.length ? current.map(card).join('') : '<div class="card"><p>No current events are published yet.</p></div>') +
+                (past.length ? '<details class="no-print"><summary class="meta" style="padding:8px 2px;cursor:pointer">Past events (' + past.length + ')</summary>' + past.map(card).join('') + '</details>' : '') +
+                '<p class="no-print"><button type="button" class="btn" id="refreshList">Refresh</button></p>';
+            app.querySelectorAll('[data-event]').forEach(function (b) { b.onclick = function () { location.hash = 'e=' + encodeURIComponent(b.dataset.event); }; });
+            $('refreshList').onclick = showList;
+        }).catch(function (err) { app.innerHTML = '<div class="card"><p class="error">' + esc(err.message) + '</p><button type="button" class="btn" id="retry">Try again</button></div>'; $('retry').onclick = showList; });
+    }
+
+    function openEvent(id) {
+        stopWatching(); view.eventId = id; view.event = undefined; view.status = {}; view.error = '';
+        app.innerHTML = '<div class="card"><p>Loading...</p></div>';
+        var fail = function (err) { view.error = err.message; drawEvent(); };
+        view.stop.push(cloud.watchEvent(id, function (ev) { view.event = ev; drawEvent(); }, fail));
+        view.stop.push(cloud.watchStatus(id, function (items) { view.status = items; drawEvent(); }, fail));
+    }
+    function doneByName() { try { return localStorage.getItem(NAME_KEY) || ''; } catch (e) { return ''; } }
+    function rememberName(v) { try { localStorage.setItem(NAME_KEY, v); } catch (e) { /* not remembered */ } }
+
+    function itemHtml(b, owner) {
+        var mark = view.status[b.key] || {}, done = isDone(b, view.status), ticks = ticksOf(b);
+        var box = function (k, label) {
+            var on = mark[k] === true, inner = on ? '&#10003;' : '';
+            var name = (on ? 'Done: ' : 'Not done: ') + label;
+            return owner ? '<button type="button" class="tick' + (on ? ' on' : '') + '" data-key="' + esc(b.key) + '" data-tick="' + k + '" aria-pressed="' + on + '" aria-label="' + esc(name) + '">' + inner + '</button>'
+                         : '<span class="tick' + (on ? ' on' : '') + '" role="img" aria-label="' + esc(name) + '">' + inner + '</span>';
+        };
+        var who = (mark.by || mark.at) && ticks.some(function (k) { return mark[k] === true; }) ? '<div class="who">' + esc((mark.by ? mark.by + ', ' : '') + stampText(mark.at)) + '</div>' : '';
+        var note = mark.note ? '<div class="inote">' + esc(mark.note) + '</div>' : '';
+        var noteBtn = owner ? '<button type="button" class="btn-text no-print" data-key="' + esc(b.key) + '" data-note="1">' + (mark.note ? 'Edit note' : 'Add note') + '</button>' : '';
+        if (!b.stages) return '<div class="item' + (done ? ' is-done' : '') + '">' + box('done', b.text) + '<div class="body">' + esc(b.text) + who + note + noteBtn + '</div></div>';
+        var stage = function (k, label) {
+            var team = b.stages[k + 'Team'] ? ' (' + b.stages[k + 'Team'] + ')' : '';
+            if (b.stages[k] !== 'check') return b.stages[k] ? '<span class="stage">' + esc(label + ': ' + b.stages[k]) + '</span>' : '';
+            return '<span class="stage">' + box(k, label + ': ' + b.text) + esc(label + team) + '</span>';
+        };
+        return '<div class="item' + (done ? ' is-done' : '') + '"><div class="body">' + esc(b.text) + '<div class="stages">' + stage('pull', 'Pull and stage') + stage('set', 'Set') + '</div>' + who + note + noteBtn + '</div></div>';
+    }
+    function checklistHtml(ev, owner) {
+        var html = '';
+        sectionsOf(ev).forEach(function (sec) {
+            if (sec.ref) {
+                html += '<details class="sec ref no-print"><summary>' + esc(sec.title) + ' (reference)</summary>' + sec.blocks.map(function (b) { return '<div class="text">' + esc(b.text) + '</div>'; }).join('') + '</details>';
+                return;
+            }
+            var items = sec.blocks.filter(function (b) { return b.t === 'item' && ticksOf(b).length; });
+            var pending = items.filter(function (b) { return !isDone(b, view.status); }).length;
+            var body = '', heading = '', any = false;
+            sec.blocks.forEach(function (b) {
+                if (b.t === 'sub') { heading = '<div class="sub">' + esc(b.text) + '</div>'; return; }
+                if (b.t === 'item') {
+                    var done = isDone(b, view.status), tickable = ticksOf(b).length > 0;
+                    var show = view.filter === 'all' || (tickable && (view.filter === 'done') === done);
+                    if (!show) return;
+                    body += heading + itemHtml(b, owner); heading = ''; any = true; return;
+                }
+                if (view.filter === 'all' && b.text) { body += heading + '<div class="note">' + esc(b.text) + '</div>'; heading = ''; }
+            });
+            if (!any && view.filter !== 'all') return;
+            html += '<section class="sec"><div class="sec-head"><h2>' + esc(sec.title) + '</h2><span class="meta">' + (pending ? pending + ' pending' : 'All done') + '</span></div>' + (body || '<div class="empty">Nothing here.</div>') + '</section>';
+        });
+        if (!html) html = '<div class="card"><p>' + (view.filter === 'pending' ? 'Nothing is pending. Every line is marked done.' : view.filter === 'done' ? 'Nothing is marked done yet.' : 'This checklist has no lines.') + '</p></div>';
+        return html;
+    }
+    function shiftsHtml(ev) {
+        var shifts = parseJson(ev.shiftsJson, []);
+        if (!shifts.length) return '<div class="card"><p>No shifts are planned for this event yet.</p></div>';
+        return shifts.map(function (sh) {
+            var goals = String(sh.goals || '').split(/\r?\n/).map(function (g) { return g.trim(); }).filter(Boolean);
+            return '<div class="card"><h3>' + esc(sh.label) + '</h3><p>' + esc(shiftTime(sh)) + '</p>' +
+                '<p><strong>Who:</strong> ' + ((sh.people || []).length ? esc(sh.people.join(', ')) : 'Not assigned yet') + '</p>' +
+                (goals.length ? '<p><strong>Goals for this shift</strong></p><ul class="plain">' + goals.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>' : '') +
+                ((sh.tasks || []).length ? '<p><strong>Planned tasks</strong></p><ul class="plain">' + sh.tasks.map(function (t) { return '<li>' + esc(t.name + (t.qty ? ' · ' + t.qty + ' ' + (t.unit || '') : '') + (t.time ? ' · ' + t.time : '')) + (t.note ? '<br><span class="meta">' + esc(t.note) + '</span>' : '') + '</li>'; }).join('') + '</ul>' : '') + '</div>';
+        }).join('');
+    }
+    function drawEvent() {
+        if (!view.eventId) return;
+        var ev = view.event, owner = view.user && view.user.role === 'owner';
+        var back = '<p class="no-print"><button type="button" class="btn-text" id="backBtn">&larr; All events</button></p>';
+        if (view.error) { app.innerHTML = back + '<div class="card"><p class="error">' + esc(view.error) + '</p></div>'; $('backBtn').onclick = goList; return; }
+        if (ev === undefined) return;
+        if (!ev || (!ev.published && !owner)) { app.innerHTML = back + '<div class="card"><p>This event is not on the status page. It may have been taken down.</p></div>'; $('backBtn').onclick = goList; return; }
+        setTop(ev.eventId || 'Event');
+        var keep = { y: window.scrollY, name: $('doneBy') ? $('doneBy').value : doneByName() };
+        var t = tally(ev, view.status), times = ev.times || {};
+        var deadlines = [['Arrive onsite', times.arriveOnsite], ['Set-up complete', times.setupComplete], ['Event start', times.eventStart], ['Event end', times.eventEnd]].filter(function (x) { return x[1]; }).map(function (x) { return x[0] + ': ' + x[1]; });
+        var people = peopleOf(ev);
+        var html = back + '<div class="card"><h1>' + esc(ev.eventId || 'Event') + '</h1>' +
+            '<p class="meta">' + esc(dayText(ev.date)) + (ev.headCount ? ' · ' + esc(ev.headCount) + ' guests' : '') + '</p>' +
+            (deadlines.length ? '<p class="meta">' + esc(deadlines.join(' · ')) + '</p>' : '') +
+            '<div class="counts"><div class="count pending"><b>' + t.pending + '</b>pending</div><div class="count done"><b>' + t.done + '</b>done</div></div>' +
+            '<p class="meta">Checklist v' + esc(ev.sheetVersion || '?') + (ev.publishedAt ? ', published ' + esc(new Date(ev.publishedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })) : '') + '. The printed sheet should say the same version.</p>' +
+            (!ev.published ? '<p class="error">Not visible to staff: this event was taken off the status page.</p>' : '') + '</div>';
+        html += '<div class="seg no-print" role="group" aria-label="View"><button type="button" data-tab="checklist" aria-pressed="' + (view.tab === 'checklist') + '">Checklist</button><button type="button" data-tab="shifts" aria-pressed="' + (view.tab === 'shifts') + '">Shifts</button></div>';
+        if (view.tab === 'shifts') html += shiftsHtml(ev);
+        else {
+            if (owner) html += '<div class="card no-print"><label class="field" style="margin:0">Done by (saved with each tick)<input id="doneBy" list="peopleList" placeholder="Name or initials" value="' + esc(keep.name) + '"></label><datalist id="peopleList">' + people.map(function (p) { return '<option value="' + esc(p) + '">'; }).join('') + '</datalist></div>';
+            html += '<div class="seg no-print" role="group" aria-label="Show"><button type="button" data-filter="pending" aria-pressed="' + (view.filter === 'pending') + '">Pending (' + t.pending + ')</button><button type="button" data-filter="done" aria-pressed="' + (view.filter === 'done') + '">Done (' + t.done + ')</button><button type="button" data-filter="all" aria-pressed="' + (view.filter === 'all') + '">All</button></div>';
+            html += checklistHtml(ev, owner);
+            html += '<p class="no-print"><button type="button" class="btn" id="printBtn">Print this list</button></p>';
+        }
+        app.innerHTML = html;
+        window.scrollTo(0, keep.y);
+        $('backBtn').onclick = goList;
+        if ($('printBtn')) $('printBtn').onclick = function () { window.print(); };
+        if ($('doneBy')) $('doneBy').onchange = function () { rememberName(this.value.trim()); };
+        app.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { view.tab = b.dataset.tab; drawEvent(); }; });
+        app.querySelectorAll('[data-filter]').forEach(function (b) { b.onclick = function () { view.filter = b.dataset.filter; drawEvent(); }; });
+        if (!owner) return;
+        var failed = function (err) { alert('That change was not saved. ' + err.message); };
+        app.querySelectorAll('[data-tick]').forEach(function (b) {
+            b.onclick = function () {
+                var k = b.dataset.tick, on = !((view.status[b.dataset.key] || {})[k] === true), change = {};
+                var by = $('doneBy') ? $('doneBy').value.trim() : ''; rememberName(by);
+                change[k] = on; if (on) change.by = by;
+                b.disabled = true;
+                cloud.setItemStatus(view.eventId, b.dataset.key, change).catch(function (err) { b.disabled = false; failed(err); });
+            };
+        });
+        app.querySelectorAll('[data-note]').forEach(function (b) {
+            b.onclick = function () {
+                var old = (view.status[b.dataset.key] || {}).note || '';
+                var text = prompt('Note for the next shift (leave empty to remove it):', old);
+                if (text === null || text.trim() === old) return;
+                cloud.setItemStatus(view.eventId, b.dataset.key, { note: text.trim() }).catch(failed);
+            };
+        });
+    }
+    function goList() { location.hash = ''; }
+    function route() {
+        if (!view.user) return;
+        if (view.user.role === 'unknown') { stopWatching(); showUnknown(); return; }
+        var m = /^#e=(.+)$/.exec(location.hash);
+        if (m) openEvent(decodeURIComponent(m[1])); else { view.eventId = ''; showList(); }
+    }
+
+    if (!cloud || !cloud.configured) { showNotConfigured(); return; }
+    $('signOutBtn').onclick = function () { cloud.signOut(); };
+    window.addEventListener('hashchange', route);
+    cloud.onUser(function (u) {
+        view.user = u;
+        if (!u) { stopWatching(); view.eventId = ''; showSignIn(); return; }
+        route();
+    });
+    cloud.init().catch(function (err) { app.innerHTML = '<div class="card"><p class="error">' + esc(err.message) + '</p></div>'; });
+})();
+</script>
+</body>
+
+</html>
