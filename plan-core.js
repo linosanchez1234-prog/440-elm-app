@@ -184,7 +184,7 @@
       });
       Object.values(e.questions || {})
         .filter((q) => q.status === "waiting")
-        .forEach((q) => push("question:" + q.id, q.text));
+        .forEach((q) => push("question:" + q.id, "Planner question: " + q.text));
       out.push(...shiftWarnings(e, r, blocks));
     }
     if (!c.laundry?.requested)

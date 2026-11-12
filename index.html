@@ -2273,7 +2273,10 @@ function roundCutleryItem(b) {
 
 function vendorWhen(v,k,legacy) {
     const base=legacy(v[k+'Date'],v[k+'Time']);
-    return base+(v[k+'TimeEnd']?' to '+(friendlyTime(v[k+'TimeEnd'])||v[k+'TimeEnd']):'')+(Object.prototype.hasOwnProperty.call(v,k+'Confirmed')&&!v[k+'Confirmed']?' (not confirmed)':'');
+    // "(not confirmed)" prints only when there is a date to confirm, and only on rows that use the vendor schedule
+    // (a kind, a presence choice, a window end or a confirmed tick). Rows from older events print exactly as before.
+    const scheduled=['kind','needsPresence','loadInTimeEnd','loadOutTimeEnd','loadInConfirmed','loadOutConfirmed'].some(f=>v[f]!==undefined);
+    return base+(v[k+'TimeEnd']?' to '+(friendlyTime(v[k+'TimeEnd'])||v[k+'TimeEnd']):'')+(scheduled&&hasText(v[k+'Date'])&&v[k+'Confirmed']!==true?' (not confirmed)':'');
 }
 function buildEventSheet(s, options={}) {
     const v = vis(s); const head = num(s.event.headCount); const tables = num(s.food.guestTables);
@@ -5035,7 +5038,14 @@ function initCloud() {
     $('cloudSaveBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Saving...', cloudSaveManual)); });
     $('cloudPublishBtn').addEventListener('click', function () { cloudOwnerThen(() => withButton(this, 'Publishing...', cloudPublish)); });
     $('cloudStatusLink').addEventListener('click', () => window.open('status.html', '_blank', 'noopener'));
-    $('cloudEventsBtn').addEventListener('click', () => { location.href='plan.html'; });
+    // Leaving for the calendar: send the last few seconds of edits online first, so the calendar is current (2026-11-12).
+    $('cloudEventsBtn').addEventListener('click', function () {
+        const go = () => { location.href = 'plan.html'; };
+        if (!cloudIsOwner() || !cloudLink().id || draftRecovery) return go();
+        this.disabled = true;
+        const idle = () => cloudBusy ? new Promise(r => setTimeout(r, 200)).then(idle) : Promise.resolve();
+        idle().then(() => cloudSave(false)).then(go, go);
+    });
     $('cardsMenuBtn').addEventListener('click', () => $('cardsPdfBtn').click());
     $('cloudMainBtn').addEventListener('click', function () {
         const step = this.dataset.step;

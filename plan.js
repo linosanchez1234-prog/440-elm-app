@@ -13,7 +13,8 @@
     rules = { ...P.defaults },
     selected = "",
     month = new Date().toLocaleDateString("en-CA").slice(0, 7),
-    busy = false;
+    busy = false,
+    monthChosen = false;
   const today = () => {
     const d = new Date();
     return (
@@ -85,6 +86,15 @@
         };
       }),
     );
+    // First load: if nothing is happening this month, open on the month of the next event (2026-11-12).
+    if (!monthChosen) {
+      monthChosen = true;
+      const next = events
+        .filter((e) => e.date && e.date >= today())
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      if (next && !events.some((e) => (e.date || "").slice(0, 7) === month))
+        month = next.date.slice(0, 7);
+    }
     render();
   }
   function attention(ev) {
@@ -142,10 +152,13 @@
                   '<p class="' +
                   i.level +
                   '">' +
-                  button(i.text, "attention", g.ev.cloudId + "|" + i.key) +
-                  " <span>" +
+                  '<span class="level level-' +
                   i.level +
-                  "</span></p>",
+                  '">' +
+                  { urgent: "Urgent", soon: "Soon", info: "Upcoming" }[i.level] +
+                  "</span> " +
+                  button(i.text, "attention", g.ev.cloudId + "|" + i.key) +
+                  "</p>",
               )
               .join("") +
             "</article>",
@@ -381,6 +394,8 @@
               : !owner()
                 ? button("Answer", "answer", q.id)
                 : "<p>Waiting on planner</p>") +
+            // The owner can always close a question here, including one whose issue was already settled in the intake app (2026-11-12).
+            (owner() ? button("Close question", "close-question", q.id) : "") +
             "</article>",
         )
         .join("") +
@@ -586,6 +601,12 @@
             .join("\n\n"),
         );
         message("Questions copied.");
+      } else if (a === "close-question" && owner()) {
+        await C.changeShared(ev.cloudId, "questions", (d) => {
+          if (d[id]) d[id] = { ...d[id], status: "closed", closedAt: Date.now() };
+          return d;
+        });
+        await refresh();
       } else if (a === "answer" && !owner()) {
         const q = ev.questions[id];
         U.dialog(
